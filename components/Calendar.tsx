@@ -184,11 +184,9 @@ export default function Calendar({ user }: { user: User }) {
 
               {day.isHoliday && <div style={{ fontSize: '12px', color: 'red', fontWeight: 'bold' }}>{day.holidayName}</div>}
               {day.hasComment && <div style={{ fontSize: '12px', color: 'orange' }}>Comentário</div>}
-
-              {/* AQUI ESTÁ A MUDANÇA: O texto agora é sempre "Folga" */}
               {day.isDayOff 
                 ? <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga</div>
-                : <div style={{ fontSize: '12px', color: '#555', marginTop: '5px' }}>Turno: {day.shift}</div>
+                : <div style={{ fontSize: '12px', color: '#555', marginTop: '5px' }}>{day.shift}</div>
               }
             </div>
           ))}
