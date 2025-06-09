@@ -93,7 +93,6 @@ export default function Calendar({ user }: { user: User }) {
           dayInfo.dayOffReason = 'Weekday';
         }
         
-        // <<< LÓGICA DO FIM DE SEMANA REVERTIDA PARA A VERSÃO CORRETA >>>
         if ((dayOfWeek === 0 || dayOfWeek === 6) && user.initialWeekendOff) {
           const userCreatedAt = new Date(user.createdAt);
           const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
@@ -186,8 +185,9 @@ export default function Calendar({ user }: { user: User }) {
               {day.isHoliday && <div style={{ fontSize: '12px', color: 'red', fontWeight: 'bold' }}>{day.holidayName}</div>}
               {day.hasComment && <div style={{ fontSize: '12px', color: 'orange' }}>Comentário</div>}
 
+              {/* AQUI ESTÁ A MUDANÇA: O texto agora é sempre "Folga" */}
               {day.isDayOff 
-                ? <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga ({day.dayOffReason})</div>
+                ? <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga</div>
                 : <div style={{ fontSize: '12px', color: '#555', marginTop: '5px' }}>Turno: {day.shift}</div>
               }
             </div>
