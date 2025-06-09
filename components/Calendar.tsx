@@ -62,7 +62,8 @@ export default function Calendar({ user }: { user: User }) {
     const days = eachDayOfInterval({ start: startDate, end: endDate });
 
     const holidaysMap = new Map(holidays.map(h => [h.date, h.name]));
-    const swapsMap = new Map(swaps.map(s => [s.newDate, s]));
+    const newDayOffMap = new Map(swaps.map(s => [s.newDate, s]));
+    const newWorkDayMap = new Map(swaps.map(s => [s.originalDate, s]));
     const commentsMap = new Map(comments.map(c => [c.date, true]));
 
     const calendarGrid = days.map((day): DayInfo => {
@@ -78,36 +79,36 @@ export default function Calendar({ user }: { user: User }) {
         hasComment: commentsMap.has(dateString),
         shift: user.shift,
       };
-      
-      const swap = swapsMap.get(dateString);
-      if (swap) {
+
+      const newDayOffSwap = newDayOffMap.get(dateString);
+      if (newDayOffSwap) {
         dayInfo.isDayOff = true;
         dayInfo.dayOffReason = 'Swap';
-        dayInfo.shift = swap.newShift;
-      }
-
-      if (!dayInfo.isDayOff) {
+        dayInfo.shift = newDayOffSwap.newShift;
+      } else if (newWorkDayMap.has(dateString)) {
+        // É um dia de trabalho devido a uma troca, então não fazemos nada.
+      } else {
         const dayOfWeek = getDay(day);
         if (weekdayMap[dayOfWeek] === user.weekdayOff) {
           dayInfo.isDayOff = true;
           dayInfo.dayOffReason = 'Weekday';
         }
-        
+
         if ((dayOfWeek === 0 || dayOfWeek === 6) && user.initialWeekendOff) {
           const userCreatedAt = new Date(user.createdAt);
           const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
-          
+
           let firstOccurrence = startOfWeek(userCreatedAt);
-          while(getDay(firstOccurrence) !== firstWeekendOffDay) {
+          while (getDay(firstOccurrence) !== firstWeekendOffDay) {
             firstOccurrence = new Date(firstOccurrence.setDate(firstOccurrence.getDate() + 1));
           }
 
           const weeksDiff = differenceInCalendarWeeks(day, firstOccurrence, { weekStartsOn: 1 });
-          
-          const currentWeekendOffDay = (weeksDiff % 2 === 0) 
-            ? firstWeekendOffDay 
+
+          const currentWeekendOffDay = (weeksDiff % 2 === 0)
+            ? firstWeekendOffDay
             : (firstWeekendOffDay === 6 ? 0 : 6);
-          
+
           if (dayOfWeek === currentWeekendOffDay) {
             dayInfo.isDayOff = true;
             dayInfo.dayOffReason = 'Weekend';
@@ -116,7 +117,6 @@ export default function Calendar({ user }: { user: User }) {
       }
       return dayInfo;
     });
-
     setCalendarDays(calendarGrid);
   }, [user]);
 
@@ -127,19 +127,18 @@ export default function Calendar({ user }: { user: User }) {
       if (!user || !token) {
         setIsLoading(false);
         return;
-      };
+      }
 
       const monthStart = startOfMonth(currentMonth);
       const monthEnd = endOfMonth(currentMonth);
       const params = `?startDate=${format(monthStart, 'yyyy-MM-dd')}&endDate=${format(monthEnd, 'yyyy-MM-dd')}`;
-      
       const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
       try {
         const [holidaysRes, swapsRes, commentsRes] = await Promise.all([
-          fetch(`${apiURL}/api/holidays${params}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${apiURL}/api/swaps/user/${user.id}${params}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${apiURL}/api/comments/user/${user.id}${params}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/holidays${params}`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/swaps/user/${user.id}${params}`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/comments/user/${user.id}${params}`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         const holidays = (await holidaysRes.json()) || [];
@@ -181,7 +180,6 @@ export default function Calendar({ user }: { user: User }) {
               color: day.isToday ? 'blue' : 'black',
             }}>
               <div style={{ fontWeight: 'bold' }}>{format(day.date, 'd')}</div>
-
               {day.isHoliday && <div style={{ fontSize: '12px', color: 'red', fontWeight: 'bold' }}>{day.holidayName}</div>}
               {day.hasComment && <div style={{ fontSize: '12px', color: 'orange' }}>Comentário</div>}
               {day.isDayOff 
