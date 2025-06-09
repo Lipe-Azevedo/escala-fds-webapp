@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import Calendar from '../../components/Calendar'; // Importa o novo componente
 
 type User = {
   id: number;
@@ -12,6 +13,10 @@ type User = {
   userType: 'master' | 'collaborator';
   team: string;
   position: string;
+  shift: string;
+  weekdayOff: string;
+  initialWeekendOff: string;
+  createdAt: string;
 };
 
 export default function DashboardPage() {
@@ -48,35 +53,25 @@ export default function DashboardPage() {
       
       <h2>Bem-vindo(a), {user.firstName} {user.lastName}!</h2>
       
-      <div style={{ marginTop: '20px', border: '1px solid #eee', padding: '15px' }}>
-        <h3>Suas Informações:</h3>
-        <p><strong>ID:</strong> {user.id}</p>
-        <p><strong>Email:</strong> {user.email}</p>
-        <p><strong>Tipo de Acesso:</strong> {user.userType}</p>
-        
-        {/* Mostra informações adicionais se for um colaborador */}
-        {user.userType === 'collaborator' && (
-          <>
-            <p><strong>Equipe:</strong> {user.team || 'Não definido'}</p>
-            <p><strong>Cargo:</strong> {user.position || 'Não definido'}</p>
-          </>
-        )}
-      </div>
-
       {/* Área para renderizar a tela específica de cada tipo de usuário */}
       <div style={{ marginTop: '30px' }}>
-        {user.userType === 'master' ? <MasterView /> : <CollaboratorView />}
+        {user.userType === 'master' ? <MasterView /> : <CollaboratorView user={user} />}
       </div>
     </div>
   );
 }
 
-// Componente placeholder para a visão do Master
+// Visão do Master (pode ser desenvolvida depois)
 const MasterView = () => {
   return <div><h2>Visão do Master</h2><p>Aqui você verá a lista de todos os colaboradores, equipes, etc.</p></div>;
 }
 
-// Componente placeholder para a visão do Colaborador
-const CollaboratorView = () => {
-  return <div><h2>Visão do Colaborador</h2><p>Aqui você verá seu calendário de folgas, solicitações de troca, etc.</p></div>;
+// Visão do Colaborador agora renderiza o Calendário
+const CollaboratorView = ({ user }: { user: User }) => {
+  return (
+    <div>
+      <h2>Seu Calendário de Escala</h2>
+      <Calendar user={user} />
+    </div>
+  );
 }
