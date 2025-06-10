@@ -3,21 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import Calendar from '../../components/Calendar'; // Importa o novo componente
+import Calendar from '../../components/Calendar';
+import CreateUserModal from '../../components/CreateUserModal'; // Importa o novo componente
 
-type User = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  userType: 'master' | 'collaborator';
-  team: string;
-  position: string;
-  shift: string;
-  weekdayOff: string;
-  initialWeekendOff: string;
-  createdAt: string;
-};
+// ... (Tipo User não muda)
+type User = { id: number; firstName: string; lastName: string; email: string; userType: 'master' | 'collaborator'; team: string; position: string; shift: string; weekdayOff: string; initialWeekendOff: string; createdAt: string;};
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -53,7 +43,6 @@ export default function DashboardPage() {
       
       <h2>Bem-vindo(a), {user.firstName} {user.lastName}!</h2>
       
-      {/* Área para renderizar a tela específica de cada tipo de usuário */}
       <div style={{ marginTop: '30px' }}>
         {user.userType === 'master' ? <MasterView /> : <CollaboratorView user={user} />}
       </div>
@@ -61,12 +50,33 @@ export default function DashboardPage() {
   );
 }
 
-// Visão do Master (pode ser desenvolvida depois)
+// Visão do Master agora controla o modal de criação
 const MasterView = () => {
-  return <div><h2>Visão do Master</h2><p>Aqui você verá a lista de todos os colaboradores, equipes, etc.</p></div>;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleUserCreated = () => {
+    // Aqui você pode, por exemplo, recarregar a lista de usuários
+    console.log("Usuário criado com sucesso! Atualizar lista...");
+  }
+
+  return (
+    <div>
+      <h2>Visão do Master</h2>
+      <p>Gerenciamento de colaboradores e equipes.</p>
+      <button onClick={() => setIsModalOpen(true)} style={{marginTop: '10px'}}>
+        Criar Novo Colaborador
+      </button>
+
+      <CreateUserModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onUserCreated={handleUserCreated}
+      />
+    </div>
+  );
 }
 
-// Visão do Colaborador agora renderiza o Calendário
+// Visão do Colaborador continua a mesma
 const CollaboratorView = ({ user }: { user: User }) => {
   return (
     <div>
