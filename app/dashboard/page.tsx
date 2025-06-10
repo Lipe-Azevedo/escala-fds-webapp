@@ -4,10 +4,22 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import Calendar from '../../components/Calendar';
-import CreateUserModal from '../../components/CreateUserModal'; // Importa o novo componente
+import CreateUserModal from '../../components/CreateUserModal';
+import UserList from '../../components/UserList';
 
-// ... (Tipo User não muda)
-type User = { id: number; firstName: string; lastName: string; email: string; userType: 'master' | 'collaborator'; team: string; position: string; shift: string; weekdayOff: string; initialWeekendOff: string; createdAt: string;};
+type User = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  userType: 'master' | 'collaborator';
+  team: string;
+  position: string;
+  shift: string;
+  weekdayOff: string;
+  initialWeekendOff: string;
+  createdAt: string;
+};
 
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -50,28 +62,57 @@ export default function DashboardPage() {
   );
 }
 
-// Visão do Master agora controla o modal de criação
+// Visão do Master agora busca e exibe a lista de usuários
 const MasterView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const handleUserCreated = () => {
-    // Aqui você pode, por exemplo, recarregar a lista de usuários
-    console.log("Usuário criado com sucesso! Atualizar lista...");
-  }
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    setError('');
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
+    try {
+      const res = await fetch(`${apiURL}/api/users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Falha ao buscar usuários.');
+      const data = await res.json();
+      setUsers(data || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   return (
     <div>
-      <h2>Visão do Master</h2>
-      <p>Gerenciamento de colaboradores e equipes.</p>
-      <button onClick={() => setIsModalOpen(true)} style={{marginTop: '10px'}}>
-        Criar Novo Colaborador
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>Visão do Master - Colaboradores</h2>
+        <button onClick={() => setIsModalOpen(true)}>
+          + Criar Novo Colaborador
+        </button>
+      </div>
+      
+      {isLoading && <p>Carregando lista de usuários...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {!isLoading && !error && <UserList users={users} />}
 
-      <CreateUserModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onUserCreated={handleUserCreated}
-      />
+      {isModalOpen && (
+        <CreateUserModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onUserCreated={fetchUsers} // Atualiza a lista após criar um novo usuário
+        />
+      )}
     </div>
   );
 }
