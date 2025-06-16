@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 type User = {
   id: number;
   firstName: string;
@@ -12,14 +14,36 @@ type User = {
 
 interface UserListProps {
   users: User[];
+  onEdit: (user: User) => void;
 }
 
-export default function UserList({ users }: UserListProps) {
+const tableHeaderStyle: React.CSSProperties = {
+  padding: '12px 15px',
+  textAlign: 'left',
+  fontWeight: 'bold',
+  color: '#374151',
+  textTransform: 'uppercase',
+  borderBottom: '2px solid #e5e7eb',
+};
+
+const tableCellStyle: React.CSSProperties = {
+  padding: '12px 15px',
+  textAlign: 'left',
+  borderBottom: '1px solid #e5e7eb',
+};
+
+const actionButtonStyle: React.CSSProperties = {
+  padding: '5px 10px',
+  fontSize: '12px',
+  marginRight: '5px'
+};
+
+export default function UserList({ users, onEdit }: UserListProps) {
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#000000' }}>
+    <div style={{ overflowX: 'auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead style={{ backgroundColor: '#f9fafb' }}>
+          <tr>
             <th style={tableHeaderStyle}>Nome</th>
             <th style={tableHeaderStyle}>Equipe</th>
             <th style={tableHeaderStyle}>Cargo</th>
@@ -29,14 +53,16 @@ export default function UserList({ users }: UserListProps) {
         </thead>
         <tbody>
           {users.map((user) => (
-            <tr key={user.id} style={{ borderBottom: '1px solid #ddd' }}>
+            <tr key={user.id}>
               <td style={tableCellStyle}>{user.firstName} {user.lastName}</td>
               <td style={tableCellStyle}>{user.team || 'N/A'}</td>
               <td style={tableCellStyle}>{user.position || 'N/A'}</td>
               <td style={tableCellStyle}>{user.shift || 'N/A'}</td>
               <td style={tableCellStyle}>
-                <button style={{ marginRight: '5px' }}>Detalhes</button>
-                <button>Editar</button>
+                <Link href={`/dashboard/users/${user.id}`}>
+                  <button style={{...actionButtonStyle, backgroundColor: '#6b7280'}}>Detalhes</button>
+                </Link>
+                <button onClick={() => onEdit(user)} style={actionButtonStyle}>Editar</button>
               </td>
             </tr>
           ))}
@@ -45,15 +71,3 @@ export default function UserList({ users }: UserListProps) {
     </div>
   );
 }
-
-// Estilos para a tabela
-const tableHeaderStyle: React.CSSProperties = {
-  padding: '12px',
-  textAlign: 'left',
-  borderBottom: '2px solid #ddd',
-};
-
-const tableCellStyle: React.CSSProperties = {
-  padding: '12px',
-  textAlign: 'left',
-};

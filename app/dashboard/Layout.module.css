@@ -1,0 +1,10 @@
+.layout {
+    display: flex;
+}
+  
+.mainContent {
+    flex: 1;
+    padding: 30px;
+    height: 100vh;
+    overflow-y: auto;
+}
