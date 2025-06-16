@@ -108,10 +108,16 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
         <form onSubmit={handleSubmit}>
             <label htmlFor="firstName">Nome</label>
             <input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Nome" required />
+            
             <label htmlFor="lastName">Sobrenome</label>
             <input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Sobrenome" required />
+            
+            <label htmlFor="phoneNumber">Telefone</label>
+            <input id="phoneNumber" name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleChange} placeholder="Telefone" required />
+            
             <label htmlFor="email">Email</label>
             <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" required />
+
             <label htmlFor="password">Senha</label>
             <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Senha" required />
             
