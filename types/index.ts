@@ -13,11 +13,39 @@ export type User = {
   weekdayOff: string;
   initialWeekendOff: string;
   createdAt: string;
+  superiorId?: number;
 };
 
 export type Holiday = {
   id: number;
   name: string;
-  date: string; // Formato "yyyy-MM-dd"
+  date: string;
   type: 'national' | 'state' | 'city';
+};
+
+export type Swap = {
+  id: number;
+  requester: User;
+  involvedCollaborator?: User;
+  originalDate: string;
+  newDate: string;
+  originalShift: string;
+  newShift: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approvedBy?: User;
+  createdAt: string;
+  approvedAt?: string;
+};
+
+export type Certificate = {
+  id: number;
+  collaborator: User;
+  startDate: string;
+  endDate: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approvedBy?: User;
+  createdAt: string;
+  approvedAt?: string;
 };
