@@ -14,3 +14,10 @@ export type User = {
   initialWeekendOff: string;
   createdAt: string;
 };
+
+export type Holiday = {
+  id: number;
+  name: string;
+  date: string; // Formato "yyyy-MM-dd"
+  type: 'national' | 'state' | 'city';
+};
