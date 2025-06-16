@@ -3,11 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-
-type User = {
-  firstName: string;
-  lastName: string;
-};
+import { User } from '../../types';
+import Calendar from '../../components/Calendar';
 
 export default function DashboardHomePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -36,11 +33,18 @@ export default function DashboardHomePage() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Painel Principal</h1>
+        <h1>{user.userType === 'master' ? 'Painel Principal' : 'Meu Calendário'}</h1>
         <button onClick={handleLogout}>Sair</button>
       </div>
-      <h2 style={{fontWeight: 400}}>Bem-vindo(a) de volta, {user.firstName} {user.lastName}!</h2>
-      <p>Utilize a navegação ao lado para gerenciar o sistema.</p>
+
+      {user.userType === 'master' ? (
+        <div>
+          <h2 style={{fontWeight: 400}}>Bem-vindo(a) de volta, {user.firstName}!</h2>
+          <p>Utilize a navegação ao lado para gerenciar o sistema.</p>
+        </div>
+      ) : (
+        <Calendar user={user} />
+      )}
     </div>
   );
 }

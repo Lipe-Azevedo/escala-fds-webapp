@@ -16,12 +16,13 @@ import {
   getDay,
   differenceInCalendarWeeks,
 } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { User } from '../types';
 
 type Holiday = { date: string; name: string };
 type Swap = { newDate: string; originalDate: string; newShift: string };
 type Comment = { date: string };
-type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | '';
+type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | '';
 
 type DayInfo = {
   date: Date;
@@ -65,64 +66,60 @@ export default function Calendar({ user }: { user: CalendarUser }) {
 
     const calendarGrid = days.map((day): DayInfo => {
       const dateString = format(day, 'yyyy-MM-dd');
-      let dayInfo: DayInfo = {
+      const dayOfWeek = getDay(day);
+
+      let isOff = false;
+      let reason: DayOffReason = '';
+      let shift = user.shift;
+      
+      const holidayName = holidaysMap.get(dateString);
+      
+      // Lógica de Precedência Corrigida:
+      // 1. Define o status base de folga (semanal ou fim de semana)
+      if (weekdayMap[dayOfWeek] === user.weekdayOff) {
+        isOff = true;
+        reason = 'Weekday';
+      } else if (user.initialWeekendOff && user.createdAt && (dayOfWeek === 0 || dayOfWeek === 6)) {
+        const userCreatedAt = new Date(user.createdAt);
+        const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
+        
+        let firstOccurrence = startOfWeek(userCreatedAt);
+        while(getDay(firstOccurrence) !== firstWeekendOffDay) {
+          firstOccurrence = new Date(firstOccurrence.setDate(firstOccurrence.getDate() + 1));
+        }
+        
+        const weeksDiff = differenceInCalendarWeeks(day, firstOccurrence, { weekStartsOn: 1 });
+        
+        const currentWeekendOffDay = (weeksDiff % 2 === 0) 
+          ? firstWeekendOffDay 
+          : (firstWeekendOffDay === 6 ? 0 : 6);
+        
+        if (dayOfWeek === currentWeekendOffDay) {
+          isOff = true;
+          reason = 'Weekend';
+        }
+      }
+      
+      // 2. Trocas sobrepõem a lógica de folga base
+      if (dayOffSwapMap.has(dateString)) {
+        isOff = true;
+        reason = 'Swap';
+      } else if (workDaySwapMap.has(dateString)) {
+        isOff = false;
+        shift = workDaySwapMap.get(dateString)!.newShift;
+      }
+      
+      return {
         date: day,
         isCurrentMonth: isSameMonth(day, monthStart),
         isToday: isToday(day),
-        isDayOff: false,
-        dayOffReason: '',
-        isHoliday: holidaysMap.has(dateString),
-        holidayName: holidaysMap.get(dateString) || '',
+        isDayOff: isOff,
+        dayOffReason: reason,
+        isHoliday: !!holidayName, // O feriado é um indicador separado
+        holidayName: holidayName || '',
         hasComment: commentsMap.has(dateString),
-        shift: user.shift,
+        shift: isOff ? '' : shift,
       };
-      
-      const newDayOffSwap = dayOffSwapMap.get(dateString);
-      if (newDayOffSwap) {
-        dayInfo.isDayOff = true;
-        dayInfo.dayOffReason = 'Swap';
-      } else if (workDaySwapMap.has(dateString)) {
-        dayInfo.isDayOff = false;
-        dayInfo.shift = workDaySwapMap.get(dateString)!.newShift;
-      } else {
-        const dayOfWeek = getDay(day);
-        if (weekdayMap[dayOfWeek] === user.weekdayOff) {
-          dayInfo.isDayOff = true;
-          dayInfo.dayOffReason = 'Weekday';
-        }
-        
-        if ((dayOfWeek === 0 || dayOfWeek === 6) && user.initialWeekendOff && user.createdAt) {
-          const userCreatedAt = new Date(user.createdAt);
-          const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
-          
-          let firstOccurrence = startOfWeek(userCreatedAt);
-          while(getDay(firstOccurrence) !== firstWeekendOffDay) {
-            firstOccurrence = new Date(firstOccurrence.setDate(firstOccurrence.getDate() + 1));
-          }
-          
-          const weeksDiff = differenceInCalendarWeeks(day, firstOccurrence, { weekStartsOn: 1 }); // Usando weekStartsOn: 1 (Segunda) como na sua lógica original
-          
-          const currentWeekendOffDay = (weeksDiff % 2 === 0) 
-            ? firstWeekendOffDay 
-            : (firstWeekendOffDay === 6 ? 0 : 6);
-          
-          if (dayOfWeek === currentWeekendOffDay) {
-            dayInfo.isDayOff = true;
-            dayInfo.dayOffReason = 'Weekend';
-          }
-        }
-      }
-
-      if (dayInfo.isHoliday) {
-        dayInfo.isDayOff = true;
-        dayInfo.dayOffReason = 'Holiday';
-      }
-
-      if (dayInfo.isDayOff) {
-        dayInfo.shift = '';
-      }
-      
-      return dayInfo;
     });
 
     setCalendarDays(calendarGrid);
@@ -180,7 +177,7 @@ export default function Calendar({ user }: { user: CalendarUser }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0' }}>
         <button onClick={prevMonth}>Mês Anterior</button>
-        <h2>{format(currentMonth, 'MMMM yyyy')}</h2>
+        <h2>{format(currentMonth, "MMMM 'de' yyyy", { locale: ptBR })}</h2>
         <button onClick={nextMonth}>Próximo Mês</button>
       </div>
 
@@ -198,7 +195,7 @@ export default function Calendar({ user }: { user: CalendarUser }) {
             }}>
               <div style={{ fontWeight: 'bold' }}>{format(day.date, 'd')}</div>
 
-              {day.isHoliday && <div style={{ fontSize: '12px', color: 'purple', fontWeight: 'bold' }}>{day.holidayName}</div>}
+              {day.isHoliday && <div style={{ fontSize: '12px', color: 'red', fontWeight: 'bold' }}>{day.holidayName}</div>}
               {day.hasComment && <div style={{ fontSize: '12px', color: 'orange' }}>&#9998; Comentário</div>}
 
               {day.isDayOff 
