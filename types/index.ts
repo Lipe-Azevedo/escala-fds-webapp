@@ -1,5 +1,7 @@
 export type TeamName = 'Security' | 'Support' | 'CustomerService' | '';
 export type PositionName = string;
+export type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | 'Certificate' | '';
+
 
 export type User = {
   id: number;

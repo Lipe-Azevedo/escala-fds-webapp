@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('master@email.com');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
