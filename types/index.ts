@@ -51,3 +51,13 @@ export type Certificate = {
   createdAt: string;
   approvedAt?: string;
 };
+
+export type Comment = {
+    id: number;
+    collaborator: User;
+    author: User;
+    text: string;
+    date: string;
+    createdAt: string;
+    updatedAt: string;
+};
