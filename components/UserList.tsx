@@ -1,16 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-
-type User = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  team: string;
-  position: string;
-  shift: string;
-};
+import { User } from '../types'; // Importando do local central
 
 interface UserListProps {
   users: User[];

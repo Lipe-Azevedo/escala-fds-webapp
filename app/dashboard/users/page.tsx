@@ -5,19 +5,7 @@ import Cookies from 'js-cookie';
 import UserList from '../../../components/UserList';
 import CreateUserModal from '../../../components/CreateUserModal';
 import EditUserModal from '../../../components/EditUserModal';
-
-type User = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  userType: 'master' | 'collaborator';
-  team: string;
-  position: string;
-  shift: string;
-  weekdayOff: string;
-  initialWeekendOff: string;
-};
+import { User } from '../../../types'; // Importando do local central
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -38,7 +26,6 @@ export default function UsersPage() {
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
     try {
-      // Futuramente, a API suportará filtros via query params
       const res = await fetch(`${apiURL}/api/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });

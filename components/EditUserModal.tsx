@@ -2,17 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-
-type TeamName = 'Segurança' | 'Suporte' | 'Atendimento' | '';
-type PositionName = string;
-type User = {
-    id: number;
-    team: TeamName;
-    position: PositionName;
-    shift: string;
-    weekdayOff: string;
-    initialWeekendOff: string;
-};
+import { User, TeamName, PositionName } from '../types'; // Importando do local central
 
 const positionsByTeam: Record<TeamName, PositionName[]> = {
   'Segurança': ['Segurança', 'Supervisor I', 'Supervisor II'],
