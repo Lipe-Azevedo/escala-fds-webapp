@@ -1,4 +1,4 @@
-export type TeamName = 'Segurança' | 'Suporte' | 'Atendimento' | '';
+export type TeamName = 'Security' | 'Support' | 'CustomerService' | '';
 export type PositionName = string;
 
 export type User = {

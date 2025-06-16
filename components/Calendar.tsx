@@ -16,25 +16,19 @@ import {
   getDay,
   differenceInCalendarWeeks,
 } from 'date-fns';
-
-type User = {
-  id: number;
-  shift: string;
-  weekdayOff: string;
-  initialWeekendOff: string;
-  createdAt: string;
-};
+import { User } from '../types';
 
 type Holiday = { date: string; name: string };
-type Swap = { newDate: string; originalDate: string, newShift: string };
+type Swap = { newDate: string; originalDate: string; newShift: string };
 type Comment = { date: string };
+type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | '';
 
 type DayInfo = {
   date: Date;
   isCurrentMonth: boolean;
   isToday: boolean;
   isDayOff: boolean;
-  dayOffReason: 'Weekday' | 'Weekend' | 'Swap' | '';
+  dayOffReason: DayOffReason;
   isHoliday: boolean;
   holidayName: string;
   hasComment: boolean;
@@ -43,10 +37,13 @@ type DayInfo = {
 
 const weekdayMap: { [key: number]: string } = { 1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday' };
 
-export default function Calendar({ user }: { user: User }) {
+type CalendarUser = Pick<User, 'id' | 'shift' | 'weekdayOff' | 'initialWeekendOff' | 'createdAt'>;
+
+export default function Calendar({ user }: { user: CalendarUser }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState<DayInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const generateCalendar = useCallback((
     month: Date,
@@ -62,8 +59,8 @@ export default function Calendar({ user }: { user: User }) {
     const days = eachDayOfInterval({ start: startDate, end: endDate });
 
     const holidaysMap = new Map(holidays.map(h => [h.date, h.name]));
-    const newDayOffMap = new Map(swaps.map(s => [s.newDate, s]));
-    const newWorkDayMap = new Map(swaps.map(s => [s.originalDate, s]));
+    const dayOffSwapMap = new Map(swaps.map(s => [s.newDate, s]));
+    const workDaySwapMap = new Map(swaps.map(s => [s.originalDate, s]));
     const commentsMap = new Map(comments.map(c => [c.date, true]));
 
     const calendarGrid = days.map((day): DayInfo => {
@@ -80,13 +77,13 @@ export default function Calendar({ user }: { user: User }) {
         shift: user.shift,
       };
       
-      const newDayOffSwap = newDayOffMap.get(dateString);
+      const newDayOffSwap = dayOffSwapMap.get(dateString);
       if (newDayOffSwap) {
         dayInfo.isDayOff = true;
         dayInfo.dayOffReason = 'Swap';
-        dayInfo.shift = newDayOffSwap.newShift;
-      } else if (newWorkDayMap.has(dateString)) {
-        // É um dia de trabalho devido a uma troca, então não fazemos nada.
+      } else if (workDaySwapMap.has(dateString)) {
+        dayInfo.isDayOff = false;
+        dayInfo.shift = workDaySwapMap.get(dateString)!.newShift;
       } else {
         const dayOfWeek = getDay(day);
         if (weekdayMap[dayOfWeek] === user.weekdayOff) {
@@ -94,7 +91,7 @@ export default function Calendar({ user }: { user: User }) {
           dayInfo.dayOffReason = 'Weekday';
         }
         
-        if ((dayOfWeek === 0 || dayOfWeek === 6) && user.initialWeekendOff) {
+        if ((dayOfWeek === 0 || dayOfWeek === 6) && user.initialWeekendOff && user.createdAt) {
           const userCreatedAt = new Date(user.createdAt);
           const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
           
@@ -102,8 +99,8 @@ export default function Calendar({ user }: { user: User }) {
           while(getDay(firstOccurrence) !== firstWeekendOffDay) {
             firstOccurrence = new Date(firstOccurrence.setDate(firstOccurrence.getDate() + 1));
           }
-
-          const weeksDiff = differenceInCalendarWeeks(day, firstOccurrence, { weekStartsOn: 1 });
+          
+          const weeksDiff = differenceInCalendarWeeks(day, firstOccurrence, { weekStartsOn: 1 }); // Usando weekStartsOn: 1 (Segunda) como na sua lógica original
           
           const currentWeekendOffDay = (weeksDiff % 2 === 0) 
             ? firstWeekendOffDay 
@@ -115,6 +112,16 @@ export default function Calendar({ user }: { user: User }) {
           }
         }
       }
+
+      if (dayInfo.isHoliday) {
+        dayInfo.isDayOff = true;
+        dayInfo.dayOffReason = 'Holiday';
+      }
+
+      if (dayInfo.isDayOff) {
+        dayInfo.shift = '';
+      }
+      
       return dayInfo;
     });
 
@@ -124,6 +131,7 @@ export default function Calendar({ user }: { user: User }) {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setError('');
       const token = Cookies.get('authToken');
       if (!user || !token) {
         setIsLoading(false);
@@ -132,24 +140,31 @@ export default function Calendar({ user }: { user: User }) {
 
       const monthStart = startOfMonth(currentMonth);
       const monthEnd = endOfMonth(currentMonth);
-      const params = `?startDate=${format(monthStart, 'yyyy-MM-dd')}&endDate=${format(monthEnd, 'yyyy-MM-dd')}`;
       
       const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
       try {
+        const holidayParams = `startDate=${format(monthStart, 'yyyy-MM-dd')}&endDate=${format(monthEnd, 'yyyy-MM-dd')}`;
+        const commentParams = `collaboratorId=${user.id}&startDate=${format(monthStart, 'yyyy-MM-dd')}&endDate=${format(monthEnd, 'yyyy-MM-dd')}`;
+        
         const [holidaysRes, swapsRes, commentsRes] = await Promise.all([
-          fetch(`${apiURL}/api/holidays${params}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/holidays?${holidayParams}`, { headers: { 'Authorization': `Bearer ${token}` } }),
           fetch(`${apiURL}/api/swaps/user/${user.id}?status=approved`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${apiURL}/api/comments/user/${user.id}${params}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/comments?${commentParams}`, { headers: { 'Authorization': `Bearer ${token}` } }),
         ]);
 
-        const holidays = (await holidaysRes.json()) || [];
-        const swaps = (await swapsRes.json()) || [];
-        const comments = (await commentsRes.json()) || [];
+        if (!holidaysRes.ok) throw new Error(`Falha ao buscar feriados (status: ${holidaysRes.status})`);
+        if (!swapsRes.ok) throw new Error(`Falha ao buscar trocas (status: ${swapsRes.status})`);
+        if (!commentsRes.ok) throw new Error(`Falha ao buscar comentários (status: ${commentsRes.status})`);
+
+        const holidays = await holidaysRes.json() || [];
+        const swaps = await swapsRes.json() || [];
+        const comments = await commentsRes.json() || [];
 
         generateCalendar(currentMonth, holidays, swaps, comments);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch calendar data:", error);
+        setError(error.message || 'Ocorreu um erro.');
       } finally {
         setIsLoading(false);
       }
@@ -165,12 +180,11 @@ export default function Calendar({ user }: { user: User }) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0' }}>
         <button onClick={prevMonth}>Mês Anterior</button>
-        {/* AQUI ESTÁ A CORREÇÃO */}
         <h2>{format(currentMonth, 'MMMM yyyy')}</h2>
         <button onClick={nextMonth}>Próximo Mês</button>
       </div>
 
-      {isLoading ? <p>Carregando calendário...</p> : (
+      {isLoading ? <p>Carregando calendário...</p> : error ? <p style={{color: 'red'}}>{error}</p> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '5px' }}>
           {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => <div key={day} style={{ fontWeight: 'bold', textAlign: 'center' }}>{day}</div>)}
           
@@ -179,16 +193,18 @@ export default function Calendar({ user }: { user: User }) {
               border: '1px solid #ccc',
               padding: '10px',
               minHeight: '100px',
-              backgroundColor: !day.isCurrentMonth ? '#f9f9f9' : 'white',
+              backgroundColor: !day.isCurrentMonth ? '#f9f9f9' : (day.isDayOff ? '#e8f5e9' : 'white'),
               color: day.isToday ? 'blue' : 'black',
             }}>
               <div style={{ fontWeight: 'bold' }}>{format(day.date, 'd')}</div>
 
-              {day.isHoliday && <div style={{ fontSize: '12px', color: 'red', fontWeight: 'bold' }}>{day.holidayName}</div>}
-              {day.hasComment && <div style={{ fontSize: '12px', color: 'orange' }}>Comentário</div>}
+              {day.isHoliday && <div style={{ fontSize: '12px', color: 'purple', fontWeight: 'bold' }}>{day.holidayName}</div>}
+              {day.hasComment && <div style={{ fontSize: '12px', color: 'orange' }}>&#9998; Comentário</div>}
 
               {day.isDayOff 
-                ? <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga</div>
+                ? <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>
+                    Folga {day.dayOffReason === 'Swap' && '(Troca)'}
+                  </div>
                 : <div style={{ fontSize: '12px', color: '#555', marginTop: '5px' }}>{day.shift}</div>
               }
             </div>

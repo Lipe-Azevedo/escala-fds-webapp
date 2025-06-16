@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import UserList from '../../../components/UserList';
 import CreateUserModal from '../../../components/CreateUserModal';
 import EditUserModal from '../../../components/EditUserModal';
-import { User } from '../../../types'; // Importando do local central
+import { User } from '../../../types';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -66,15 +66,15 @@ export default function UsersPage() {
       <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
         <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
           <option value="">Filtrar por Equipe</option>
-          <option value="Segurança">Segurança</option>
-          <option value="Suporte">Suporte</option>
-          <option value="Atendimento">Atendimento</option>
+          <option value="Security">Segurança</option>
+          <option value="Support">Suporte</option>
+          <option value="CustomerService">Atendimento</option>
         </select>
         <select value={shiftFilter} onChange={(e) => setShiftFilter(e.target.value)}>
           <option value="">Filtrar por Turno</option>
-          <option value="06:00 às 14:00">Manhã (06:00-14:00)</option>
-          <option value="14:00 às 22:00">Tarde (14:00-22:00)</option>
-          <option value="22:00 às 06:00">Noite (22:00-06:00)</option>
+          <option value="06:00-14:00">Manhã (06:00-14:00)</option>
+          <option value="14:00-22:00">Tarde (14:00-22:00)</option>
+          <option value="22:00-06:00">Noite (22:00-06:00)</option>
         </select>
       </div>
 

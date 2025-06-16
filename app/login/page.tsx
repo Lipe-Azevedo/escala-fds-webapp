@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('master@email.com');
+  const [password, setPassword] = useState('123456');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -17,10 +17,15 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      const payload = {
+        email: email.trim(),
+        password: password.trim(),
+      };
+
       const res = await fetch('http://localhost:8080/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -29,7 +34,7 @@ export default function LoginPage() {
         throw new Error(data.message || 'Credenciais inválidas.');
       }
 
-      Cookies.set('authToken', data.token, { expires: 1, secure: true, sameSite: 'strict' });
+      Cookies.set('authToken', data.token, { expires: 1, secure: process.env.NODE_ENV === 'production' });
       localStorage.setItem('userData', JSON.stringify(data.user));
 
       router.push('/dashboard');
@@ -58,7 +63,7 @@ export default function LoginPage() {
           <div style={{ marginBottom: '15px' }}>
             <label>Senha:</label>
             <input
-              type="password"
+              type="text" // ALTERADO TEMPORARIAMENTE PARA DEBUG
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

@@ -2,12 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { User, TeamName, PositionName } from '../types'; // Importando do local central
+import { User, TeamName, PositionName } from '../types';
 
-const positionsByTeam: Record<TeamName, PositionName[]> = {
-  'Segurança': ['Segurança', 'Supervisor I', 'Supervisor II'],
-  'Suporte': ['Desenvolvedor Backend', 'Desenvolvedor Frontend'],
-  'Atendimento': ['Atendente', 'Supervisor I', 'Supervisor II'],
+const positionsByTeam: Record<TeamName, { value: PositionName, label: string }[]> = {
+  'Security': [
+    { value: 'Security', label: 'Segurança' },
+    { value: 'SupervisorI', label: 'Supervisor I' },
+    { value: 'SupervisorII', label: 'Supervisor II' },
+  ],
+  'Support': [
+    { value: 'BackendDeveloper', label: 'Desenvolvedor Backend' },
+    { value: 'FrontendDeveloper', label: 'Desenvolvedor Frontend' },
+  ],
+  'CustomerService': [
+    { value: 'Attendant', label: 'Atendente' },
+    { value: 'SupervisorI', label: 'Supervisor I' },
+    { value: 'SupervisorII', label: 'Supervisor II' },
+  ],
   '': [],
 };
 
@@ -27,19 +38,21 @@ export default function EditUserModal({ isOpen, onClose, onUserUpdated, user }: 
     initialWeekendOff: user.initialWeekendOff,
   });
   
-  const [availablePositions, setAvailablePositions] = useState<PositionName[]>([]);
+  const [availablePositions, setAvailablePositions] = useState<{ value: PositionName, label: string }[]>([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setAvailablePositions(positionsByTeam[formData.team] || []);
+    if(formData.team) {
+      setAvailablePositions(positionsByTeam[formData.team] || []);
+    }
   }, [formData.team]);
 
   if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value as TeamName }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,40 +100,40 @@ export default function EditUserModal({ isOpen, onClose, onUserUpdated, user }: 
         <form onSubmit={handleSubmit}>
           <label htmlFor="team">Equipe</label>
           <select id="team" name="team" value={formData.team} onChange={handleChange} required>
-              <option value="Segurança">Segurança</option>
-              <option value="Suporte">Suporte</option>
-              <option value="Atendimento">Atendimento</option>
+              <option value="Security">Segurança</option>
+              <option value="Support">Suporte</option>
+              <option value="CustomerService">Atendimento</option>
           </select>
 
           <label htmlFor="position">Cargo</label>
           <select id="position" name="position" value={formData.position} onChange={handleChange} required disabled={!formData.team}>
               <option value="">Selecione...</option>
-              {availablePositions.map(pos => <option key={pos} value={pos}>{pos}</option>)}
+              {availablePositions.map(pos => <option key={pos.value} value={pos.value}>{pos.label}</option>)}
           </select>
           
           <label htmlFor="shift">Turno</label>
           <select id="shift" name="shift" value={formData.shift} onChange={handleChange} required>
             <option value="">Selecione o Turno</option>
-            <option value="06:00 às 14:00">Manhã (06:00-14:00)</option>
-            <option value="14:00 às 22:00">Tarde (14:00-22:00)</option>
-            <option value="22:00 às 06:00">Noite (22:00-06:00)</option>
+            <option value="06:00-14:00">Manhã (06:00-14:00)</option>
+            <option value="14:00-22:00">Tarde (14:00-22:00)</option>
+            <option value="22:00-06:00">Noite (22:00-06:00)</option>
           </select>
 
           <label htmlFor="weekdayOff">Folga da Semana</label>
           <select id="weekdayOff" name="weekdayOff" value={formData.weekdayOff} onChange={handleChange} required>
             <option value="">Selecione...</option>
-            <option value="segunda-feira">Segunda</option>
-            <option value="terça-feira">Terça</option>
-            <option value="quarta-feira">Quarta</option>
-            <option value="quinta-feira">Quinta</option>
-            <option value="sexta-feira">Sexta</option>
+            <option value="monday">Segunda</option>
+            <option value="tuesday">Terça</option>
+            <option value="wednesday">Quarta</option>
+            <option value="thursday">Quinta</option>
+            <option value="friday">Sexta</option>
           </select>
           
           <label htmlFor="initialWeekendOff">Folga Inicial do Fim de Semana</label>
           <select id="initialWeekendOff" name="initialWeekendOff" value={formData.initialWeekendOff} onChange={handleChange} required>
               <option value="">Selecione...</option>
-              <option value="sábado">Sábado</option>
-              <option value="domingo">Domingo</option>
+              <option value="saturday">Sábado</option>
+              <option value="sunday">Domingo</option>
           </select>
 
           {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
