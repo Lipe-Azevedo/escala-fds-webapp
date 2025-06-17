@@ -11,6 +11,7 @@ const navItems = [
   { href: '/dashboard/users', label: 'Colaboradores', masterOnly: true },
   { href: '/dashboard/swaps', label: 'Trocas de Folga', masterOnly: false },
   { href: '/dashboard/certificates', label: 'Atestados', masterOnly: false },
+  { href: '/dashboard/comments', label: 'Comentários', masterOnly: false },
   { href: '/dashboard/holidays', label: 'Feriados', masterOnly: true },
 ];
 
