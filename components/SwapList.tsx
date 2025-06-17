@@ -25,7 +25,11 @@ export default function SwapList({ swaps, currentUser, onApprove, onReject }: Sw
     }
   };
 
-  const formatDate = (date: string) => format(new Date(date), 'dd/MM/yyyy');
+  // Função corrigida para tratar o fuso horário corretamente
+  const formatDate = (dateString: string) => {
+    // Adiciona T00:00:00 para que a data seja interpretada como local e não UTC
+    return format(new Date(dateString.replace(/-/g, '/')), 'dd/MM/yyyy');
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>

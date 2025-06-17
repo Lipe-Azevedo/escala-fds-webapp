@@ -25,7 +25,10 @@ export default function CertificateList({ certificates, currentUser, onApprove, 
     }
   };
 
-  const formatDate = (date: string) => format(new Date(date), 'dd/MM/yyyy');
+  const formatDate = (dateString: string) => {
+    // Substitui hífens por barras para que o JS interprete a data como local, não UTC.
+    return format(new Date(dateString.replace(/-/g, '/')), 'dd/MM/yyyy');
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -41,8 +44,8 @@ export default function CertificateList({ certificates, currentUser, onApprove, 
             <p><strong>Período:</strong> {formatDate(cert.startDate)} até {formatDate(cert.endDate)}</p>
             <p><strong>Motivo:</strong> {cert.reason}</p>
             <p><strong>Status:</strong> <span style={getStatusStyle(cert.status)}>{cert.status}</span></p>
-            {cert.approvedBy && (
-                <p><strong>Aprovado por:</strong> {cert.approvedBy.firstName} em {format(new Date(cert.approvedAt!), 'dd/MM/yyyy HH:mm')}</p>
+            {cert.approvedBy && cert.approvedAt && (
+                <p><strong>Aprovado por:</strong> {cert.approvedBy.firstName} em {format(new Date(cert.approvedAt), 'dd/MM/yyyy HH:mm')}</p>
             )}
             
             {cert.status === 'pending' && canApprove && (
