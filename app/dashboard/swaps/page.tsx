@@ -25,17 +25,17 @@ export default function SwapsPage() {
       url = `${apiURL}/api/swaps/user/${currentUser.id}`;
     }
 
+    if (statusFilter) {
+      const separator = url.includes('?') ? '&' : '?';
+      url += `${separator}status=${statusFilter}`;
+    }
+
     try {
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) throw new Error('Falha ao buscar trocas de folga.');
       
       const data: Swap[] = await res.json();
-      
-      const filteredData = statusFilter 
-        ? data.filter(swap => swap.status === statusFilter)
-        : data;
-
-      setSwaps(filteredData || []);
+      setSwaps(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -106,11 +106,12 @@ export default function SwapsPage() {
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!isLoading && !error && <SwapList swaps={swaps} currentUser={user} onApprove={handleApprove} onReject={handleReject} />}
 
-      {isModalOpen && (
+      {isModalOpen && user && (
         <RequestSwapModal 
             isOpen={isModalOpen}
             onClose={() => setModalOpen(false)}
             onSuccess={() => { if(user) fetchSwaps(user); }}
+            currentUser={user}
         />
       )}
     </div>

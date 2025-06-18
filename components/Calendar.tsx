@@ -100,9 +100,13 @@ export default function Calendar({ user }: { user: CalendarUser }) {
     const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
     const days = eachDayOfInterval({ start: startDate, end: endDate });
+
     const holidaysMap = new Map(holidays.map(h => [h.date, h.name]));
-    const dayOffSwapMap = new Map(swaps.map(s => [s.newDate, s]));
-    const workDaySwapMap = new Map(swaps.map(s => [s.originalDate, s]));
+    const approvedSwapsMap = new Map();
+    swaps.forEach(s => {
+        approvedSwapsMap.set(s.originalDate, s);
+        approvedSwapsMap.set(s.newDate, s);
+    });
     const commentsMap = new Map(comments.map(c => [c.date, true]));
     const certificateDaysMap = new Map();
     certificates.forEach(cert => {
@@ -112,13 +116,17 @@ export default function Calendar({ user }: { user: CalendarUser }) {
             certificateDaysMap.set(format(d, 'yyyy-MM-dd'), true);
         }
     });
+
     const calendarGrid = days.map((day): DayInfo => {
       const dateString = format(day, 'yyyy-MM-dd');
       const dayOfWeek = getDay(day);
+
       let isOff = false;
       let reason: DayOffReason = '';
       let shift = user.shift;
+      
       const holidayName = holidaysMap.get(dateString);
+      
       if (weekdayMap[dayOfWeek] === user.weekdayOff) {
         isOff = true; reason = 'Weekday';
       } else if (user.initialWeekendOff && user.createdAt && (dayOfWeek === 0 || dayOfWeek === 6)) {
@@ -134,14 +142,32 @@ export default function Calendar({ user }: { user: CalendarUser }) {
           isOff = true; reason = 'Weekend';
         }
       }
+      
+      const swap = approvedSwapsMap.get(dateString);
+      if (swap) {
+        const isShiftChangeOnly = swap.originalDate === swap.newDate;
+        if (isShiftChangeOnly) {
+            isOff = false;
+            shift = swap.newShift;
+            reason = '';
+        } else {
+            const isNewDayOff = dateString === swap.newDate;
+            if (isNewDayOff) {
+                isOff = true;
+                reason = 'Swap';
+            } else {
+                isOff = false;
+                shift = swap.newShift;
+                reason = '';
+            }
+        }
+      }
+
       if (certificateDaysMap.has(dateString)) {
-        isOff = true; reason = 'Certificate';
+        isOff = true; 
+        reason = 'Certificate';
       }
-      if (dayOffSwapMap.has(dateString)) {
-        isOff = true; reason = 'Swap';
-      } else if (workDaySwapMap.has(dateString)) {
-        isOff = false; shift = workDaySwapMap.get(dateString)!.newShift;
-      }
+      
       return {
         date: day,
         isCurrentMonth: isSameMonth(day, monthStart),
@@ -180,13 +206,19 @@ export default function Calendar({ user }: { user: CalendarUser }) {
       return <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga</div>;
     }
     return <div style={{ fontSize: '12px', color: '#555', marginTop: '5px' }}>{day.shift}</div>;
+  };
+
+  const formattedMonthTitle = () => {
+    const monthName = format(currentMonth, "LLLL", { locale: ptBR });
+    const year = format(currentMonth, "yyyy", { locale: ptBR });
+    return `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} de ${year}`;
   }
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0' }}>
         <button onClick={prevMonth}>Mês Anterior</button>
-        <h2>{format(currentMonth, "LLLL 'de' yyyy", { locale: ptBR })}</h2>
+        <h2>{formattedMonthTitle()}</h2>
         <button onClick={nextMonth}>Próximo Mês</button>
       </div>
 
