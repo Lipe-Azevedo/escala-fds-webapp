@@ -46,6 +46,9 @@ export default function Calendar({ user }: { user: CalendarUser }) {
   const [isCommentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  const [workedDaysCount, setWorkedDaysCount] = useState(0);
+  const [holidaysWorkedCount, setHolidaysWorkedCount] = useState(0);
+
   const fetchData = useCallback(async () => {
       setIsLoading(true);
       setError('');
@@ -100,7 +103,6 @@ export default function Calendar({ user }: { user: CalendarUser }) {
     const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
     const days = eachDayOfInterval({ start: startDate, end: endDate });
-
     const holidaysMap = new Map(holidays.map(h => [h.date, h.name]));
     const approvedSwapsMap = new Map();
     swaps.forEach(s => {
@@ -117,6 +119,9 @@ export default function Calendar({ user }: { user: CalendarUser }) {
         }
     });
 
+    let workedCounter = 0;
+    let holidaysWorkedCounter = 0;
+
     const calendarGrid = days.map((day): DayInfo => {
       const dateString = format(day, 'yyyy-MM-dd');
       const dayOfWeek = getDay(day);
@@ -124,7 +129,6 @@ export default function Calendar({ user }: { user: CalendarUser }) {
       let isOff = false;
       let reason: DayOffReason = '';
       let shift = user.shift;
-      
       const holidayName = holidaysMap.get(dateString);
       
       if (weekdayMap[dayOfWeek] === user.weekdayOff) {
@@ -167,6 +171,15 @@ export default function Calendar({ user }: { user: CalendarUser }) {
         isOff = true; 
         reason = 'Certificate';
       }
+
+      if(isSameMonth(day, month)) {
+        if (!isOff) {
+          workedCounter++;
+          if (holidayName) {
+            holidaysWorkedCounter++;
+          }
+        }
+      }
       
       return {
         date: day,
@@ -180,7 +193,10 @@ export default function Calendar({ user }: { user: CalendarUser }) {
         shift: isOff ? '' : shift,
       };
     });
+
     setCalendarDays(calendarGrid);
+    setWorkedDaysCount(workedCounter);
+    setHolidaysWorkedCount(holidaysWorkedCounter);
   }, [user]);
 
   useEffect(() => {
@@ -206,20 +222,19 @@ export default function Calendar({ user }: { user: CalendarUser }) {
       return <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga</div>;
     }
     return <div style={{ fontSize: '12px', color: '#555', marginTop: '5px' }}>{day.shift}</div>;
-  };
-
-  const formattedMonthTitle = () => {
-    const monthName = format(currentMonth, "LLLL", { locale: ptBR });
-    const year = format(currentMonth, "yyyy", { locale: ptBR });
-    return `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} de ${year}`;
   }
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0' }}>
         <button onClick={prevMonth}>Mês Anterior</button>
-        <h2>{formattedMonthTitle()}</h2>
+        <h2>{format(currentMonth, "LLLL yyyy", { locale: ptBR })}</h2>
         <button onClick={nextMonth}>Próximo Mês</button>
+      </div>
+
+      <div style={{display: 'flex', gap: '20px', justifyContent: 'center', margin: '20px 0', padding: '10px', background: '#f3f4f6', borderRadius: '8px'}}>
+        <span><strong>Dias Trabalhados no Mês:</strong> {workedDaysCount}</span>
+        <span><strong>(Sendo {holidaysWorkedCount} em feriados)</strong></span>
       </div>
 
       {isLoading ? <p>Carregando calendário...</p> : error ? <p style={{color: 'red'}}>{error}</p> : (

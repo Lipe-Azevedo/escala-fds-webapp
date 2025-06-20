@@ -16,6 +16,7 @@ export type User = {
   initialWeekendOff: string;
   createdAt: string;
   superiorId?: number;
+  birthday?: string;
 };
 
 export type Holiday = {

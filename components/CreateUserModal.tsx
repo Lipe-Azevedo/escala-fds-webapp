@@ -35,6 +35,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
     firstName: '',
     lastName: '',
     phoneNumber: '',
+    birthday: '',
     team: '' as TeamName,
     position: '',
     shift: '',
@@ -111,6 +112,9 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
             
             <label htmlFor="lastName">Sobrenome</label>
             <input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Sobrenome" required />
+            
+            <label htmlFor="birthday">Data de Nascimento</label>
+            <input id="birthday" name="birthday" type="date" value={formData.birthday} onChange={handleChange} />
             
             <label htmlFor="phoneNumber">Telefone</label>
             <input id="phoneNumber" name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleChange} placeholder="Telefone" required />
