@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import Calendar from '../../../../components/Calendar';
+import Calendar from '../../../../components/calendar/Calendar';
 import Link from 'next/link';
 
 type User = {

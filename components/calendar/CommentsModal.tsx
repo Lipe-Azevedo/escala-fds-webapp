@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Comment, User } from '../types';
+import { Comment, User } from '@/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -11,7 +11,10 @@ interface CommentsModalProps {
   onClose: () => void;
   onCommentAdded: () => void;
   selectedDate: Date;
-  calendarUser: Pick<User, 'id' | 'superiorId'>;
+  calendarUser: {
+    id: number;
+    superiorId?: number;
+  };
 }
 
 export default function CommentsModal({ isOpen, onClose, onCommentAdded, selectedDate, calendarUser }: CommentsModalProps) {
@@ -78,8 +81,8 @@ export default function CommentsModal({ isOpen, onClose, onCommentAdded, selecte
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Falha ao postar comentário.');
         setNewCommentText('');
-        onCommentAdded(); // Notifica o calendário para recarregar os dados
-        fetchComments(); // Recarrega os comentários dentro do modal
+        onCommentAdded();
+        fetchComments();
     } catch (err: any) {
         setError(err.message);
     } finally {

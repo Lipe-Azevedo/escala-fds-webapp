@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { User, Swap, Certificate } from '../../types';
-import Calendar from '../../components/Calendar';
+import Calendar from '../../components/calendar/Calendar';
 import DashboardSummaryCard from '@/components/DashboardSummaryCard';
 
 export default function DashboardHomePage() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   
-  // State for dashboard data
   const [pendingSwaps, setPendingSwaps] = useState(0);
   const [pendingCertificates, setPendingCertificates] = useState(0);
   const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
@@ -25,9 +24,9 @@ export default function DashboardHomePage() {
     const startHour = parseInt(startStr.split(':')[0], 10);
     const endHour = parseInt(endStr.split(':')[0], 10);
 
-    if (startHour < endHour) { // Turnos diurnos (ex: 06-14, 14-22)
+    if (startHour < endHour) {
       return currentHour >= startHour && currentHour < endHour;
-    } else { // Turno noturno (ex: 22-06)
+    } else {
       return currentHour >= startHour || currentHour < endHour;
     }
   };
@@ -57,7 +56,7 @@ export default function DashboardHomePage() {
 
     try {
       const [swapsRes, certificatesRes, usersRes] = await Promise.all([
-        fetch(`${apiURL}/api/swaps`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${apiURL}/api/certificates`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } }),
       ]);
@@ -66,7 +65,7 @@ export default function DashboardHomePage() {
       const certificates: Certificate[] = await certificatesRes.json();
       const users: User[] = await usersRes.json();
 
-      setPendingSwaps(swaps.filter(s => s.status === 'pending').length);
+      setPendingSwaps(swaps.length);
       setPendingCertificates(certificates.filter(c => c.status === 'pending').length);
       setUsersOnShift(users.filter(u => u.shift && isShiftNow(u.shift)));
 
@@ -95,7 +94,6 @@ export default function DashboardHomePage() {
       </div>
 
       {user.userType === 'master' ? (
-        // Master's Dashboard View
         <div>
           <h2 style={{fontWeight: 400, marginBottom: '25px'}}>Bem-vindo(a) de volta, {user.firstName}!</h2>
           {isLoading ? <p>Carregando resumo...</p> : (
@@ -134,7 +132,6 @@ export default function DashboardHomePage() {
           )}
         </div>
       ) : (
-        // Collaborator's Calendar View
         <Calendar user={user} />
       )}
     </div>

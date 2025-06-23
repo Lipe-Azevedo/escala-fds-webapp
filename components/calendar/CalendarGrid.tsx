@@ -1,7 +1,7 @@
 'use client';
 
 import { DayInfo } from '@/hooks/useCalendar';
-import DayCell from './DayCell';
+import DayCell from './DayCell'; 
 
 interface CalendarGridProps {
   days: DayInfo[];

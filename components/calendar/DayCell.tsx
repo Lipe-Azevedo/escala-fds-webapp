@@ -9,16 +9,16 @@ interface DayCellProps {
 }
 
 const renderDayStatus = (day: DayInfo) => {
-  if (day.dayOffReason === 'Certificate') {
-    return <div style={{ fontSize: '12px', color: '#ca8a04', fontWeight: 'bold' }}>Atestado</div>;
-  }
-  if (day.dayOffReason === 'Swap') {
-    return <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga (Troca)</div>;
-  }
-  if (day.isDayOff) {
-    return <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga</div>;
-  }
-  return <div style={{ fontSize: '12px', color: '#555', marginTop: '5px' }}>{day.shift}</div>;
+    if (day.dayOffReason === 'Certificate') {
+      return <div style={{ fontSize: '12px', color: '#ca8a04', fontWeight: 'bold' }}>Atestado</div>;
+    }
+    if (day.dayOffReason === 'Swap') {
+      return <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga (Troca)</div>;
+    }
+    if (day.isDayOff) {
+      return <div style={{ fontSize: '12px', color: 'green', fontWeight: 'bold' }}>Folga</div>;
+    }
+    return <div style={{ fontSize: '12px', color: '#555', marginTop: '5px' }}>{day.shift}</div>;
 }
 
 export default function DayCell({ day, onClick }: DayCellProps) {

@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { User } from '../types';
-import CommentsModal from './CommentsModal';
+import { User } from '@/types';
+import CommentsModal from '@/components/calendar/CommentsModal';
 import { useCalendar } from '@/hooks/useCalendar';
-import CalendarHeader from './CalendarHeader';
-import CalendarSummary from './CalendarSummary';
-import CalendarGrid from './CalendarGrid';
+import CalendarHeader from '@/components/calendar/CalendarHeader';
+import CalendarSummary from '@/components/calendar/CalendarSummary';
+import CalendarGrid from '@/components/calendar/CalendarGrid';
 
 type CalendarUser = Pick<User, 'id' | 'shift' | 'weekdayOff' | 'initialWeekendOff' | 'createdAt' | 'superiorId'>;
 
@@ -32,7 +32,7 @@ export default function Calendar({ user }: { user: CalendarUser }) {
   };
 
   const handleCommentAdded = () => {
-    fetchData(); // Recarrega os dados do calendário para mostrar o novo ícone de comentário
+    fetchData();
   }
 
   return (
