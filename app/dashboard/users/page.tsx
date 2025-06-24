@@ -1,61 +1,114 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import Calendar from '@/components/calendar/Calendar'; // Caminho atualizado
-import Link from 'next/link';
 import { User } from '@/types';
+import UserList from '@/components/UserList';
+import CreateUserModal from '@/components/CreateUserModal';
+import EditUserModal from '@/components/EditUserModal';
 
-export default function UserDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const userId = params.id;
-  const [user, setUser] = useState<User | null>(null);
+export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  const [teamFilter, setTeamFilter] = useState('');
+  const [shiftFilter, setShiftFilter] = useState('');
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    setError('');
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
+    try {
+      const res = await fetch(`${apiURL}/api/users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Falha ao buscar usuários.');
+      
+      const data: User[] = await res.json();
+      
+      const filteredData = data.filter(user => {
+        const teamMatch = teamFilter ? user.team === teamFilter : true;
+        const shiftMatch = shiftFilter ? user.shift === shiftFilter : true;
+        return teamMatch && shiftMatch;
+      });
+
+      setUsers(filteredData || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!userId) return;
+    const userDataString = localStorage.getItem('userData');
+    if (userDataString) {
+      const user = JSON.parse(userDataString);
+      setCurrentUser(user);
+    }
+  }, []);
 
-    const fetchUser = async () => {
-      setIsLoading(true);
-      setError('');
-      const token = Cookies.get('authToken');
-      const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  useEffect(() => {
+    if(currentUser) {
+        fetchUsers();
+    }
+  }, [currentUser, teamFilter, shiftFilter]);
 
-      try {
-        const res = await fetch(`${apiURL}/api/users/${userId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) {
-          throw new Error('Falha ao buscar dados do usuário.');
-        }
-        const data = await res.json();
-        setUser(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchUser();
-  }, [userId]);
-
-  if (isLoading) return <div>Carregando...</div>;
-  if (error) return <div>Erro: {error}</div>;
-  if (!user) return <div>Usuário não encontrado.</div>;
+  const handleEdit = (user: User) => {
+    setSelectedUser(user);
+    setEditModalOpen(true);
+  };
 
   return (
     <div>
-      <div style={{ marginBottom: '20px' }}>
-        <Link href="/dashboard/users" style={{ textDecoration: 'none', color: 'var(--primary-color)' }}>
-          &larr; Voltar para a lista
-        </Link>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>Colaboradores</h1>
+        <button onClick={() => setCreateModalOpen(true)}>+ Novo Colaborador</button>
       </div>
-      <h1>Calendário de {user.firstName} {user.lastName}</h1>
-      <Calendar user={user} />
+
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+        <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
+          <option value="">Filtrar por Equipe</option>
+          <option value="Security">Segurança</option>
+          <option value="Support">Suporte</option>
+          <option value="CustomerService">Atendimento</option>
+        </select>
+        <select value={shiftFilter} onChange={(e) => setShiftFilter(e.target.value)}>
+          <option value="">Filtrar por Turno</option>
+          <option value="06:00-14:00">Manhã (06:00-14:00)</option>
+          <option value="14:00-22:00">Tarde (14:00-22:00)</option>
+          <option value="22:00-06:00">Noite (22:00-06:00)</option>
+        </select>
+      </div>
+
+      {isLoading && <p>Carregando lista de usuários...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {!isLoading && !error && <UserList users={users} onEdit={handleEdit} />}
+
+      {isCreateModalOpen && (
+        <CreateUserModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setCreateModalOpen(false)}
+          onUserCreated={fetchUsers}
+        />
+      )}
+
+      {isEditModalOpen && selectedUser && (
+        <EditUserModal
+          isOpen={isEditModalOpen}
+          onClose={() => { setEditModalOpen(false); setSelectedUser(null); }}
+          onUserUpdated={fetchUsers}
+          user={selectedUser}
+        />
+      )}
     </div>
   );
 }
