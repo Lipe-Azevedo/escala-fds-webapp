@@ -2,16 +2,33 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Certificate, User } from '@/types';
+import { Certificate, User, FilterConfig } from '@/types';
 import CertificateList from '@/components/CertificateList';
 import SubmitCertificateModal from '@/components/SubmitCertificateModal';
+import FilterBar from '@/components/FilterBar';
+
+const certificateFilterConfigs: FilterConfig[] = [
+    { 
+      name: 'status', 
+      label: 'Status', 
+      type: 'select', 
+      options: [
+        { value: '', label: 'Todos os Status' },
+        { value: 'pending', label: 'Pendentes' },
+        { value: 'approved', label: 'Aprovados' },
+        { value: 'rejected', label: 'Rejeitados' },
+    ]}
+];
 
 export default function CertificatesPage() {
-  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [allCertificates, setAllCertificates] = useState<Certificate[]>([]);
+  const [filteredCertificates, setFilteredCertificates] = useState<Certificate[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setModalOpen] = useState(false);
+
+  const [filters, setFilters] = useState({ status: '' });
 
   const fetchCertificates = async (currentUser: User) => {
     setIsLoading(true);
@@ -28,7 +45,8 @@ export default function CertificatesPage() {
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) throw new Error('Falha ao buscar atestados.');
       const data: Certificate[] = await res.json();
-      setCertificates(data || []);
+      setAllCertificates(data || []);
+      setFilteredCertificates(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -45,16 +63,25 @@ export default function CertificatesPage() {
     }
   }, []);
 
+  useEffect(() => {
+    let newFilteredData = allCertificates;
+    if(filters.status) {
+        newFilteredData = newFilteredData.filter(c => c.status === filters.status);
+    }
+    setFilteredCertificates(newFilteredData);
+  }, [filters, allCertificates]);
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   const updateCertificateStatus = async (certificateId: number, status: 'approved' | 'rejected') => {
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     try {
         const res = await fetch(`${apiURL}/api/certificates/${certificateId}/status`, {
             method: 'PATCH',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}` 
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ status })
         });
         if (!res.ok) {
@@ -80,9 +107,11 @@ export default function CertificatesPage() {
         )}
       </div>
 
+      <FilterBar configs={certificateFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
+
       {isLoading && <p>Carregando atestados...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && <CertificateList certificates={certificates} currentUser={user} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />}
+      {!isLoading && !error && <CertificateList certificates={filteredCertificates} currentUser={user} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />}
 
       {isModalOpen && (
         <SubmitCertificateModal 

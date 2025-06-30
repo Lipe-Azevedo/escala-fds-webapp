@@ -2,9 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Swap, User } from '@/types';
+import { Swap, User, FilterConfig } from '@/types';
 import SwapList from '@/components/SwapList';
 import RequestSwapModal from '@/components/RequestSwapModal';
+import FilterBar from '@/components/FilterBar';
+
+const swapFilterConfigs: FilterConfig[] = [
+  {
+    name: 'status',
+    label: 'Status',
+    type: 'select',
+    options: [
+      { value: '', label: 'Todos' },
+      { value: 'pending', label: 'Pendentes' },
+      { value: 'approved', label: 'Aprovadas' },
+      { value: 'rejected', label: 'Rejeitadas' },
+    ]
+  }
+];
 
 export default function SwapsPage() {
   const [swaps, setSwaps] = useState<Swap[]>([]);
@@ -12,7 +27,7 @@ export default function SwapsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setModalOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState('');
+  const [filters, setFilters] = useState({ status: '' });
 
   const fetchSwaps = async (currentUser: User) => {
     setIsLoading(true);
@@ -25,9 +40,9 @@ export default function SwapsPage() {
       url = `${apiURL}/api/swaps/user/${currentUser.id}`;
     }
 
-    if (statusFilter) {
+    if (filters.status) {
       const separator = url.includes('?') ? '&' : '?';
-      url += `${separator}status=${statusFilter}`;
+      url += `${separator}status=${filters.status}`;
     }
 
     try {
@@ -50,7 +65,7 @@ export default function SwapsPage() {
       setUser(currentUser);
       fetchSwaps(currentUser);
     }
-  }, [statusFilter]);
+  }, [filters]);
 
   const handleApprove = async (swapId: number) => {
     updateSwapStatus(swapId, 'approved');
@@ -82,6 +97,10 @@ export default function SwapsPage() {
     }
   };
 
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   if (!user) {
     return <div>Carregando...</div>;
   }
@@ -95,12 +114,7 @@ export default function SwapsPage() {
         )}
       </div>
       
-      <div style={{ marginBottom: '20px' }}>
-        <button onClick={() => setStatusFilter('')} disabled={statusFilter === ''}>Todas</button>
-        <button onClick={() => setStatusFilter('pending')} disabled={statusFilter === 'pending'} style={{marginLeft: '10px'}}>Pendentes</button>
-        <button onClick={() => setStatusFilter('approved')} disabled={statusFilter === 'approved'} style={{marginLeft: '10px'}}>Aprovadas</button>
-        <button onClick={() => setStatusFilter('rejected')} disabled={statusFilter === 'rejected'} style={{marginLeft: '10px'}}>Rejeitadas</button>
-      </div>
+      <FilterBar configs={swapFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
 
       {isLoading && <p>Carregando solicitações...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}

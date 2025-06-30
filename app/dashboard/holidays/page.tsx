@@ -2,19 +2,35 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Holiday } from '@/types';
+import { Holiday, FilterConfig } from '@/types';
 import HolidayList from '@/components/HolidayList';
 import HolidayModal from '@/components/HolidayModal';
+import FilterBar from '@/components/FilterBar';
 import { useRouter } from 'next/navigation';
 
+const holidayFilterConfigs: FilterConfig[] = [
+    { 
+      name: 'type', 
+      label: 'Tipo de Feriado', 
+      type: 'select', 
+      options: [
+        { value: '', label: 'Todos os Tipos' },
+        { value: 'national', label: 'Nacional' },
+        { value: 'state', label: 'Estadual' },
+        { value: 'city', label: 'Municipal' },
+    ]}
+];
+
 export default function HolidaysPage() {
-  const [holidays, setHolidays] = useState<Holiday[]>([]);
+  const [allHolidays, setAllHolidays] = useState<Holiday[]>([]);
+  const [filteredHolidays, setFilteredHolidays] = useState<Holiday[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedHoliday, setSelectedHoliday] = useState<Holiday | null>(null);
   const router = useRouter();
+
+  const [filters, setFilters] = useState({ type: '' });
 
   const fetchHolidays = async () => {
     setIsLoading(true);
@@ -27,15 +43,13 @@ export default function HolidaysPage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) {
-        if (res.status === 403) {
-          setError('Acesso negado. Apenas administradores podem ver esta página.');
-        } else {
-          throw new Error('Falha ao buscar feriados.');
-        }
+        if (res.status === 403) setError('Acesso negado.');
+        else throw new Error('Falha ao buscar feriados.');
         return;
       }
       const data: Holiday[] = await res.json();
-      setHolidays(data || []);
+      setAllHolidays(data || []);
+      setFilteredHolidays(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -47,13 +61,22 @@ export default function HolidaysPage() {
     const userDataString = localStorage.getItem('userData');
     if(userDataString) {
         const user = JSON.parse(userDataString);
-        if(user.userType !== 'master') {
-            router.push('/dashboard');
-        } else {
-            fetchHolidays();
-        }
+        if(user.userType !== 'master') router.push('/dashboard');
+        else fetchHolidays();
     }
   }, [router]);
+
+  useEffect(() => {
+    let newFilteredData = allHolidays;
+    if (filters.type) {
+        newFilteredData = newFilteredData.filter(h => h.type === filters.type);
+    }
+    setFilteredHolidays(newFilteredData);
+  }, [filters, allHolidays]);
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleEdit = (holiday: Holiday) => {
     setSelectedHoliday(holiday);
@@ -67,7 +90,6 @@ export default function HolidaysPage() {
 
   const handleDelete = async (holidayId: number) => {
     if(!window.confirm('Tem certeza que deseja apagar este feriado?')) return;
-
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     try {
@@ -76,7 +98,7 @@ export default function HolidaysPage() {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error('Falha ao apagar feriado.');
-        fetchHolidays(); // Re-fetch the list
+        fetchHolidays();
     } catch (err: any) {
         setError(err.message);
     }
@@ -94,9 +116,11 @@ export default function HolidaysPage() {
         <button onClick={handleCreate}>+ Novo Feriado</button>
       </div>
 
+      <FilterBar configs={holidayFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
+
       {isLoading && <p>Carregando feriados...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && <HolidayList holidays={holidays} onEdit={handleEdit} onDelete={handleDelete} />}
+      {!isLoading && !error && <HolidayList holidays={filteredHolidays} onEdit={handleEdit} onDelete={handleDelete} />}
 
       {isModalOpen && (
         <HolidayModal

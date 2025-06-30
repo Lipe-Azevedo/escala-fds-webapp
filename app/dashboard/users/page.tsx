@@ -8,7 +8,7 @@ import CreateUserModal from '@/components/CreateUserModal';
 import EditUserModal from '@/components/EditUserModal';
 import FilterBar from '@/components/FilterBar';
 
-const filterConfigs: FilterConfig[] = [
+const userFilterConfigs: FilterConfig[] = [
   {
     name: 'team',
     label: 'Equipe',
@@ -34,8 +34,8 @@ const filterConfigs: FilterConfig[] = [
 ];
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -58,7 +58,7 @@ export default function UsersPage() {
       if (!res.ok) throw new Error('Falha ao buscar usuários.');
       const data: User[] = await res.json();
       setAllUsers(data || []);
-      setUsers(data || []);
+      setFilteredUsers(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -71,14 +71,14 @@ export default function UsersPage() {
   }, []);
 
   useEffect(() => {
-    let filteredData = allUsers;
+    let newFilteredData = allUsers;
     if (filters.team) {
-      filteredData = filteredData.filter(user => user.team === filters.team);
+      newFilteredData = newFilteredData.filter(user => user.team === filters.team);
     }
     if (filters.shift) {
-      filteredData = filteredData.filter(user => user.shift === filters.shift);
+      newFilteredData = newFilteredData.filter(user => user.shift === filters.shift);
     }
-    setUsers(filteredData);
+    setFilteredUsers(newFilteredData);
   }, [filters, allUsers]);
 
   const handleEdit = (user: User) => {
@@ -97,11 +97,11 @@ export default function UsersPage() {
         <button onClick={() => setCreateModalOpen(true)}>+ Novo Colaborador</button>
       </div>
 
-      <FilterBar configs={filterConfigs} filters={filters} onFilterChange={handleFilterChange} />
+      <FilterBar configs={userFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
 
       {isLoading && <p>Carregando lista de usuários...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && <UserList users={users} onEdit={handleEdit} />}
+      {!isLoading && !error && <UserList users={filteredUsers} onEdit={handleEdit} />}
 
       {isCreateModalOpen && (
         <CreateUserModal

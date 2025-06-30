@@ -10,10 +10,10 @@ interface FilterBarProps {
 
 export default function FilterBar({ configs, filters, onFilterChange }: FilterBarProps) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px', padding: '15px', background: '#f9fafb', borderRadius: '8px' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', alignItems: 'flex-end', marginBottom: '20px', padding: '20px', background: '#f9fafb', borderRadius: '8px' }}>
       {configs.map((config) => (
         <div key={config.name}>
-          <label htmlFor={config.name} style={{fontSize: '14px', fontWeight: 500}}>{config.label}</label>
+          <label htmlFor={config.name} style={{fontSize: '14px', fontWeight: 500, display: 'block', marginBottom: '5px'}}>{config.label}</label>
           {config.type === 'select' ? (
             <select
               id={config.name}
@@ -21,6 +21,7 @@ export default function FilterBar({ configs, filters, onFilterChange }: FilterBa
               value={filters[config.name] || ''}
               onChange={onFilterChange}
               disabled={config.disabled}
+              style={{ margin: 0 }}
             >
               {config.options?.map(option => (
                 <option key={option.value} value={option.value}>{option.label}</option>
@@ -35,6 +36,7 @@ export default function FilterBar({ configs, filters, onFilterChange }: FilterBa
               onChange={onFilterChange}
               placeholder={config.placeholder}
               disabled={config.disabled}
+              style={{ margin: 0 }}
             />
           )}
         </div>
