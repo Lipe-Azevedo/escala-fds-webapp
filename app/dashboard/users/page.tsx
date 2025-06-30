@@ -2,23 +2,48 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { User } from '@/types';
+import { User, FilterConfig } from '@/types';
 import UserList from '@/components/UserList';
 import CreateUserModal from '@/components/CreateUserModal';
 import EditUserModal from '@/components/EditUserModal';
+import FilterBar from '@/components/FilterBar';
+
+const filterConfigs: FilterConfig[] = [
+  {
+    name: 'team',
+    label: 'Equipe',
+    type: 'select',
+    options: [
+      { value: '', label: 'Todas as Equipes' },
+      { value: 'Security', label: 'Segurança' },
+      { value: 'Support', label: 'Suporte' },
+      { value: 'CustomerService', label: 'Atendimento' },
+    ]
+  },
+  {
+    name: 'shift',
+    label: 'Turno',
+    type: 'select',
+    options: [
+        { value: '', label: 'Todos os Turnos' },
+        { value: '06:00-14:00', label: 'Manhã (06:00-14:00)' },
+        { value: '14:00-22:00', label: 'Tarde (14:00-22:00)' },
+        { value: '22:00-06:00', label: 'Noite (22:00-06:00)' },
+    ]
+  }
+];
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const [teamFilter, setTeamFilter] = useState('');
-  const [shiftFilter, setShiftFilter] = useState('');
+  const [filters, setFilters] = useState({ team: '', shift: '' });
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -31,16 +56,9 @@ export default function UsersPage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Falha ao buscar usuários.');
-      
       const data: User[] = await res.json();
-      
-      const filteredData = data.filter(user => {
-        const teamMatch = teamFilter ? user.team === teamFilter : true;
-        const shiftMatch = shiftFilter ? user.shift === shiftFilter : true;
-        return teamMatch && shiftMatch;
-      });
-
-      setUsers(filteredData || []);
+      setAllUsers(data || []);
+      setUsers(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -49,22 +67,27 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    const userDataString = localStorage.getItem('userData');
-    if (userDataString) {
-      const user = JSON.parse(userDataString);
-      setCurrentUser(user);
-    }
+    fetchUsers();
   }, []);
 
   useEffect(() => {
-    if(currentUser) {
-        fetchUsers();
+    let filteredData = allUsers;
+    if (filters.team) {
+      filteredData = filteredData.filter(user => user.team === filters.team);
     }
-  }, [currentUser, teamFilter, shiftFilter]);
+    if (filters.shift) {
+      filteredData = filteredData.filter(user => user.shift === filters.shift);
+    }
+    setUsers(filteredData);
+  }, [filters, allUsers]);
 
   const handleEdit = (user: User) => {
     setSelectedUser(user);
     setEditModalOpen(true);
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   return (
@@ -74,20 +97,7 @@ export default function UsersPage() {
         <button onClick={() => setCreateModalOpen(true)}>+ Novo Colaborador</button>
       </div>
 
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-        <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
-          <option value="">Filtrar por Equipe</option>
-          <option value="Security">Segurança</option>
-          <option value="Support">Suporte</option>
-          <option value="CustomerService">Atendimento</option>
-        </select>
-        <select value={shiftFilter} onChange={(e) => setShiftFilter(e.target.value)}>
-          <option value="">Filtrar por Turno</option>
-          <option value="06:00-14:00">Manhã (06:00-14:00)</option>
-          <option value="14:00-22:00">Tarde (14:00-22:00)</option>
-          <option value="22:00-06:00">Noite (22:00-06:00)</option>
-        </select>
-      </div>
+      <FilterBar configs={filterConfigs} filters={filters} onFilterChange={handleFilterChange} />
 
       {isLoading && <p>Carregando lista de usuários...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}

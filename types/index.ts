@@ -2,6 +2,21 @@ export type TeamName = 'Security' | 'Support' | 'CustomerService' | '';
 export type PositionName = string;
 export type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | 'Certificate' | '';
 
+// --- Novos Tipos para Filtros ---
+export type FilterOption = {
+  label: string;
+  value: string;
+};
+
+export type FilterConfig = {
+  name: string;
+  label: string;
+  type: 'text' | 'date' | 'select';
+  placeholder?: string;
+  options?: FilterOption[];
+  disabled?: boolean;
+};
+// ---------------------------------
 
 export type User = {
   id: number;
