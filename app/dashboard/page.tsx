@@ -57,7 +57,7 @@ export default function DashboardHomePage() {
     try {
       const [swapsRes, certificatesRes, usersRes] = await Promise.all([
         fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${apiURL}/api/certificates?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${apiURL}/api/certificates`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } }),
       ]);
 
@@ -65,8 +65,12 @@ export default function DashboardHomePage() {
       const certificates: Certificate[] = await certificatesRes.json();
       const users: User[] = await usersRes.json();
 
-      setPendingSwaps(swaps.length);
-      setPendingCertificates(certificates.length);
+      // Filtra e conta os itens pendentes no lado do cliente para garantir a precisão
+      const pendingSwapsCount = swaps.filter(s => s.status === 'pending').length;
+      const pendingCertificatesCount = certificates.filter(c => c.status === 'pending').length;
+
+      setPendingSwaps(pendingSwapsCount);
+      setPendingCertificates(pendingCertificatesCount);
       setUsersOnShift(users.filter(u => u.shift && isShiftNow(u.shift)));
 
     } catch (error) {
