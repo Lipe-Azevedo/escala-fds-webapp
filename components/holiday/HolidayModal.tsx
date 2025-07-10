@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Holiday } from '../types';
+import { Holiday } from '@/types';
 
 interface HolidayModalProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ export default function HolidayModal({ isOpen, onClose, onSuccess, holiday }: Ho
     name: '',
     date: '',
     type: 'national' as Holiday['type'],
+    repeatsAnnually: false,
   });
   
   const [error, setError] = useState('');
@@ -24,11 +25,16 @@ export default function HolidayModal({ isOpen, onClose, onSuccess, holiday }: Ho
   const isEditMode = holiday !== null;
 
   useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && holiday) {
       setFormData({
         name: holiday.name,
         date: holiday.date,
         type: holiday.type,
+        repeatsAnnually: holiday.repeatsAnnually,
+      });
+    } else {
+      setFormData({
+        name: '', date: '', type: 'national', repeatsAnnually: false,
       });
     }
   }, [holiday, isEditMode]);
@@ -36,8 +42,13 @@ export default function HolidayModal({ isOpen, onClose, onSuccess, holiday }: Ho
   if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const isCheckbox = type === 'checkbox';
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value 
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +58,7 @@ export default function HolidayModal({ isOpen, onClose, onSuccess, holiday }: Ho
 
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    const url = isEditMode ? `${apiURL}/api/holidays/${holiday.id}` : `${apiURL}/api/holidays`;
+    const url = isEditMode ? `${apiURL}/api/holidays/${holiday?.id}` : `${apiURL}/api/holidays`;
     const method = isEditMode ? 'PUT' : 'POST';
 
     try {
@@ -72,12 +83,17 @@ export default function HolidayModal({ isOpen, onClose, onSuccess, holiday }: Ho
   
   const modalOverlayStyle: React.CSSProperties = {
     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
   };
   const modalContentStyle: React.CSSProperties = {
-    background: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '500px',
-    color: 'black',
+    background: 'rgb(var(--card-background-rgb))',
+    padding: '25px',
+    borderRadius: '8px',
+    width: '90%',
+    maxWidth: '500px',
+    color: 'rgb(var(--foreground-rgb))',
+    border: '1px solid rgb(var(--card-border-rgb))'
   };
 
   return (
@@ -98,10 +114,22 @@ export default function HolidayModal({ isOpen, onClose, onSuccess, holiday }: Ho
               <option value="city">Municipal</option>
           </select>
 
-          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+          <div style={{display: 'flex', alignItems: 'center', marginTop: '20px', marginBottom: '10px'}}>
+            <input 
+              id="repeatsAnnually" 
+              name="repeatsAnnually" 
+              type="checkbox" 
+              checked={formData.repeatsAnnually} 
+              onChange={handleChange} 
+              style={{width: 'auto', height: '18px', marginRight: '10px', accentColor: 'var(--primary-color)'}}
+            />
+            <label htmlFor="repeatsAnnually" style={{marginBottom: 0, cursor: 'pointer'}}>Repetir anualmente</label>
+          </div>
+
+          {error && <p style={{ color: '#f87171', textAlign: 'center', marginTop: '15px' }}>{error}</p>}
           
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <button type="button" onClick={onClose} style={{ backgroundColor: '#6b7280'}}>Cancelar</button>
+            <button type="button" onClick={onClose} style={{ backgroundColor: '#4a5568'}}>Cancelar</button>
             <button type="submit" disabled={isLoading}>{isLoading ? 'Salvando...' : 'Salvar'}</button>
           </div>
         </form>
