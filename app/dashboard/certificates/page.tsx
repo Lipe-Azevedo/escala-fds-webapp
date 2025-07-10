@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Certificate, User, FilterConfig } from '@/types';
-import CertificateList from '@/components/CertificateList';
+import CertificateList from '@/components/certificate/CertificateList';
 import SubmitCertificateModal from '@/components/certificate/SubmitCertificateModal';
 import FilterBar from '@/components/common/FilterBar';
 

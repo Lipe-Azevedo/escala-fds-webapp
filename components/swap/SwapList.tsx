@@ -1,6 +1,6 @@
 'use client';
 
-import { Swap, User } from '../types';
+import { Swap, User } from '@/types';
 import { format } from 'date-fns';
 
 interface SwapListProps {
@@ -14,20 +14,14 @@ export default function SwapList({ swaps, currentUser, onApprove, onReject }: Sw
     
   const getStatusStyle = (status: Swap['status']): React.CSSProperties => {
     switch (status) {
-      case 'approved':
-        return { color: 'green', fontWeight: 'bold' };
-      case 'rejected':
-        return { color: 'red', fontWeight: 'bold' };
-      case 'pending':
-        return { color: 'orange', fontWeight: 'bold' };
-      default:
-        return {};
+      case 'approved': return { color: '#10b981', fontWeight: 'bold' };
+      case 'rejected': return { color: '#ef4444', fontWeight: 'bold' };
+      case 'pending': return { color: '#f59e0b', fontWeight: 'bold' };
+      default: return {};
     }
   };
 
-  // Função corrigida para tratar o fuso horário corretamente
   const formatDate = (dateString: string) => {
-    // Adiciona T00:00:00 para que a data seja interpretada como local e não UTC
     return format(new Date(dateString.replace(/-/g, '/')), 'dd/MM/yyyy');
   };
 
@@ -38,7 +32,7 @@ export default function SwapList({ swaps, currentUser, onApprove, onReject }: Sw
         const canApprove = currentUser.userType === 'master' || currentUser.id === swap.requester.superiorId;
         
         return (
-          <div key={swap.id} style={{ padding: '15px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: 'white' }}>
+          <div key={swap.id} style={{ padding: '15px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
             <p><strong>Solicitante:</strong> {swap.requester.firstName} {swap.requester.lastName}</p>
             <p><strong>Motivo:</strong> {swap.reason || 'Não informado'}</p>
             <p>
@@ -51,8 +45,8 @@ export default function SwapList({ swaps, currentUser, onApprove, onReject }: Sw
             
             {swap.status === 'pending' && canApprove && (
               <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                <button onClick={() => onApprove(swap.id)} style={{backgroundColor: '#22c55e'}}>Aprovar</button>
-                <button onClick={() => onReject(swap.id)} style={{backgroundColor: '#ef4444'}}>Rejeitar</button>
+                <button onClick={() => onApprove(swap.id)} style={{backgroundColor: '#16a34a'}}>Aprovar</button>
+                <button onClick={() => onReject(swap.id)} style={{backgroundColor: '#dc2626'}}>Rejeitar</button>
               </div>
             )}
           </div>

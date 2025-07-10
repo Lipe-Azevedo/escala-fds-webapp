@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Swap, User, FilterConfig } from '@/types';
-import SwapList from '@/components/SwapList';
-import RequestSwapModal from '@/components/RequestSwapModal';
+import SwapList from '@/components/swap/SwapList';
+import RequestSwapModal from '@/components/swap/RequestSwapModal';
 import FilterBar from '@/components/common/FilterBar';
 
 const swapFilterConfigs: FilterConfig[] = [

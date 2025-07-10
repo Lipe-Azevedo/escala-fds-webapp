@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { User, Swap, Certificate } from '../../types';
-import Calendar from '../../components/calendar/Calendar';
+import { User, Swap, Certificate } from '@/types';
+import Calendar from '@/components/calendar/Calendar';
 import DashboardSummaryCard from '@/components/common/DashboardSummaryCard';
 
 export default function DashboardHomePage() {
@@ -56,7 +56,7 @@ export default function DashboardHomePage() {
 
     try {
       const [swapsRes, certificatesRes, usersRes] = await Promise.all([
-        fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${apiURL}/api/swaps`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${apiURL}/api/certificates`, { headers: { 'Authorization': `Bearer ${token}` } }),
         fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } }),
       ]);
@@ -65,12 +65,8 @@ export default function DashboardHomePage() {
       const certificates: Certificate[] = await certificatesRes.json();
       const users: User[] = await usersRes.json();
 
-      // Filtra e conta os itens pendentes no lado do cliente para garantir a precisão
-      const pendingSwapsCount = swaps.filter(s => s.status === 'pending').length;
-      const pendingCertificatesCount = certificates.filter(c => c.status === 'pending').length;
-
-      setPendingSwaps(pendingSwapsCount);
-      setPendingCertificates(pendingCertificatesCount);
+      setPendingSwaps(swaps.filter(s => s.status === 'pending').length);
+      setPendingCertificates(certificates.filter(c => c.status === 'pending').length);
       setUsersOnShift(users.filter(u => u.shift && isShiftNow(u.shift)));
 
     } catch (error) {
@@ -118,11 +114,11 @@ export default function DashboardHomePage() {
               </div>
               <div style={{marginTop: '40px'}}>
                 <h3>Colaboradores de Plantão Agora</h3>
-                <div style={{backgroundColor: 'white', padding: '10px 20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'}}>
+                <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', border: '1px solid rgb(var(--card-border-rgb))', padding: '10px 20px', borderRadius: '8px'}}>
                   {usersOnShift.length > 0 ? (
                     <ul style={{listStyle: 'none', padding: 0}}>
                       {usersOnShift.map(u => (
-                        <li key={u.id} style={{padding: '10px 0', borderBottom: '1px solid #eee'}}>
+                        <li key={u.id} style={{padding: '10px 0', borderBottom: '1px solid rgb(var(--card-border-rgb))'}}>
                           {u.firstName} {u.lastName} ({u.team}) - Turno: {u.shift}
                         </li>
                       ))}

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Holiday, FilterConfig } from '@/types';
-import HolidayList from '@/components/HolidayList';
-import HolidayModal from '@/components/HolidayModal';
+import HolidayList from '@/components/holiday/HolidayList';
+import HolidayModal from '@/components/holiday/HolidayModal';
 import FilterBar from '@/components/common/FilterBar';
 import { useRouter } from 'next/navigation';
 

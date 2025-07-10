@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { User } from '../types';
+import { User } from '@/types';
 
 interface RequestSwapModalProps {
   isOpen: boolean;
@@ -24,11 +24,8 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // A lógica de detecção de turno do dia selecionado pode ser mais complexa
-    // por enquanto, vamos assumir o turno padrão do usuário. O backend validará.
     setFormData(prev => ({ ...prev, originalShift: currentUser.shift }));
   }, [currentUser.shift]);
-
 
   if (!isOpen) return null;
 
@@ -45,16 +42,13 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     
-    // Se a newDate não for preenchida, o backend validará, mas por clareza da UI, forçamos o preenchimento
-    if (!formData.newDate) {
-        formData.newDate = formData.originalDate;
-    }
+    const payload = { ...formData, newDate: formData.newDate || formData.originalDate };
 
     try {
       const res = await fetch(`${apiURL}/api/swaps`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       
       const data = await res.json();
@@ -76,8 +70,8 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
     display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
   };
   const modalContentStyle: React.CSSProperties = {
-    background: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '500px',
-    color: 'black',
+    background: 'rgb(var(--card-background-rgb))', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '500px',
+    color: 'rgb(var(--foreground-rgb))', border: '1px solid rgb(var(--card-border-rgb))'
   };
 
   return (
@@ -85,12 +79,13 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
       <div style={modalContentStyle}>
         <h2>Solicitar Troca</h2>
         <form onSubmit={handleSubmit}>
+          <p style={{fontSize: '14px', color: 'var(--text-secondary-color)'}}>Para trocar um dia de folga, preencha todos os campos. Para trocar apenas o turno, preencha a nova data com o mesmo dia.</p>
           
           <label htmlFor="originalDate">Data Original (sua folga ou dia de trabalho):</label>
           <input type="date" id="originalDate" name="originalDate" value={formData.originalDate} onChange={handleChange} required />
 
           <label htmlFor="originalShift">Seu Turno Original:</label>
-          <input type="text" id="originalShift" name="originalShift" value={formData.originalShift} readOnly style={{backgroundColor: '#eee', cursor: 'not-allowed'}}/>
+          <input type="text" id="originalShift" name="originalShift" value={formData.originalShift} readOnly style={{backgroundColor: '#2a2a2a', cursor: 'not-allowed'}}/>
           
           <label htmlFor="newDate">Nova Data (para trabalho ou folga):</label>
           <input type="date" id="newDate" name="newDate" value={formData.newDate} onChange={handleChange} required />
@@ -106,10 +101,10 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
           <label htmlFor="reason">Motivo:</label>
           <textarea id="reason" name="reason" value={formData.reason} onChange={handleChange} required rows={3}></textarea>
 
-          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+          {error && <p style={{ color: '#f87171', textAlign: 'center' }}>{error}</p>}
           
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <button type="button" onClick={onClose} style={{ backgroundColor: '#6b7280'}}>Cancelar</button>
+            <button type="button" onClick={onClose} style={{ backgroundColor: '#4a5568'}}>Cancelar</button>
             <button type="submit" disabled={isLoading}>{isLoading ? 'Enviando...' : 'Enviar Solicitação'}</button>
           </div>
         </form>
