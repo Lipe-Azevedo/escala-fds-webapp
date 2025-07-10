@@ -6,7 +6,7 @@ import { User, FilterConfig } from '@/types';
 import UserList from '@/components/UserList';
 import CreateUserModal from '@/components/CreateUserModal';
 import EditUserModal from '@/components/EditUserModal';
-import FilterBar from '@/components/FilterBar';
+import FilterBar from '@/components/common/FilterBar';
 
 const userFilterConfigs: FilterConfig[] = [
   {

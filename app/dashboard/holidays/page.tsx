@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import { Holiday, FilterConfig } from '@/types';
 import HolidayList from '@/components/HolidayList';
 import HolidayModal from '@/components/HolidayModal';
-import FilterBar from '@/components/FilterBar';
+import FilterBar from '@/components/common/FilterBar';
 import { useRouter } from 'next/navigation';
 
 const holidayFilterConfigs: FilterConfig[] = [

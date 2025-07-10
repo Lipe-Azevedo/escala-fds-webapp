@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import { Comment, User, FilterConfig } from '@/types';
 import CommentList from '@/components/CommentList';
 import CreateCommentModal from '@/components/CreateCommentModal';
-import FilterBar from '@/components/FilterBar';
+import FilterBar from '@/components/common/FilterBar';
 
 const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfig[] => {
   if (!user) return [];

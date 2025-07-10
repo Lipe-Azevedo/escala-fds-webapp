@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Certificate, User, FilterConfig } from '@/types';
 import CertificateList from '@/components/CertificateList';
-import SubmitCertificateModal from '@/components/SubmitCertificateModal';
-import FilterBar from '@/components/FilterBar';
+import SubmitCertificateModal from '@/components/certificate/SubmitCertificateModal';
+import FilterBar from '@/components/common/FilterBar';
 
 const certificateFilterConfigs: FilterConfig[] = [
     { 

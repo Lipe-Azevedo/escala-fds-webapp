@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { User, Swap, Certificate } from '../../types';
 import Calendar from '../../components/calendar/Calendar';
-import DashboardSummaryCard from '@/components/DashboardSummaryCard';
+import DashboardSummaryCard from '@/components/common/DashboardSummaryCard';
 
 export default function DashboardHomePage() {
   const [user, setUser] = useState<User | null>(null);

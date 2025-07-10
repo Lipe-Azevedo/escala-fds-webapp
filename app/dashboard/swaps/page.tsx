@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import { Swap, User, FilterConfig } from '@/types';
 import SwapList from '@/components/SwapList';
 import RequestSwapModal from '@/components/RequestSwapModal';
-import FilterBar from '@/components/FilterBar';
+import FilterBar from '@/components/common/FilterBar';
 
 const swapFilterConfigs: FilterConfig[] = [
   {

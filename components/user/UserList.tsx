@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { User } from '../types'; // Importando do local central
+import { User } from '@/types';
 
 interface UserListProps {
   users: User[];
@@ -12,28 +12,29 @@ const tableHeaderStyle: React.CSSProperties = {
   padding: '12px 15px',
   textAlign: 'left',
   fontWeight: 'bold',
-  color: '#374151',
+  color: '#a0aec0',
   textTransform: 'uppercase',
-  borderBottom: '2px solid #e5e7eb',
+  fontSize: '12px',
+  borderBottom: '2px solid rgb(var(--card-border-rgb))',
 };
 
 const tableCellStyle: React.CSSProperties = {
   padding: '12px 15px',
   textAlign: 'left',
-  borderBottom: '1px solid #e5e7eb',
+  borderBottom: '1px solid rgb(var(--card-border-rgb))',
 };
 
 const actionButtonStyle: React.CSSProperties = {
-  padding: '5px 10px',
+  padding: '6px 12px',
   fontSize: '12px',
   marginRight: '5px'
 };
 
 export default function UserList({ users, onEdit }: UserListProps) {
   return (
-    <div style={{ overflowX: 'auto', backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1)' }}>
+    <div style={{ overflowX: 'auto', backgroundColor: `rgb(var(--card-background-rgb))`, borderRadius: '8px', border: `1px solid rgb(var(--card-border-rgb))` }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead style={{ backgroundColor: '#f9fafb' }}>
+        <thead>
           <tr>
             <th style={tableHeaderStyle}>Nome</th>
             <th style={tableHeaderStyle}>Equipe</th>
@@ -51,7 +52,7 @@ export default function UserList({ users, onEdit }: UserListProps) {
               <td style={tableCellStyle}>{user.shift || 'N/A'}</td>
               <td style={tableCellStyle}>
                 <Link href={`/dashboard/users/${user.id}`}>
-                  <button style={{...actionButtonStyle, backgroundColor: '#6b7280'}}>Detalhes</button>
+                  <button style={{...actionButtonStyle, backgroundColor: '#4a5568'}}>Detalhes</button>
                 </Link>
                 <button onClick={() => onEdit(user)} style={actionButtonStyle}>Editar</button>
               </td>

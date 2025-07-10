@@ -1,38 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
-import Sidebar from '../../components/Sidebar';
-import styles from './Layout.module.css';
+import Sidebar from '@/components/Sidebar';
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const router = useRouter();
-  const [isVerified, setIsVerified] = useState(false);
-
-  useEffect(() => {
-    const token = Cookies.get('authToken');
-    if (!token) {
-      router.push('/login');
-    } else {
-      setIsVerified(true);
-    }
-  }, [router]);
-
-  if (!isVerified) {
-    return <div>Verificando autenticação...</div>;
-  }
-
   return (
-    <div className={styles.layout}>
+    <div style={{ display: 'flex' }}>
       <Sidebar />
-      <main className={styles.mainContent}>
+      <main style={{ flexGrow: 1, padding: '20px 40px' }}>
         {children}
       </main>
     </div>
-  );
+  )
 }
