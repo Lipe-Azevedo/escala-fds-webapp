@@ -58,7 +58,7 @@ export default function CommentsModal({ isOpen, onClose, onCommentAdded, selecte
     if (isOpen) {
       fetchComments();
     }
-  }, [isOpen]);
+  }, [isOpen, selectedDate]);
 
   const handlePostComment = async () => {
     if (!newCommentText.trim()) return;
@@ -100,21 +100,21 @@ export default function CommentsModal({ isOpen, onClose, onCommentAdded, selecte
     display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
   };
   const modalContentStyle: React.CSSProperties = {
-    background: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '600px',
-    color: 'black', maxHeight: '90vh', overflowY: 'auto',
+    background: 'rgb(var(--card-background-rgb))', padding: '25px', borderRadius: '8px', width: '90%', maxWidth: '600px',
+    color: 'rgb(var(--foreground-rgb))', border: '1px solid rgb(var(--card-border-rgb))',
   };
 
   return (
     <div style={modalOverlayStyle} onClick={onClose}>
       <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
         <h2>Comentários para {format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</h2>
-        <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #eee', padding: '10px', marginBottom: '20px' }}>
+        <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid rgb(var(--card-border-rgb))', padding: '10px', marginBottom: '20px', borderRadius: '6px' }}>
           {isLoading && <p>Carregando...</p>}
           {!isLoading && comments.length === 0 && <p>Nenhum comentário para esta data.</p>}
           {!isLoading && comments.map(comment => (
-            <div key={comment.id} style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
+            <div key={comment.id} style={{ borderBottom: '1px solid rgb(var(--card-border-rgb))', paddingBottom: '10px', marginBottom: '10px' }}>
               <p><strong>{comment.author.firstName}:</strong> {comment.text}</p>
-              <p style={{ fontSize: '12px', color: '#888' }}>em {format(new Date(comment.createdAt), 'dd/MM/yyyy HH:mm')}</p>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary-color)' }}>em {format(new Date(comment.createdAt), 'dd/MM/yyyy HH:mm')}</p>
             </div>
           ))}
         </div>
@@ -126,7 +126,6 @@ export default function CommentsModal({ isOpen, onClose, onCommentAdded, selecte
                     onChange={(e) => setNewCommentText(e.target.value)}
                     placeholder="Adicionar um novo comentário..."
                     rows={3}
-                    style={{width: '100%', padding: '8px', boxSizing: 'border-box'}}
                 />
                 <button onClick={handlePostComment} disabled={isLoading} style={{marginTop: '10px'}}>
                     {isLoading ? 'Salvando...' : 'Salvar Comentário'}
@@ -134,9 +133,9 @@ export default function CommentsModal({ isOpen, onClose, onCommentAdded, selecte
             </div>
         )}
 
-        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+        {error && <p style={{ color: '#f87171', marginTop: '10px' }}>{error}</p>}
 
-        <button onClick={onClose} style={{ marginTop: '20px', backgroundColor: '#6b7280' }}>Fechar</button>
+        <button onClick={onClose} style={{ marginTop: '20px', backgroundColor: '#4a5568' }}>Fechar</button>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { User } from '@/types';
-import CommentsModal from '@/components/calendar/CommentsModal';
+import CommentsModal from '@/components/comment/CommentsModal'; // Caminho de importação corrigido
 import { useCalendar } from '@/hooks/useCalendar';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarSummary from '@/components/calendar/CalendarSummary';
@@ -32,7 +32,7 @@ export default function Calendar({ user }: { user: CalendarUser }) {
   };
 
   const handleCommentAdded = () => {
-    fetchData();
+    fetchData(); 
   }
 
   return (
@@ -43,13 +43,14 @@ export default function Calendar({ user }: { user: CalendarUser }) {
         onNextMonth={nextMonth}
       />
       
-      <CalendarSummary 
-        workedDays={workedDaysCount}
-        holidaysWorked={holidaysWorkedCount}
-      />
-
-      {isLoading ? <p>Carregando calendário...</p> : error ? <p style={{color: 'red'}}>{error}</p> : (
-        <CalendarGrid days={calendarDays} onDayClick={handleDayClick} />
+      {isLoading ? <p>Carregando calendário...</p> : error ? <p style={{color: '#f87171'}}>{error}</p> : (
+        <>
+            <CalendarGrid days={calendarDays} onDayClick={handleDayClick} />
+            <CalendarSummary 
+                workedDays={workedDaysCount}
+                holidaysWorked={holidaysWorkedCount}
+            />
+        </>
       )}
 
       <CommentsModal 
