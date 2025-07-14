@@ -1,61 +1,85 @@
 .sidebar {
-    width: 250px;
-    min-height: 100vh;
-    background-color: rgb(var(--sidebar-background-rgb));
-    color: rgb(var(--foreground-rgb));
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    box-sizing: border-box;
-    border-right: 1px solid rgb(var(--card-border-rgb));
-  }
-  
-  .logo {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 40px;
-    text-align: center;
-  }
-  
-  .nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .nav li {
-    margin-bottom: 10px;
-  }
-  
-  .navLink {
-    display: block;
-    padding: 12px 15px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: var(--text-secondary-color);
-    font-weight: 500;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-  
-  .navLink:hover {
-    background-color: rgb(var(--card-background-rgb));
-    color: rgb(var(--foreground-rgb));
-  }
-  
-  .navLink.active {
-    background-color: var(--primary-color);
-    color: var(--primary-text-color);
-  }
-  
-  .userProfile {
+  width: 250px;
+  min-height: 100vh;
+  background-color: rgb(var(--sidebar-background-rgb));
+  color: rgb(var(--foreground-rgb));
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+  border-right: 1px solid rgb(var(--card-border-rgb));
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav li {
+  margin-bottom: 10px;
+}
+
+.navLink {
+  display: block;
+  padding: 12px 15px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--text-secondary-color);
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.navLink:hover {
+  background-color: rgb(var(--card-background-rgb));
+  color: rgb(var(--foreground-rgb));
+}
+
+.navLink.active {
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+}
+
+.sidebarFooter {
     margin-top: auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    gap: 20px;
+}
+
+.notificationBell {
+    position: relative;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.notificationBadge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background-color: #ef4444;
+    color: white;
     border-radius: 50%;
-    background-color: #4a5568;
+    padding: 2px 6px;
+    font-size: 10px;
     font-weight: bold;
-    align-self: center;
-  }
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #4a5568;
+  font-weight: bold;
+}

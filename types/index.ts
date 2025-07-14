@@ -2,7 +2,6 @@ export type TeamName = 'Security' | 'Support' | 'CustomerService' | '';
 export type PositionName = string;
 export type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | 'Certificate' | '';
 
-
 export type User = {
   id: number;
   firstName: string;
@@ -55,13 +54,13 @@ export type Certificate = {
 };
 
 export type Comment = {
-    id: number;
-    collaborator: User;
-    author: User;
-    text: string;
-    date: string;
-    createdAt: string;
-    updatedAt: string;
+  id: number;
+  collaborator: User;
+  author: User;
+  text: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type FilterOption = {
@@ -76,4 +75,12 @@ export type FilterConfig = {
   placeholder?: string;
   options?: FilterOption[];
   disabled?: boolean;
+};
+
+export type Notification = {
+  id: number;
+  message: string;
+  link: string;
+  isRead: boolean;
+  createdAt: string;
 };
