@@ -6,11 +6,11 @@ import { format } from 'date-fns';
 interface SwapListProps {
   swaps: Swap[];
   currentUser: User;
-  onApprove: (swapId: number) => void;
+  onApproveClick: (swap: Swap) => void;
   onReject: (swapId: number) => void;
 }
 
-export default function SwapList({ swaps, currentUser, onApprove, onReject }: SwapListProps) {
+export default function SwapList({ swaps, currentUser, onApproveClick, onReject }: SwapListProps) {
     
   const getStatusStyle = (status: Swap['status']): React.CSSProperties => {
     switch (status) {
@@ -34,18 +34,15 @@ export default function SwapList({ swaps, currentUser, onApprove, onReject }: Sw
         return (
           <div key={swap.id} style={{ padding: '15px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
             <p><strong>Solicitante:</strong> {swap.requester.firstName} {swap.requester.lastName}</p>
+            {swap.involvedCollaborator && <p><strong>Envolvido na Troca:</strong> {swap.involvedCollaborator.firstName} {swap.involvedCollaborator.lastName}</p>}
             <p><strong>Motivo:</strong> {swap.reason || 'Não informado'}</p>
-            <p>
-              <strong>Troca:</strong> Dia {formatDate(swap.originalDate)} (Turno: {swap.originalShift})
-            </p>
-            <p>
-              <strong>Por:</strong> Dia {formatDate(swap.newDate)} (Turno: {swap.newShift})
-            </p>
+            <p><strong>Dia Original:</strong> {formatDate(swap.originalDate)} (Turno: {swap.originalShift})</p>
+            <p><strong>Novo Dia:</strong> {formatDate(swap.newDate)} (Turno: {swap.newShift})</p>
             <p><strong>Status:</strong> <span style={getStatusStyle(swap.status)}>{swap.status}</span></p>
             
             {swap.status === 'pending' && canApprove && (
               <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                <button onClick={() => onApprove(swap.id)} style={{backgroundColor: '#16a34a'}}>Aprovar</button>
+                <button onClick={() => onApproveClick(swap)} style={{backgroundColor: '#16a34a'}}>Aprovar</button>
                 <button onClick={() => onReject(swap.id)} style={{backgroundColor: '#dc2626'}}>Rejeitar</button>
               </div>
             )}
