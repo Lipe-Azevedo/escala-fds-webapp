@@ -3,12 +3,15 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import EyeIcon from '@/components/icons/EyeIcon';
+import EyeOffIcon from '@/components/icons/EyeOffIcon';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('master@email.com');
+  const [password, setPassword] = useState('123456');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,33 +48,56 @@ export default function LoginPage() {
     }
   };
 
+  const passwordInputContainerStyle: React.CSSProperties = {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+  };
+
+  const passwordToggleButtonStyle: React.CSSProperties = {
+    position: 'absolute',
+    right: '10px',
+    background: 'none',
+    border: 'none',
+    padding: '5px',
+    cursor: 'pointer',
+    color: 'var(--text-secondary-color)'
+  };
+
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <div style={{ width: '100%', maxWidth: '400px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Login do Sistema</h1>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'rgb(var(--background-rgb))' }}>
+      <div style={{ width: '100%', maxWidth: '400px', padding: '40px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>Login do Sistema</h1>
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '15px' }}>
-            <label>Email:</label>
+          <div style={{ marginBottom: '20px' }}>
+            <label htmlFor="email">Email:</label>
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
             />
           </div>
-          <div style={{ marginBottom: '15px' }}>
-            <label>Senha:</label>
-            <input
-              type="text" // ALTERADO TEMPORARIAMENTE PARA DEBUG
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
-            />
+          <div style={{ marginBottom: '20px' }}>
+            <label htmlFor="password">Senha:</label>
+            <div style={passwordInputContainerStyle}>
+                <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    style={{paddingRight: '45px'}}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} style={passwordToggleButtonStyle} aria-label="Mostrar/ocultar senha">
+                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+            </div>
           </div>
-          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-          <button type="submit" disabled={isLoading} style={{ width: '100%', padding: '10px', cursor: 'pointer' }}>
+          {error && <p style={{ color: '#f87171', textAlign: 'center' }}>{error}</p>}
+          <button type="submit" disabled={isLoading} style={{ width: '100%', padding: '12px', marginTop: '10px', fontSize: '16px' }}>
             {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
