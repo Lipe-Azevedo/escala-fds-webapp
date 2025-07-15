@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import styles from './Sidebar.module.css';
 import { User, Notification } from '../types';
 import BellIcon from './icons/BellIcon';
+import NotificationPanel from './common/NotificationPanel';
 
 const navItems = [
     { href: '/dashboard', label: 'Início' },
@@ -21,17 +22,18 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  const fetchUnreadCount = async () => {
+  const fetchNotifications = async () => {
     const token = Cookies.get('authToken');
     if (!token) return;
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     try {
         const res = await fetch(`${apiURL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
         if(res.ok) {
-            const data: Notification[] = await res.json();
-            setUnreadCount(data.filter(n => !n.isRead).length);
+            const data = await res.json();
+            setNotifications(data || []);
         }
     } catch(e) {
         console.error("Failed to fetch notifications", e);
@@ -43,10 +45,33 @@ export default function Sidebar() {
     if (userDataString) {
       setUser(JSON.parse(userDataString));
     }
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 60000); // Atualiza a cada 1 minuto
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
+  
+  const handleNotificationClick = async (notification: Notification) => {
+    setShowNotifications(false);
+    if (notification.isRead) {
+      router.push(notification.link);
+      return;
+    }
+
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    try {
+      await fetch(`${apiURL}/api/notifications/${notification.id}/read`, { 
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchNotifications();
+      router.push(notification.link);
+    } catch (e) {
+      console.error("Failed to mark notification as read", e);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
     <aside className={styles.sidebar}>
@@ -72,14 +97,15 @@ export default function Sidebar() {
         </nav>
       </div>
       <div className={styles.sidebarFooter}>
-        <button className={styles.notificationBell} onClick={() => router.push('/dashboard/notifications')}>
-            <BellIcon />
-            {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount}</span>}
-        </button>
         <div className={styles.userProfile}>
           {user ? user.firstName.charAt(0) : ''}
         </div>
+        <button className={styles.notificationBell} onClick={() => setShowNotifications(!showNotifications)}>
+            <BellIcon />
+            {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount}</span>}
+        </button>
       </div>
+      {showNotifications && <NotificationPanel notifications={notifications} onNotificationClick={handleNotificationClick} onClose={() => setShowNotifications(false)}/>}
     </aside>
   );
 }
