@@ -2,6 +2,7 @@ export type TeamName = 'Security' | 'Support' | 'CustomerService' | '';
 export type PositionName = string;
 export type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | 'Certificate' | '';
 
+
 export type User = {
   id: number;
   firstName: string;
@@ -35,7 +36,7 @@ export type Swap = {
   originalShift: string;
   newShift: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'pending_confirmation';
   approvedBy?: User;
   createdAt: string;
   approvedAt?: string;
@@ -54,13 +55,13 @@ export type Certificate = {
 };
 
 export type Comment = {
-  id: number;
-  collaborator: User;
-  author: User;
-  text: string;
-  date: string;
-  createdAt: string;
-  updatedAt: string;
+    id: number;
+    collaborator: User;
+    author: User;
+    text: string;
+    date: string;
+    createdAt: string;
+    updatedAt: string;
 };
 
 export type FilterOption = {
