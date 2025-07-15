@@ -5,7 +5,6 @@ import { Holiday } from '@/types';
 interface HolidayListProps {
   holidays: Holiday[];
   onEdit: (holiday: Holiday) => void;
-  onDelete: (holidayId: number) => void;
 }
 
 const tableHeaderStyle: React.CSSProperties = {
@@ -30,7 +29,7 @@ const actionButtonStyle: React.CSSProperties = {
   marginRight: '5px'
 };
 
-export default function HolidayList({ holidays, onEdit, onDelete }: HolidayListProps) {
+export default function HolidayList({ holidays, onEdit }: HolidayListProps) {
   const formatType = (type: Holiday['type']) => {
     switch(type) {
       case 'national': return 'Nacional';
@@ -43,7 +42,7 @@ export default function HolidayList({ holidays, onEdit, onDelete }: HolidayListP
   return (
     <div style={{ overflowX: 'auto', backgroundColor: `rgb(var(--card-background-rgb))`, borderRadius: '8px', border: `1px solid rgb(var(--card-border-rgb))` }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
+        <thead >
           <tr>
             <th style={tableHeaderStyle}>Nome</th>
             <th style={tableHeaderStyle}>Data</th>

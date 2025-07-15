@@ -88,22 +88,6 @@ export default function HolidaysPage() {
     setModalOpen(true);
   };
 
-  const handleDelete = async (holidayId: number) => {
-    if(!window.confirm('Tem certeza que deseja apagar este feriado?')) return;
-    const token = Cookies.get('authToken');
-    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    try {
-        const res = await fetch(`${apiURL}/api/holidays/${holidayId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Falha ao apagar feriado.');
-        fetchHolidays();
-    } catch (err: any) {
-        setError(err.message);
-    }
-  }
-
   const handleModalClose = () => {
     setModalOpen(false);
     setSelectedHoliday(null);
@@ -120,7 +104,7 @@ export default function HolidaysPage() {
 
       {isLoading && <p>Carregando feriados...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && <HolidayList holidays={filteredHolidays} onEdit={handleEdit} onDelete={handleDelete} />}
+      {!isLoading && !error && <HolidayList holidays={filteredHolidays} onEdit={handleEdit} />}
 
       {isModalOpen && (
         <HolidayModal

@@ -19,6 +19,8 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
     newShift: '',
     reason: '',
   });
+
+  const [swapType, setSwapType] = useState<'day' | 'shift'>('day');
   
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,6 +28,7 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
   useEffect(() => {
     setFormData(prev => ({ ...prev, originalShift: currentUser.shift }));
   }, [currentUser.shift]);
+
 
   if (!isOpen) return null;
 
@@ -42,7 +45,10 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     
-    const payload = { ...formData, newDate: formData.newDate || formData.originalDate };
+    const payload = {
+        ...formData,
+        newDate: swapType === 'shift' ? formData.originalDate : formData.newDate
+    };
 
     try {
       const res = await fetch(`${apiURL}/api/swaps`, {
@@ -66,11 +72,11 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
   
   const modalOverlayStyle: React.CSSProperties = {
     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
   };
   const modalContentStyle: React.CSSProperties = {
-    background: 'rgb(var(--card-background-rgb))', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '500px',
+    background: 'rgb(var(--card-background-rgb))', padding: '25px', borderRadius: '8px', width: '90%', maxWidth: '500px',
     color: 'rgb(var(--foreground-rgb))', border: '1px solid rgb(var(--card-border-rgb))'
   };
 
@@ -79,24 +85,38 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
       <div style={modalContentStyle}>
         <h2>Solicitar Troca</h2>
         <form onSubmit={handleSubmit}>
-          <p style={{fontSize: '14px', color: 'var(--text-secondary-color)'}}>Para trocar um dia de folga, preencha todos os campos. Para trocar apenas o turno, preencha a nova data com o mesmo dia.</p>
           
-          <label htmlFor="originalDate">Data Original (sua folga ou dia de trabalho):</label>
+          <div style={{ marginBottom: '20px' }}>
+            <label>O que você quer trocar?</label>
+            <select value={swapType} onChange={(e) => setSwapType(e.target.value as 'day' | 'shift')}>
+              <option value="day">Minha Folga por um Dia de Trabalho</option>
+              <option value="shift">Apenas o Turno (no mesmo dia)</option>
+            </select>
+          </div>
+
+          <label htmlFor="originalDate">
+            {swapType === 'day' ? 'Dia da minha Folga:' : 'Dia do meu Turno:'}
+          </label>
           <input type="date" id="originalDate" name="originalDate" value={formData.originalDate} onChange={handleChange} required />
 
-          <label htmlFor="originalShift">Seu Turno Original:</label>
-          <input type="text" id="originalShift" name="originalShift" value={formData.originalShift} readOnly style={{backgroundColor: '#2a2a2a', cursor: 'not-allowed'}}/>
-          
-          <label htmlFor="newDate">Nova Data (para trabalho ou folga):</label>
-          <input type="date" id="newDate" name="newDate" value={formData.newDate} onChange={handleChange} required />
+          {swapType === 'day' && (
+            <>
+              <label htmlFor="newDate">Quero trabalhar no dia:</label>
+              <input type="date" id="newDate" name="newDate" value={formData.newDate} onChange={handleChange} required={swapType === 'day'} />
+            </>
+          )}
 
-          <label htmlFor="newShift">Novo Turno de Trabalho:</label>
+          <label htmlFor="newShift">
+            {swapType === 'day' ? 'Para trabalhar no turno:' : 'Quero trocar para o turno:'}
+          </label>
           <select id="newShift" name="newShift" value={formData.newShift} onChange={handleChange} required>
             <option value="">Selecione...</option>
             <option value="06:00-14:00">Manhã (06:00-14:00)</option>
             <option value="14:00-22:00">Tarde (14:00-22:00)</option>
             <option value="22:00-06:00">Noite (22:00-06:00)</option>
           </select>
+          
+          <input type="hidden" name="originalShift" value={formData.originalShift} />
 
           <label htmlFor="reason">Motivo:</label>
           <textarea id="reason" name="reason" value={formData.reason} onChange={handleChange} required rows={3}></textarea>
