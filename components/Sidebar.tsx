@@ -7,6 +7,7 @@ import Cookies from 'js-cookie';
 import styles from './Sidebar.module.css';
 import { User, Notification } from '../types';
 import NotificationPanel from './common/NotificationPanel';
+import BellIcon from './icons/BellIcon';
 
 const navItems = [
     { href: '/dashboard', label: 'Início' },
@@ -44,12 +45,14 @@ export default function Sidebar() {
       setUser(JSON.parse(userDataString));
     }
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000); // Atualiza a cada 1 minuto
+    const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
   
   const handleNotificationClick = async (notification: Notification) => {
+    setShowNotifications(false);
     if (notification.isRead) return;
+
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     try {
@@ -67,28 +70,32 @@ export default function Sidebar() {
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.logo}>EscalaFDS</div>
-      <nav className={styles.nav}>
-        <ul>
-          {navItems.map(({ href, label }) => {
-            if ((label === 'Colaboradores' || label === 'Feriados') && user?.userType !== 'master') {
-              return null;
-            }
-            return (
-              <li key={href}>
-                <Link href={href} className={`${styles.navLink} ${pathname.startsWith(href) && href !== '/dashboard' || pathname === href ? styles.active : ''}`}>
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-      <div className={styles.sidebarFooter}>
-        <div className={styles.notificationBell} onClick={() => setShowNotifications(!showNotifications)}>
-            &#128276;
-            {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount}</span>}
+      <div>
+        <div className={styles.logo}>
+          EscalaFDS
         </div>
+        <nav className={styles.nav}>
+          <ul>
+            {navItems.map(({ href, label }) => {
+              if ((label === 'Colaboradores' || label === 'Feriados') && user?.userType !== 'master') {
+                return null;
+              }
+              return (
+                <li key={href}>
+                  <Link href={href} className={`${styles.navLink} ${pathname.startsWith(href) && href !== '/dashboard' || pathname === href ? styles.active : ''}`}>
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+      <div className={styles.sidebarFooter}>
+        <button className={styles.notificationBell} onClick={() => setShowNotifications(!showNotifications)}>
+            <BellIcon />
+            {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount}</span>}
+        </button>
         <div className={styles.userProfile}>
           {user ? user.firstName.charAt(0) : ''}
         </div>
