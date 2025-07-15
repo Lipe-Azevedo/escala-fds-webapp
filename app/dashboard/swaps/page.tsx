@@ -22,27 +22,69 @@ export default function SwapsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  
   const [isRequestModalOpen, setRequestModalOpen] = useState(false);
   const [isApproveModalOpen, setApproveModalOpen] = useState(false);
   const [selectedSwap, setSelectedSwap] = useState<Swap | null>(null);
   const [filters, setFilters] = useState({ status: '' });
 
-  const fetchSwaps = async (currentUser: User) => { /* ... (sem alterações) ... */ };
-  const fetchUsers = async () => { /* ... (sem alterações) ... */ };
+  const fetchSwaps = async (currentUser: User) => {
+    setIsLoading(true);
+    setError('');
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    
+    let url = `${apiURL}/api/swaps`;
+    if (currentUser.userType !== 'master') {
+      url = `${apiURL}/api/swaps/user/${currentUser.id}`;
+    }
+
+    try {
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!res.ok) throw new Error('Falha ao buscar trocas de folga.');
+      
+      const data: Swap[] = await res.json();
+      setAllSwaps(data || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
+  const fetchUsers = async () => {
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    try {
+      const res = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+      setAllUsers(await res.json() || []);
+    } catch (e) {
+      console.error("Failed to fetch users", e);
+    }
+  };
+
+  // Este useEffect busca os dados do usuário do localStorage UMA VEZ quando o componente monta.
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
       const currentUser = JSON.parse(userDataString);
       setUser(currentUser);
-      if(currentUser.userType === 'master') fetchUsers();
+      if(currentUser.userType === 'master') {
+        fetchUsers();
+      }
+    } else {
+        setIsLoading(false); // Se não houver usuário, paramos o carregamento.
     }
   }, []);
 
+  // Este useEffect busca as trocas SEMPRE que o usuário for definido ou os filtros mudarem.
   useEffect(() => {
-    if(user) fetchSwaps(user);
+    if(user){
+      fetchSwaps(user);
+    }
   }, [user, filters]);
 
+  // Este useEffect filtra os dados localmente quando os filtros ou a lista principal de trocas mudam.
   useEffect(() => {
     let newFilteredData = allSwaps;
     if (filters.status) { newFilteredData = allSwaps.filter(swap => swap.status === filters.status); }
@@ -109,13 +151,13 @@ export default function SwapsPage() {
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  if (!user) { return <div>Carregando...</div>; }
+  if (!user && !isLoading) { return <div>Usuário não encontrado. Por favor, faça login novamente.</div>; }
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Trocas de Folga</h1>
-        {user.userType === 'collaborator' && (
+        {user?.userType === 'collaborator' && (
             <button onClick={() => setRequestModalOpen(true)}>+ Solicitar Troca</button>
         )}
       </div>
@@ -127,7 +169,7 @@ export default function SwapsPage() {
       {!isLoading && !error && (
         <SwapList 
             swaps={filteredSwaps} 
-            currentUser={user} 
+            currentUser={user!} 
             onApproveClick={handleApproveClick} 
             onReject={handleReject}
             onConfirm={handleConfirmSwap}
