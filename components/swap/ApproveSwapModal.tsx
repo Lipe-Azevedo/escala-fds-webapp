@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Swap, User } from '@/types';
 
 interface ApproveSwapModalProps {
@@ -27,8 +27,8 @@ export default function ApproveSwapModal({ isOpen, onClose, onConfirm, swap, use
   };
 
   const modalContentStyle: React.CSSProperties = {
-    background: 'rgb(var(--card-background-rgb))', padding: '25px', borderRadius: '8px', 
-    width: '90%', maxWidth: '500px', color: 'rgb(var(--foreground-rgb))', 
+    background: 'rgb(var(--card-background-rgb))', padding: '25px', borderRadius: '8px',
+    width: '90%', maxWidth: '500px', color: 'rgb(var(--foreground-rgb))',
     border: '1px solid rgb(var(--card-border-rgb))'
   };
 
@@ -37,15 +37,15 @@ export default function ApproveSwapModal({ isOpen, onClose, onConfirm, swap, use
       <div style={modalContentStyle}>
         <h2>Aprovar Troca</h2>
         <p><strong>Solicitante:</strong> {swap.requester.firstName}</p>
-        <p><strong>Dia da Folga Original:</strong> {new Date(swap.originalDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
-        <p><strong>Novo Dia de Trabalho:</strong> {new Date(swap.newDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
-        <p><strong>Novo Turno:</strong> {swap.newShift}</p>
-        
+        <p><strong>Dia Original:</strong> {new Date(swap.originalDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
+        <p><strong>Novo Dia de Folga:</strong> {new Date(swap.newDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
+        <p><strong>Turno:</strong> {swap.newShift}</p>
+
         <div style={{marginTop: '20px'}}>
           <label htmlFor="involvedCollaborator">Selecionar colaborador para cobrir o turno original:</label>
-          <select 
-            id="involvedCollaborator" 
-            value={involvedId} 
+          <select
+            id="involvedCollaborator"
+            value={involvedId}
             onChange={(e) => setInvolvedId(e.target.value)}
           >
             <option value="">Ninguém (Apenas troca de dia)</option>
