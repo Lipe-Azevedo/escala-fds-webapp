@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { TeamName, PositionName } from '../types';
+import { TeamName, PositionName, User } from '@/types';
 
 const positionsByTeam: Record<TeamName, { value: PositionName, label: string }[]> = {
   'Security': [
@@ -36,6 +36,7 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
     lastName: '',
     phoneNumber: '',
     birthday: '',
+    userType: 'collaborator' as User['userType'],
     team: '' as TeamName,
     position: '',
     shift: '',
@@ -74,7 +75,6 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
             ...formData,
-            userType: 'collaborator',
             superiorId: Number(formData.superiorId) || null,
         })
       });
@@ -94,81 +94,96 @@ export default function CreateUserModal({ isOpen, onClose, onUserCreated }: Crea
   
   const modalOverlayStyle: React.CSSProperties = {
     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
   };
   const modalContentStyle: React.CSSProperties = {
-    background: 'white', padding: '20px', borderRadius: '8px', width: '90%', maxWidth: '600px',
-    color: 'black', maxHeight: '90vh', overflowY: 'auto',
+    background: 'rgb(var(--card-background-rgb))',
+    padding: '25px',
+    borderRadius: '8px',
+    width: '90%',
+    maxWidth: '600px',
+    color: 'rgb(var(--foreground-rgb))',
+    border: '1px solid rgb(var(--card-border-rgb))',
+    maxHeight: '90vh',
+    overflowY: 'auto',
   };
 
   return (
     <div style={modalOverlayStyle}>
       <div style={modalContentStyle}>
-        <h2 style={{ textAlign: 'center', marginTop: 0 }}>Criar Novo Colaborador</h2>
+        <h2 style={{ textAlign: 'center', marginTop: 0, marginBottom: '25px' }}>Criar Novo Colaborador</h2>
         <form onSubmit={handleSubmit}>
+            <label htmlFor="userType">Tipo de Usuário</label>
+            <select name="userType" value={formData.userType} onChange={handleChange}>
+                <option value="collaborator">Colaborador</option>
+                <option value="master">Master</option>
+            </select>
+
+            <div style={{height: '20px'}}></div>
+
             <label htmlFor="firstName">Nome</label>
-            <input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Nome" required />
+            <input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required />
             
             <label htmlFor="lastName">Sobrenome</label>
-            <input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Sobrenome" required />
-            
+            <input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required />
+
             <label htmlFor="birthday">Data de Nascimento</label>
             <input id="birthday" name="birthday" type="date" value={formData.birthday} onChange={handleChange} />
             
             <label htmlFor="phoneNumber">Telefone</label>
-            <input id="phoneNumber" name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleChange} placeholder="Telefone" required />
+            <input id="phoneNumber" name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleChange} required />
             
             <label htmlFor="email">Email</label>
-            <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="Email" required />
+            <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required />
 
             <label htmlFor="password">Senha</label>
-            <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} placeholder="Senha" required />
+            <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} required />
             
-            <label htmlFor="team">Equipe</label>
-            <select id="team" name="team" value={formData.team} onChange={handleChange} required>
-                <option value="">Selecione...</option>
-                <option value="Security">Segurança</option>
-                <option value="Support">Suporte</option>
-                <option value="CustomerService">Atendimento</option>
-            </select>
-            
-            <label htmlFor="position">Cargo</label>
-            <select id="position" name="position" value={formData.position} onChange={handleChange} required disabled={!formData.team}>
-                <option value="">Selecione...</option>
-                {availablePositions.map(pos => <option key={pos.value} value={pos.value}>{pos.label}</option>)}
-            </select>
-            
-            <label htmlFor="shift">Turno</label>
-            <select id="shift" name="shift" value={formData.shift} onChange={handleChange} required>
-              <option value="">Selecione o Turno</option>
-              <option value="06:00-14:00">Manhã (06:00-14:00)</option>
-              <option value="14:00-22:00">Tarde (14:00-22:00)</option>
-              <option value="22:00-06:00">Noite (22:00-06:00)</option>
-            </select>
-            
-            <label htmlFor="weekdayOff">Folga da Semana</label>
-            <select id="weekdayOff" name="weekdayOff" value={formData.weekdayOff} onChange={handleChange} required>
-                <option value="">Selecione...</option>
-                <option value="monday">Segunda</option>
-                <option value="tuesday">Terça</option>
-                <option value="wednesday">Quarta</option>
-                <option value="thursday">Quinta</option>
-                <option value="friday">Sexta</option>
-            </select>
-            
-            <label htmlFor="initialWeekendOff">Folga Inicial do Fim de Semana</label>
-            <select id="initialWeekendOff" name="initialWeekendOff" value={formData.initialWeekendOff} onChange={handleChange} required>
-                <option value="">Selecione...</option>
-                <option value="saturday">Sábado</option>
-                <option value="sunday">Domingo</option>
-            </select>
+            {formData.userType === 'collaborator' && (
+              <>
+                <div style={{height: '20px'}}></div>
+                <label htmlFor="team">Equipe</label>
+                <select id="team" name="team" value={formData.team} onChange={handleChange} required>
+                    <option value="">Selecione...</option>
+                    <option value="Security">Segurança</option>
+                    <option value="Support">Suporte</option>
+                    <option value="CustomerService">Atendimento</option>
+                </select>
+                <label htmlFor="position">Cargo</label>
+                <select id="position" name="position" value={formData.position} onChange={handleChange} required disabled={!formData.team}>
+                    <option value="">Selecione...</option>
+                    {availablePositions.map(pos => <option key={pos.value} value={pos.value}>{pos.label}</option>)}
+                </select>
+                <label htmlFor="shift">Turno</label>
+                <select id="shift" name="shift" value={formData.shift} onChange={handleChange} required>
+                  <option value="">Selecione...</option>
+                  <option value="06:00-14:00">Manhã (06:00-14:00)</option>
+                  <option value="14:00-22:00">Tarde (14:00-22:00)</option>
+                  <option value="22:00-06:00">Noite (22:00-06:00)</option>
+                </select>
+                <label htmlFor="weekdayOff">Folga da Semana</label>
+                <select id="weekdayOff" name="weekdayOff" value={formData.weekdayOff} onChange={handleChange} required>
+                    <option value="">Selecione...</option>
+                    <option value="monday">Segunda</option>
+                    <option value="tuesday">Terça</option>
+                    <option value="wednesday">Quarta</option>
+                    <option value="thursday">Quinta</option>
+                    <option value="friday">Sexta</option>
+                </select>
+                <label htmlFor="initialWeekendOff">Folga Inicial do Fim de Semana</label>
+                <select id="initialWeekendOff" name="initialWeekendOff" value={formData.initialWeekendOff} onChange={handleChange} required>
+                    <option value="">Selecione...</option>
+                    <option value="saturday">Sábado</option>
+                    <option value="sunday">Domingo</option>
+                </select>
+              </>
+            )}
 
-          {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-          
+          {error && <p style={{ color: '#f87171', textAlign: 'center' }}>{error}</p>}
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <button type="button" onClick={onClose} style={{ backgroundColor: '#6b7280'}}>Cancelar</button>
-            <button type="submit" disabled={isLoading}>{isLoading ? 'Salvando...' : 'Salvar Colaborador'}</button>
+            <button type="button" onClick={onClose} style={{ backgroundColor: '#4a5568'}}>Cancelar</button>
+            <button type="submit" disabled={isLoading}>{isLoading ? 'Salvando...' : 'Salvar Usuário'}</button>
           </div>
         </form>
       </div>
