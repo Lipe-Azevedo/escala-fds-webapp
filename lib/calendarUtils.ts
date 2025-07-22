@@ -1,21 +1,61 @@
 import {
-    format,
-    startOfMonth,
-    endOfMonth,
-    startOfWeek,
-    endOfWeek,
-    eachDayOfInterval,
-    isSameMonth,
-    isToday,
-    getDay,
-    differenceInCalendarWeeks,
-    addDays
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday,
+  getDay,
+  differenceInCalendarWeeks,
+  addDays,
 } from 'date-fns';
 import { User, Holiday, Swap, Certificate, DayOffReason, Comment } from '@/types';
-import { DayInfo } from '@/hooks/useCalendar';
+
+export interface DayInfo {
+  date: Date;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  isDayOff: boolean;
+  dayOffReason: DayOffReason;
+  isHoliday: boolean;
+  holidayName: string;
+  hasComment: boolean;
+  shift: string;
+}
 
 const weekdayMap: { [key: number]: string } = { 1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday' };
 type CalendarUser = Pick<User, 'id' | 'shift' | 'weekdayOff' | 'initialWeekendOff' | 'createdAt' | 'superiorId'>;
+
+export function isRegularDayOff(date: Date, user: Pick<User, 'weekdayOff' | 'initialWeekendOff' | 'createdAt'>): boolean {
+    const dayOfWeek = getDay(date);
+
+    if (weekdayMap[dayOfWeek] === user.weekdayOff) {
+        return true;
+    }
+
+    if ((dayOfWeek === 0 || dayOfWeek === 6) && user.initialWeekendOff && user.createdAt) {
+        const userCreatedAt = new Date(user.createdAt);
+        const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
+
+        let firstOccurrence = new Date(userCreatedAt);
+        while (getDay(firstOccurrence) !== firstWeekendOffDay) {
+            firstOccurrence.setDate(firstOccurrence.getDate() + 1);
+        }
+
+        const weeksDiff = differenceInCalendarWeeks(date, firstOccurrence, { weekStartsOn: 1 });
+        
+        const currentWeekendOffDay = (weeksDiff % 2 === 0) 
+            ? firstWeekendOffDay 
+            : (firstWeekendOffDay === 6 ? 0 : 6);
+
+        if (dayOfWeek === currentWeekendOffDay) {
+            return true;
+        }
+    }
+    return false;
+}
 
 export const generateCalendarGrid = (
     month: Date,
@@ -24,7 +64,7 @@ export const generateCalendarGrid = (
     swaps: Swap[],
     comments: Comment[],
     certificates: Certificate[]
-) => {
+  ) => {
     const monthStart = startOfMonth(month);
     const monthEnd = endOfMonth(month);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
@@ -52,36 +92,21 @@ export const generateCalendarGrid = (
 
     const calendarGrid = days.map((day): DayInfo => {
       const dateString = format(day, 'yyyy-MM-dd');
-      const dayOfWeek = getDay(day);
-
       let isOff = false;
       let reason: DayOffReason = '';
       let shift = user.shift;
-      
       const holidayName = holidaysMap.get(dateString);
       
-      if (weekdayMap[dayOfWeek] === user.weekdayOff) {
-        isOff = true; reason = 'Weekday';
-      } else if (user.initialWeekendOff && user.createdAt && (dayOfWeek === 0 || dayOfWeek === 6)) {
-        const userCreatedAt = new Date(user.createdAt);
-        const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
-        let firstOccurrence = startOfWeek(userCreatedAt);
-        while(getDay(firstOccurrence) !== firstWeekendOffDay) {
-          firstOccurrence = new Date(firstOccurrence.setDate(firstOccurrence.getDate() + 1));
-        }
-        const weeksDiff = differenceInCalendarWeeks(day, firstOccurrence, { weekStartsOn: 1 });
-        const currentWeekendOffDay = (weeksDiff % 2 === 0) ? firstWeekendOffDay : (firstWeekendOffDay === 6 ? 0 : 6);
-        if (dayOfWeek === currentWeekendOffDay) {
-          isOff = true; reason = 'Weekend';
-        }
+      if (isRegularDayOff(day, user)) {
+        isOff = true;
+        reason = getDay(day) === 0 || getDay(day) === 6 ? 'Weekend' : 'Weekday';
       }
       
       const swap = approvedSwapsMap.get(dateString);
       if (swap) {
         const isShiftChangeOnly = swap.originalDate === swap.newDate;
-        if (isShiftChangeOnly) {
-            isOff = false; shift = swap.newShift; reason = '';
-        } else {
+        if (isShiftChangeOnly) { isOff = false; shift = swap.newShift; reason = ''; } 
+        else {
             const isNewDayOff = dateString === swap.newDate;
             if (isNewDayOff) { isOff = true; reason = 'Swap'; } 
             else { isOff = false; shift = swap.newShift; reason = ''; }
@@ -92,24 +117,15 @@ export const generateCalendarGrid = (
         isOff = true; reason = 'Certificate';
       }
 
-      if(isSameMonth(day, month)) {
-        if (!isOff) {
+      if(isSameMonth(day, month) && !isOff) {
           workedCounter++;
-          if (holidayName) {
-            holidaysWorkedCounter++;
-          }
-        }
+          if (holidayName) holidaysWorkedCounter++;
       }
       
       return {
-        date: day,
-        isCurrentMonth: isSameMonth(day, month),
-        isToday: isToday(day),
-        isDayOff: isOff,
-        dayOffReason: reason,
-        isHoliday: !!holidayName,
-        holidayName: holidayName || '',
-        hasComment: commentsMap.has(dateString),
+        date: day, isCurrentMonth: isSameMonth(day, month), isToday: isToday(day),
+        isDayOff: isOff, dayOffReason: reason, isHoliday: !!holidayName,
+        holidayName: holidayName || '', hasComment: commentsMap.has(dateString),
         shift: isOff ? '' : shift,
       };
     });
