@@ -68,12 +68,14 @@ export default function ApproveSwapModal({ isOpen, onClose, onConfirm, swap }: A
     border: '1px solid rgb(var(--card-border-rgb))'
   };
 
+  if (!isOpen) return null;
+
   return (
     <div style={modalOverlayStyle}>
       <div style={modalContentStyle}>
         <h2>Aprovar Troca</h2>
         <p><strong>Solicitante:</strong> {swap.requester.firstName}</p>
-        <p><strong>Dia Original:</strong> {new Date(swap.originalDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')} (Turno: {swap.originalShift})</p>
+        <p><strong>Dia Original:</strong> {new Date(swap.originalDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
         <p><strong>Novo Dia de Folga:</strong> {new Date(swap.newDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
         <p><strong>Turno:</strong> {swap.newShift}</p>
         

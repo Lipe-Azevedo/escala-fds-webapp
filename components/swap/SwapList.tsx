@@ -2,6 +2,7 @@
 
 import { Swap, User } from '@/types';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 interface SwapListProps {
   swaps: Swap[];
@@ -54,7 +55,7 @@ export default function SwapList({ swaps, currentUser, onApproveClick, onReject,
             
             {swap.status === 'pending' && isManager && (
               <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                <button onClick={() => onApproveClick(swap)} style={{backgroundColor: '#16a34a'}}>Aprovar</button>
+                <button onClick={() => onApproveClick(swap)} style={{backgroundColor: '#16a3a4'}}>Aprovar</button>
                 <button onClick={() => onReject(swap.id)} style={{backgroundColor: '#dc2626'}}>Rejeitar</button>
               </div>
             )}

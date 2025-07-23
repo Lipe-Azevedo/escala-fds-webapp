@@ -81,8 +81,8 @@ export default function SwapsPage() {
     setApproveModalOpen(false);
   };
 
-  const handleReject = (swapId: number) => {
-    updateSwapStatus(swapId, 'rejected', null);
+  const handleReject = async (swapId: number) => {
+    await updateSwapStatus(swapId, 'rejected', null);
   };
 
   const updateSwapStatus = async (swapId: number, status: 'approved' | 'rejected', involvedId: number | null) => {
@@ -104,15 +104,35 @@ export default function SwapsPage() {
     }
   };
 
-  const handleConfirmSwap = async (swapId: number) => { /* ... (sem alterações) ... */ };
-  const handleDeclineSwap = async (swapId: number) => { /* ... (sem alterações) ... */ };
+  const handleConfirmSwap = async (swapId: number) => {
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    try {
+        await fetch(`${apiURL}/api/swaps/${swapId}/confirm`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` }});
+        triggerRefetch();
+    } catch (err: any) {
+        setError(err.message);
+    }
+  };
+
+  const handleDeclineSwap = async (swapId: number) => {
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    try {
+        await fetch(`${apiURL}/api/swaps/${swapId}/decline`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` }});
+        triggerRefetch();
+    } catch (err: any) {
+        setError(err.message);
+    }
+  };
+
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  if (!user) { return <div>Carregando...</div>; }
   if (isLoading) return <p>Carregando solicitações...</p>;
   if (error) return <p style={{ color: '#f87171' }}>{error}</p>;
+  if (!user) return <p>Usuário não encontrado. Por favor, faça login novamente.</p>;
 
   return (
     <div>
@@ -142,7 +162,7 @@ export default function SwapsPage() {
           currentUser={user} 
         />
       )}
-
+      
       {isApproveModalOpen && selectedSwap && (
         <ApproveSwapModal 
           isOpen={isApproveModalOpen} 
