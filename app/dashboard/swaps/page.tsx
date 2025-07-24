@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Swap, User, FilterConfig } from '@/types';
+import { Swap, User, FilterConfig, Notification } from '@/types';
 import SwapList from '@/components/swap/SwapList';
 import RequestSwapModal from '@/components/swap/RequestSwapModal';
 import ApproveSwapModal from '@/components/swap/ApproveSwapModal';
@@ -17,6 +17,7 @@ const swapFilterConfigs: FilterConfig[] = [
 export default function SwapsPage() {
   const [allSwaps, setAllSwaps] = useState<Swap[]>([]);
   const [filteredSwaps, setFilteredSwaps] = useState<Swap[]>([]);
+  const [unreadSwapIds, setUnreadSwapIds] = useState<Set<number>>(new Set());
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,33 +29,68 @@ export default function SwapsPage() {
 
   const triggerRefetch = () => setRefetchTrigger(c => c + 1);
 
-  useEffect(() => {
-    const userDataString = localStorage.getItem('userData');
-    if (userDataString) {
-      setUser(JSON.parse(userDataString));
-    } else {
-      setIsLoading(false);
+  const markNotificationsAsRead = async () => {
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    try {
+        await fetch(`${apiURL}/api/notifications/read-by-link`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ link: '/dashboard/swaps' })
+        });
+    } catch (err) {
+        console.error("Failed to mark notifications as read", err);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    if (!user) return;
-
-    const fetchSwaps = async () => {
+    const fetchPageData = async () => {
       setIsLoading(true);
       setError('');
+      
+      const userDataString = localStorage.getItem('userData');
+      if (!userDataString) {
+        setIsLoading(false);
+        setError('Usuário não autenticado.');
+        return;
+      }
+      const currentUser: User = JSON.parse(userDataString);
+      setUser(currentUser);
+
       const token = Cookies.get('authToken');
       const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       
-      let url = user.userType === 'master'
-        ? `${apiURL}/api/swaps`
-        : `${apiURL}/api/swaps/user/${user.id}`;
-      
       try {
-        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) throw new Error('Falha ao buscar trocas de folga.');
-        const data: Swap[] = await res.json();
-        setAllSwaps(data || []);
+        let swapsUrl = currentUser.userType === 'master'
+          ? `${apiURL}/api/swaps`
+          : `${apiURL}/api/swaps/user/${currentUser.id}`;
+        
+        const [swapsRes, notificationsRes] = await Promise.all([
+          fetch(swapsUrl, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+
+        if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
+        const swapsData = await swapsRes.json();
+        setAllSwaps(swapsData || []);
+
+        if (notificationsRes.ok) {
+            const notifications: Notification[] = await notificationsRes.json();
+            const unreadIds = new Set<number>();
+            notifications
+              .filter(n => !n.isRead && n.link.includes('/swaps'))
+              .forEach(n => {
+                const idMatch = n.link.match(/\/swaps\/(\d+)/);
+                if (idMatch && idMatch[1]) {
+                    unreadIds.add(parseInt(idMatch[1]));
+                }
+              });
+            setUnreadSwapIds(unreadIds);
+            if (unreadIds.size > 0) {
+                markNotificationsAsRead();
+            }
+        }
+
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -62,12 +98,14 @@ export default function SwapsPage() {
       }
     };
     
-    fetchSwaps();
-  }, [user, refetchTrigger]);
+    fetchPageData();
+  }, [refetchTrigger]);
 
   useEffect(() => {
     let newFilteredData = allSwaps;
-    if (filters.status) { newFilteredData = allSwaps.filter(swap => swap.status === filters.status); }
+    if (filters.status) {
+      newFilteredData = allSwaps.filter(swap => swap.status === filters.status);
+    }
     setFilteredSwaps(newFilteredData);
   }, [filters, allSwaps]);
 
@@ -148,6 +186,7 @@ export default function SwapsPage() {
       <SwapList 
           swaps={filteredSwaps} 
           currentUser={user} 
+          unreadIds={unreadSwapIds}
           onApproveClick={handleApproveClick}
           onReject={handleReject}
           onConfirm={handleConfirmSwap}
@@ -162,7 +201,7 @@ export default function SwapsPage() {
           currentUser={user} 
         />
       )}
-      
+
       {isApproveModalOpen && selectedSwap && (
         <ApproveSwapModal 
           isOpen={isApproveModalOpen} 

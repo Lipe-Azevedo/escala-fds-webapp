@@ -7,13 +7,14 @@ import Link from 'next/link';
 interface SwapListProps {
   swaps: Swap[];
   currentUser: User;
+  unreadIds: Set<number>;
   onApproveClick: (swap: Swap) => void;
   onReject: (swapId: number) => void;
   onConfirm: (swapId: number) => void;
   onDecline: (swapId: number) => void;
 }
 
-export default function SwapList({ swaps, currentUser, onApproveClick, onReject, onConfirm, onDecline }: SwapListProps) {
+export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick, onReject, onConfirm, onDecline }: SwapListProps) {
     
   const getStatusText = (status: Swap['status']) => {
     if (status === 'pending_confirmation') return 'Aguardando Confirmação';
@@ -43,9 +44,13 @@ export default function SwapList({ swaps, currentUser, onApproveClick, onReject,
       {swaps.map((swap) => {
         const isManager = currentUser.userType === 'master' || currentUser.id === swap.requester.superiorId;
         const isAwaitingMyConfirmation = swap.status === 'pending_confirmation' && currentUser.id === swap.involvedCollaborator?.id;
+        const hasNotification = unreadIds.has(swap.id);
 
         return (
-          <div key={swap.id} style={{ padding: '15px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
+          <div key={swap.id} style={{ position: 'relative', padding: '15px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
+            {hasNotification && (
+              <span style={{ position: 'absolute', top: '15px', right: '15px', height: '10px', width: '10px', backgroundColor: 'var(--primary-color)', borderRadius: '50%' }}></span>
+            )}
             <p><strong>Solicitante:</strong> {swap.requester.firstName} {swap.requester.lastName}</p>
             {swap.involvedCollaborator && <p><strong>Envolvido na Troca:</strong> {swap.involvedCollaborator.firstName} {swap.involvedCollaborator.lastName}</p>}
             <p><strong>Motivo:</strong> {swap.reason || 'Não informado'}</p>
@@ -55,7 +60,7 @@ export default function SwapList({ swaps, currentUser, onApproveClick, onReject,
             
             {swap.status === 'pending' && isManager && (
               <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                <button onClick={() => onApproveClick(swap)} style={{backgroundColor: '#16a3a4'}}>Aprovar</button>
+                <button onClick={() => onApproveClick(swap)} style={{backgroundColor: '#16a34a'}}>Aprovar</button>
                 <button onClick={() => onReject(swap.id)} style={{backgroundColor: '#dc2626'}}>Rejeitar</button>
               </div>
             )}
