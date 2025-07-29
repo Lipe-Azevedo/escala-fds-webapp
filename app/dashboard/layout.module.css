@@ -1,0 +1,11 @@
+.dashboardContainer {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.mainContent {
+    flex-grow: 1;
+    overflow-y: auto; /* Apenas o conteúdo principal terá scroll */
+    padding: 20px 40px;
+}

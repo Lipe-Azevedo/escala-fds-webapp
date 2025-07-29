@@ -1,60 +1,55 @@
 'use client';
 
 import Link from 'next/link';
-import { User } from '@/types';
+import { User, TeamName, PositionName } from '@/types';
 
 interface UserListProps {
   users: User[];
   onEdit: (user: User) => void;
 }
 
-const tableHeaderStyle: React.CSSProperties = {
-  padding: '12px 15px',
-  textAlign: 'left',
-  fontWeight: 'bold',
-  color: '#a0aec0',
-  textTransform: 'uppercase',
-  fontSize: '12px',
-  borderBottom: '2px solid rgb(var(--card-border-rgb))',
-};
-
-const tableCellStyle: React.CSSProperties = {
-  padding: '12px 15px',
-  textAlign: 'left',
-  borderBottom: '1px solid rgb(var(--card-border-rgb))',
-};
-
-const actionButtonStyle: React.CSSProperties = {
-  padding: '6px 12px',
-  fontSize: '12px',
-  marginRight: '5px'
-};
+// Função para traduzir os valores do backend
+const translate = (value: TeamName | PositionName | string | undefined): string => {
+    if (!value) return 'N/A';
+    const translations: Record<string, string> = {
+        'Security': 'Segurança',
+        'Support': 'Suporte',
+        'CustomerService': 'Atendimento',
+        'SupervisorI': 'Supervisor I',
+        'SupervisorII': 'Supervisor II',
+        'BackendDeveloper': 'Dev. Backend',
+        'FrontendDeveloper': 'Dev. Frontend',
+        'Attendant': 'Atendente',
+        'Master': 'Master',
+    };
+    return translations[value] || value;
+}
 
 export default function UserList({ users, onEdit }: UserListProps) {
   return (
-    <div style={{ overflowX: 'auto', backgroundColor: `rgb(var(--card-background-rgb))`, borderRadius: '8px', border: `1px solid rgb(var(--card-border-rgb))` }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+    <div style={{ /*...*/ }}>
+      <table style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th style={tableHeaderStyle}>Nome</th>
-            <th style={tableHeaderStyle}>Equipe</th>
-            <th style={tableHeaderStyle}>Cargo</th>
-            <th style={tableHeaderStyle}>Turno</th>
-            <th style={tableHeaderStyle}>Ações</th>
+            <th style={{ width: '25%' }}>Nome</th>
+            <th style={{ width: '20%' }}>Equipe</th>
+            <th style={{ width: '20%' }}>Cargo</th>
+            <th style={{ width: '20%' }}>Turno</th>
+            <th style={{ width: '15%' }}>Ações</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
-              <td style={tableCellStyle}>{user.firstName} {user.lastName}</td>
-              <td style={tableCellStyle}>{user.team || 'N/A'}</td>
-              <td style={tableCellStyle}>{user.position || 'N/A'}</td>
-              <td style={tableCellStyle}>{user.shift || 'N/A'}</td>
-              <td style={tableCellStyle}>
+              <td>{user.firstName} {user.lastName}</td>
+              <td>{translate(user.team)}</td>
+              <td>{translate(user.position)}</td>
+              <td>{user.shift || 'N/A'}</td>
+              <td>
                 <Link href={`/dashboard/users/${user.id}`}>
-                  <button style={{...actionButtonStyle, backgroundColor: '#4a5568'}}>Detalhes</button>
+                  <button>Detalhes</button>
                 </Link>
-                <button onClick={() => onEdit(user)} style={actionButtonStyle}>Editar</button>
+                <button onClick={() => onEdit(user)}>Editar</button>
               </td>
             </tr>
           ))}

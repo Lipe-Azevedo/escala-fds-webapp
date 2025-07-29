@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import EyeIcon from '@/components/icons/EyeIcon';
 import EyeOffIcon from '@/components/icons/EyeOffIcon';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
+  useAuth();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
