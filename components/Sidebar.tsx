@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import styles from './Sidebar.module.css';
 import { User } from '../types';
-import { useNotifications } from '@/context/NotificationContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const navItems = [
     { href: '/dashboard', label: 'Início', key: 'home' },
@@ -13,8 +13,8 @@ const navItems = [
     { href: '/dashboard/swaps', label: 'Trocas de Folga', key: 'swaps' },
     { href: '/dashboard/certificates', label: 'Atestados', key: 'certificates' },
     { href: '/dashboard/comments', label: 'Comentários', key: 'comments' },
+    { href: '/dashboard/notifications', label: 'Notificações', key: 'notifications' },
     { href: '/dashboard/holidays', label: 'Feriados', key: 'holidays', masterOnly: true },
-    { href: '/dashboard/profile', label: 'Meu Perfil', key: 'profile' }, // Novo Link
 ];
 
 export default function Sidebar() {
@@ -41,11 +41,13 @@ export default function Sidebar() {
               if (masterOnly && user?.userType !== 'master') {
                 return null;
               }
+              const hasNotification = unreadByCategory[key] || (key === 'notifications' && Object.values(unreadByCategory).some(Boolean));
+
               return (
                 <li key={href}>
                   <Link href={href} className={`${styles.navLink} ${pathname.startsWith(href) && href !== '/dashboard' || pathname === href ? styles.active : ''}`}>
                     <span>{label}</span>
-                    {unreadByCategory[key] && <span className={styles.notificationDot}></span>}
+                    {hasNotification && <span className={styles.notificationDot}></span>}
                   </Link>
                 </li>
               );

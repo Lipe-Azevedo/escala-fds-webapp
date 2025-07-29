@@ -82,6 +82,5 @@ export type Notification = {
   id: number;
   message: string;
   link: string;
-  isRead: boolean;
   createdAt: string;
 };
