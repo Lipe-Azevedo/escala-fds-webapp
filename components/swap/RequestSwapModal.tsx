@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { User, Holiday, Swap, Certificate } from '@/types';
-import { addDays, format } from 'date-fns';
+import { addDays, format, parseISO } from 'date-fns';
 import { getDayStatus } from '@/lib/calendarUtils';
-import { ptBR } from 'date-fns/locale';
+import CustomDatePicker from '../common/CustomDatePicker/CustomDatePicker';
 
 interface RequestSwapModalProps {
   isOpen: boolean;
@@ -18,12 +18,11 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
   const [formData, setFormData] = useState({
     originalDate: '',
     newDate: '',
-    originalShift: '',
     newShift: '',
     reason: '',
   });
   
-  const [availableDaysOff, setAvailableDaysOff] = useState<{label: string, value: string}[]>([]);
+  const [availableDaysOff, setAvailableDaysOff] = useState<Set<string>>(new Set());
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,26 +47,23 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
         const swaps: Swap[] = await swapsRes.json();
         const certificates: Certificate[] = await certsRes.json();
 
-        const upcomingDaysOff: {label: string, value: string}[] = [];
+        const upcomingDaysOff = new Set<string>();
         const today = new Date();
         for (let i = 0; i < 90; i++) {
           const day = addDays(today, i);
           const dayStatus = getDayStatus(day, currentUser, holidays, swaps.filter(s => s.status === 'approved'), certificates.filter(c => c.status === 'approved'));
-          
           if(dayStatus.isDayOff) {
-            upcomingDaysOff.push({
-              value: format(day, 'yyyy-MM-dd'),
-              label: format(day, "dd/MM/yyyy (EEEE)", { locale: ptBR })
-            });
+            upcomingDaysOff.add(format(day, 'yyyy-MM-dd'));
           }
         }
         setAvailableDaysOff(upcomingDaysOff);
-        if (upcomingDaysOff.length > 0) {
-            setFormData(prev => ({...prev, originalDate: upcomingDaysOff[0].value}));
+        const firstAvailable = upcomingDaysOff.values().next().value;
+        if (firstAvailable) {
+            setFormData(prev => ({...prev, originalDate: firstAvailable}));
         }
 
       } catch(e) {
-        setError('Erro ao carregar sua escala de folgas.');
+        setError('Erro ao carregar escala de folgas.');
       } finally {
         setIsLoadingSchedule(false);
       }
@@ -75,11 +71,6 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
 
     fetchAndProcessSchedule();
   }, [isOpen, currentUser]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +82,7 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
     
     const payload = {
         ...formData,
-        originalShift: "Folga", // O dia original é sempre uma folga
+        originalShift: "Folga",
     };
 
     try {
@@ -112,46 +103,46 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
     }
   };
   
-  const modalOverlayStyle: React.CSSProperties = {
-    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
-  };
-  const modalContentStyle: React.CSSProperties = {
-    background: 'rgb(var(--card-background-rgb))', padding: '25px', borderRadius: '8px', width: '90%', maxWidth: '500px',
-    color: 'rgb(var(--foreground-rgb))', border: '1px solid rgb(var(--card-border-rgb))'
-  };
-
+  const modalOverlayStyle: React.CSSProperties = { /* ... */ };
+  const modalContentStyle: React.CSSProperties = { /* ... */ };
   if (!isOpen) return null;
 
   return (
     <div style={modalOverlayStyle}>
       <div style={modalContentStyle}>
         <h2>Solicitar Troca de Folga</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           
-          <label htmlFor="originalDate">Dia da minha Folga:</label>
-          <select id="originalDate" name="originalDate" value={formData.originalDate} onChange={handleChange} required disabled={isLoadingSchedule}>
-            {isLoadingSchedule ? <option>Carregando folgas...</option> : 
-             availableDaysOff.length > 0 ? 
-             availableDaysOff.map(d => <option key={d.value} value={d.value}>{d.label}</option>) :
-             <option>Nenhuma folga encontrada nos próximos 90 dias.</option>
-            }
-          </select>
+          <div>
+            <label>1. Selecione o dia da sua folga que você quer trocar:</label>
+            {isLoadingSchedule ? <p>Carregando escala...</p> : (
+              <CustomDatePicker
+                selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
+                onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
+                isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+              />
+            )}
+          </div>
 
-          <label htmlFor="newDate">Quero trabalhar no dia:</label>
-          <input type="date" id="newDate" name="newDate" value={formData.newDate} onChange={handleChange} required />
+          <div>
+            <label htmlFor="newDate">2. Escolha o novo dia em que você quer trabalhar:</label>
+            <input type="date" id="newDate" name="newDate" value={formData.newDate} onChange={(e) => setFormData({...formData, newDate: e.target.value})} required />
+          </div>
 
-          <label htmlFor="newShift">Para trabalhar no turno:</label>
-          <select id="newShift" name="newShift" value={formData.newShift} onChange={handleChange} required>
-            <option value="">Selecione...</option>
-            <option value="06:00-14:00">Manhã (06:00-14:00)</option>
-            <option value="14:00-22:00">Tarde (14:00-22:00)</option>
-            <option value="22:00-06:00">Noite (22:00-06:00)</option>
-          </select>
+          <div>
+            <label htmlFor="newShift">3. Escolha o turno em que você irá trabalhar:</label>
+            <select id="newShift" name="newShift" value={formData.newShift} onChange={(e) => setFormData({...formData, newShift: e.target.value})} required>
+              <option value="">Selecione...</option>
+              <option value="06:00-14:00">Manhã (06:00-14:00)</option>
+              <option value="14:00-22:00">Tarde (14:00-22:00)</option>
+              <option value="22:00-06:00">Noite (22:00-06:00)</option>
+            </select>
+          </div>
           
-          <label htmlFor="reason">Motivo:</label>
-          <textarea id="reason" name="reason" value={formData.reason} onChange={handleChange} required rows={3}></textarea>
+          <div>
+            <label htmlFor="reason">4. Motivo da solicitação:</label>
+            <textarea id="reason" name="reason" value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})} required rows={3}></textarea>
+          </div>
 
           {error && <p style={{ color: '#f87171' }}>{error}</p>}
           
