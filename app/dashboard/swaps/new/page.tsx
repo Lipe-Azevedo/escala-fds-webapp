@@ -8,13 +8,14 @@ import { getDayStatus } from '@/lib/calendarUtils';
 import CustomDatePicker from '@/components/common/CustomDatePicker/CustomDatePicker';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ShiftSelector from '@/components/swap/ShiftSelector';
 
 export default function NewSwapPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     originalDate: '',
     newDate: '',
-    newShift: '',
+    newShift: '' as User['shift'],
     reason: '',
   });
   
@@ -27,8 +28,7 @@ export default function NewSwapPage() {
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
-      const user = JSON.parse(userDataString);
-      setCurrentUser(user);
+      setCurrentUser(JSON.parse(userDataString));
     }
   }, []);
 
@@ -63,7 +63,7 @@ export default function NewSwapPage() {
         }
         setAvailableDaysOff(upcomingDaysOff);
       } catch(e) {
-        setError('Erro ao carregar escala de folgas.');
+        setError('Erro ao carregar sua escala de folgas.');
       } finally {
         setIsLoadingSchedule(false);
       }
@@ -74,8 +74,8 @@ export default function NewSwapPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.originalDate) {
-        setError("Por favor, selecione uma data de folga no calendário.");
+    if (!formData.originalDate || !formData.newDate || !formData.newShift) {
+        setError("Por favor, preencha todos os campos.");
         return;
     }
     setError('');
@@ -115,34 +115,39 @@ export default function NewSwapPage() {
             </Link>
         </div>
 
-        <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '700px', margin: 'auto' }}>
+        <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '800px', margin: 'auto' }}>
             <h1 style={{textAlign: 'center', marginBottom: '30px'}}>Solicitar Troca de Folga</h1>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
             
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+                <div>
+                    <label>1. Selecione o dia da sua folga:</label>
+                    {isLoadingSchedule ? <p>Carregando escala...</p> : (
+                    <CustomDatePicker
+                        selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
+                        onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
+                        isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+                    />
+                    )}
+                </div>
+                <div>
+                    <label>2. Escolha o novo dia de trabalho:</label>
+                    {isLoadingSchedule ? <p>Carregando escala...</p> : (
+                        <CustomDatePicker
+                            selectedDate={formData.newDate ? parseISO(formData.newDate) : null}
+                            onDateSelect={(date) => setFormData({...formData, newDate: format(date, 'yyyy-MM-dd')})}
+                            isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+                        />
+                    )}
+                </div>
+            </div>
+
             <div>
-                <label>1. Selecione o dia da sua folga que você quer trocar:</label>
-                {isLoadingSchedule ? <p>Carregando sua escala...</p> : (
-                <CustomDatePicker
-                    selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
-                    onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
-                    isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+                <label>3. Escolha o turno em que você irá trabalhar:</label>
+                <ShiftSelector 
+                    selectedShift={formData.newShift}
+                    onSelectShift={(shift) => setFormData({...formData, newShift: shift})}
                 />
-                )}
-            </div>
-
-            <div>
-                <label htmlFor="newDate">2. Escolha o novo dia em que você quer trabalhar:</label>
-                <input type="date" id="newDate" name="newDate" value={formData.newDate} onChange={(e) => setFormData({...formData, newDate: e.target.value})} required />
-            </div>
-
-            <div>
-                <label htmlFor="newShift">3. Escolha o turno em que você irá trabalhar:</label>
-                <select id="newShift" name="newShift" value={formData.newShift} onChange={(e) => setFormData({...formData, newShift: e.target.value})} required>
-                <option value="">Selecione...</option>
-                <option value="06:00-14:00">Manhã (06:00-14:00)</option>
-                <option value="14:00-22:00">Tarde (14:00-22:00)</option>
-                <option value="22:00-06:00">Noite (22:00-06:00)</option>
-                </select>
             </div>
             
             <div>
@@ -150,7 +155,7 @@ export default function NewSwapPage() {
                 <textarea id="reason" name="reason" value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})} required rows={3}></textarea>
             </div>
 
-            {error && <p style={{ color: '#f87171' }}>{error}</p>}
+            {error && <p style={{ color: '#f87171', textAlign: 'center' }}>{error}</p>}
             
             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                 <Link href="/dashboard/swaps"><button type="button" style={{backgroundColor: '#4a5568'}}>Cancelar</button></Link>

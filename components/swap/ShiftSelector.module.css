@@ -1,0 +1,38 @@
+.container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.shiftButton {
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid rgb(var(--input-border-rgb));
+    background-color: rgb(var(--input-background-rgb));
+    color: rgb(var(--foreground-rgb));
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.shiftButton:hover {
+    border-color: var(--primary-color);
+}
+
+.shiftButton.selected {
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
+    border-color: var(--primary-color);
+    font-weight: bold;
+}
+
+.shiftTime {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    color: var(--text-secondary-color);
+}
+
+.shiftButton.selected .shiftTime {
+    color: rgba(255, 255, 255, 0.8);
+}
