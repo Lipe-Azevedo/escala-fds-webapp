@@ -6,6 +6,7 @@ import { Certificate, User, FilterConfig } from '@/types';
 import CertificateList from '@/components/certificate/CertificateList';
 import SubmitCertificateModal from '@/components/certificate/SubmitCertificateModal';
 import FilterBar from '@/components/common/FilterBar';
+import { useSearchParams } from 'next/navigation';
 
 const certificateFilterConfigs: FilterConfig[] = [
     { 
@@ -27,8 +28,16 @@ export default function CertificatesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setModalOpen] = useState(false);
-
   const [filters, setFilters] = useState({ status: '' });
+  
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const statusFromUrl = searchParams.get('status');
+    if (statusFromUrl) {
+      setFilters(prev => ({ ...prev, status: statusFromUrl }));
+    }
+  }, [searchParams]);
 
   const fetchCertificates = async (currentUser: User) => {
     setIsLoading(true);
@@ -46,7 +55,6 @@ export default function CertificatesPage() {
       if (!res.ok) throw new Error('Falha ao buscar atestados.');
       const data: Certificate[] = await res.json();
       setAllCertificates(data || []);
-      setFilteredCertificates(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -59,9 +67,14 @@ export default function CertificatesPage() {
     if (userDataString) {
       const currentUser = JSON.parse(userDataString);
       setUser(currentUser);
-      fetchCertificates(currentUser);
     }
   }, []);
+  
+  useEffect(() => {
+    if (user) {
+        fetchCertificates(user);
+    }
+  }, [user]);
 
   useEffect(() => {
     let newFilteredData = allCertificates;

@@ -7,6 +7,8 @@ import SwapList from '@/components/swap/SwapList';
 import RequestSwapModal from '@/components/swap/RequestSwapModal';
 import ApproveSwapModal from '@/components/swap/ApproveSwapModal';
 import FilterBar from '@/components/common/FilterBar';
+import { useNotifications } from '@/context/NotificationContext';
+import { useSearchParams } from 'next/navigation';
 
 const swapFilterConfigs: FilterConfig[] = [
   { name: 'status', label: 'Status', type: 'select', options: [
@@ -17,7 +19,7 @@ const swapFilterConfigs: FilterConfig[] = [
 export default function SwapsPage() {
   const [allSwaps, setAllSwaps] = useState<Swap[]>([]);
   const [filteredSwaps, setFilteredSwaps] = useState<Swap[]>([]);
-  const [unreadSwapIds, setUnreadSwapIds] = useState<Set<number>>(new Set());
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -26,28 +28,25 @@ export default function SwapsPage() {
   const [selectedSwap, setSelectedSwap] = useState<Swap | null>(null);
   const [filters, setFilters] = useState({ status: '' });
   const [refetchTrigger, setRefetchTrigger] = useState(0);
+  
+  const { getUnreadIdsForCategory, markCategoryAsSeen } = useNotifications();
+  const unreadSwapIds = getUnreadIdsForCategory('swaps');
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const statusFromUrl = searchParams.get('status');
+    if (statusFromUrl) {
+      setFilters(prev => ({ ...prev, status: statusFromUrl }));
+    }
+    markCategoryAsSeen('swaps');
+  }, [searchParams, markCategoryAsSeen]);
 
   const triggerRefetch = () => setRefetchTrigger(c => c + 1);
-
-  const markNotificationsAsRead = async () => {
-    const token = Cookies.get('authToken');
-    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    try {
-        await fetch(`${apiURL}/api/notifications/read-by-link`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ link: '/dashboard/swaps' })
-        });
-    } catch (err) {
-        console.error("Failed to mark notifications as read", err);
-    }
-  };
 
   useEffect(() => {
     const fetchPageData = async () => {
       setIsLoading(true);
       setError('');
-      
       const userDataString = localStorage.getItem('userData');
       if (!userDataString) {
         setIsLoading(false);
@@ -56,39 +55,34 @@ export default function SwapsPage() {
       }
       const currentUser: User = JSON.parse(userDataString);
       setUser(currentUser);
-
+      
       const token = Cookies.get('authToken');
       const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       
       try {
-        let swapsUrl = currentUser.userType === 'master'
-          ? `${apiURL}/api/swaps`
-          : `${apiURL}/api/swaps/user/${currentUser.id}`;
+        const isManager = currentUser.userType === 'master' || (currentUser.position && currentUser.position.includes('Supervisor'));
         
-        const [swapsRes, notificationsRes] = await Promise.all([
-          fetch(swapsUrl, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${apiURL}/api/notifications`, { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
+        let swapsUrl = isManager ? `${apiURL}/api/swaps` : `${apiURL}/api/swaps/user/${currentUser.id}`;
+        
+        const fetchPromises: Promise<Response>[] = [
+          fetch(swapsUrl, { headers: { 'Authorization': `Bearer ${token}` } })
+        ];
+
+        if (isManager) {
+          fetchPromises.push(fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } }));
+        }
+
+        const responses = await Promise.all(fetchPromises);
+        const [swapsRes, usersRes] = responses;
 
         if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
         const swapsData = await swapsRes.json();
         setAllSwaps(swapsData || []);
-
-        if (notificationsRes.ok) {
-            const notifications: Notification[] = await notificationsRes.json();
-            const unreadIds = new Set<number>();
-            notifications
-              .filter(n => !n.isRead && n.link.includes('/swaps'))
-              .forEach(n => {
-                const idMatch = n.link.match(/\/swaps\/(\d+)/);
-                if (idMatch && idMatch[1]) {
-                    unreadIds.add(parseInt(idMatch[1]));
-                }
-              });
-            setUnreadSwapIds(unreadIds);
-            if (unreadIds.size > 0) {
-                markNotificationsAsRead();
-            }
+        
+        if (usersRes) {
+          if (!usersRes.ok) throw new Error('Falha ao buscar usuários.');
+          const usersData = await usersRes.json();
+          setAllUsers(usersData || []);
         }
 
       } catch (err: any) {

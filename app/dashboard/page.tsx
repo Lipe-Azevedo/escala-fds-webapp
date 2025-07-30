@@ -144,8 +144,18 @@ export default function DashboardHomePage() {
           {isLoading ? <p>Carregando resumo...</p> : error ? <p style={{color: '#f87171'}}>{error}</p> : (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '25px' }}>
-                <DashboardSummaryCard title="Trocas Pendentes" value={pendingSwaps} linkTo="/dashboard/swaps" linkLabel="Ver trocas"/>
-                <DashboardSummaryCard title="Atestados Pendentes" value={pendingCertificates} linkTo="/dashboard/certificates" linkLabel="Ver atestados"/>
+                <DashboardSummaryCard 
+                  title="Trocas Pendentes" 
+                  value={pendingSwaps} 
+                  linkTo="/dashboard/swaps?status=pending" 
+                  linkLabel="Ver trocas"
+                />
+                <DashboardSummaryCard 
+                  title="Atestados Pendentes" 
+                  value={pendingCertificates} 
+                  linkTo="/dashboard/certificates?status=pending" 
+                  linkLabel="Ver atestados"
+                />
               </div>
               <div style={{marginTop: '40px'}}>
                 <h3>Colaboradores de plantão</h3>
