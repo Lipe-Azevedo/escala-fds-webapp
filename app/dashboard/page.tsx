@@ -26,8 +26,8 @@ export default function DashboardHomePage() {
     
     try {
       const [startStr, endStr] = shift.split('-');
-      const startHour = parseInt(startStr, 10);
-      const endHour = parseInt(endStr, 10);
+      const startHour = parseInt(startStr.split(':')[0], 10);
+      const endHour = parseInt(endStr.split(':')[0], 10);
   
       if (isNaN(startHour) || isNaN(endHour)) {
         return false;
@@ -48,6 +48,7 @@ export default function DashboardHomePage() {
     const userDataString = localStorage.getItem('userData');
     if (!userDataString) {
       setIsLoading(false);
+      router.push('/login');
       return;
     }
     
@@ -64,6 +65,9 @@ export default function DashboardHomePage() {
 
         const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         try {
+            const usersRes = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const allUsers: User[] = await usersRes.json();
+
             if (currentUser.userType === 'master') {
                 const [swapsRes, certsRes] = await Promise.all([
                     fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -73,9 +77,8 @@ export default function DashboardHomePage() {
                 const certs: Certificate[] = await certsRes.json();
                 setPendingSwaps(swaps.length);
                 setPendingCertificates(certs.filter(c => c.status === 'pending').length);
+                setUsersOnShift(allUsers.filter(u => u.shift && isShiftNow(u.shift)));
             } else {
-                const usersRes = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
-                const allUsers: User[] = await usersRes.json();
                 const colleaguesOnShift = allUsers.filter(u => 
                     u.id !== currentUser.id && 
                     u.shift === currentUser.shift && 
@@ -113,10 +116,28 @@ export default function DashboardHomePage() {
       {user.userType === 'master' ? (
         <div>
           {isLoading ? <p>Carregando resumo...</p> : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '25px' }}>
-              <DashboardSummaryCard title="Trocas Pendentes" value={pendingSwaps} linkTo="/dashboard/swaps" linkLabel="Ver trocas"/>
-              <DashboardSummaryCard title="Atestados Pendentes" value={pendingCertificates} linkTo="/dashboard/certificates" linkLabel="Ver atestados"/>
-            </div>
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '25px' }}>
+                <DashboardSummaryCard title="Trocas Pendentes" value={pendingSwaps} linkTo="/dashboard/swaps" linkLabel="Ver trocas"/>
+                <DashboardSummaryCard title="Atestados Pendentes" value={pendingCertificates} linkTo="/dashboard/certificates" linkLabel="Ver atestados"/>
+              </div>
+              <div style={{marginTop: '40px'}}>
+                <h3>Colaboradores de Plantão Agora</h3>
+                <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', border: '1px solid rgb(var(--card-border-rgb))', padding: '10px 20px', borderRadius: '8px'}}>
+                  {usersOnShift.length > 0 ? (
+                    <ul style={{listStyle: 'none', padding: 0}}>
+                      {usersOnShift.map(u => (
+                        <li key={u.id} style={{padding: '10px 0', borderBottom: '1px solid rgb(var(--card-border-rgb))'}}>
+                          {u.firstName} {u.lastName} ({u.team}) - Turno: {u.shift}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p style={{color: 'var(--text-secondary-color)'}}>Nenhum colaborador no turno atual.</p>
+                  )}
+                </div>
+              </div>
+            </>
           )}
         </div>
       ) : (
