@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import styles from './CustomDatePicker.module.css';
 
@@ -19,13 +19,9 @@ export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySele
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
-    const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 });
     
-    const days = eachDayOfInterval({ start: startDate, end: endDate });
-    // Garante que sempre tenhamos 6 semanas (42 dias)
-    while (days.length < 42) {
-        days.push(addDays(days[days.length - 1], 1));
-    }
+    let days = eachDayOfInterval({ start: startDate, end: addDays(startDate, 41) }); // Always generate 6 weeks (42 days)
+    
     return days;
   }, [currentMonth]);
 
@@ -35,11 +31,11 @@ export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySele
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button onClick={handlePrevMonth} className={styles.navButton}>&lt;</button>
+        <button type="button" onClick={handlePrevMonth} className={styles.navButton}>&lt;</button>
         <span className={styles.monthName}>
           {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
         </span>
-        <button onClick={handleNextMonth} className={styles.navButton}>&gt;</button>
+        <button type="button" onClick={handleNextMonth} className={styles.navButton}>&gt;</button>
       </div>
       <div className={styles.grid}>
         {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
@@ -57,6 +53,7 @@ export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySele
           
           return (
             <button
+              type="button"
               key={day.toString()}
               className={className}
               onClick={() => isSelectable && onDateSelect(day)}

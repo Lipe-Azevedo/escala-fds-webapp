@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Swap, User, FilterConfig } from '@/types';
+import { Swap, User, FilterConfig, Notification } from '@/types';
 import SwapList from '@/components/swap/SwapList';
-import RequestSwapModal from '@/components/swap/RequestSwapModal';
 import ApproveSwapModal from '@/components/swap/ApproveSwapModal';
 import FilterBar from '@/components/common/FilterBar';
 import { useNotifications } from '@/context/NotificationContext';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 const swapFilterConfigs: FilterConfig[] = [
   { name: 'status', label: 'Status', type: 'select', options: [
@@ -19,11 +19,9 @@ const swapFilterConfigs: FilterConfig[] = [
 export default function SwapsPage() {
   const [allSwaps, setAllSwaps] = useState<Swap[]>([]);
   const [filteredSwaps, setFilteredSwaps] = useState<Swap[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isRequestModalOpen, setRequestModalOpen] = useState(false);
   const [isApproveModalOpen, setApproveModalOpen] = useState(false);
   const [selectedSwap, setSelectedSwap] = useState<Swap | null>(null);
   const [filters, setFilters] = useState({ status: '' });
@@ -40,7 +38,6 @@ export default function SwapsPage() {
     }
     markCategoryAsSeen('swaps');
   }, [searchParams, markCategoryAsSeen]);
-
 
   const triggerRefetch = () => setRefetchTrigger(c => c + 1);
 
@@ -66,27 +63,12 @@ export default function SwapsPage() {
         
         let swapsUrl = isManager ? `${apiURL}/api/swaps` : `${apiURL}/api/swaps/user/${currentUser.id}`;
         
-        const fetchPromises: Promise<Response>[] = [
-          fetch(swapsUrl, { headers: { 'Authorization': `Bearer ${token}` } })
-        ];
+        const res = await fetch(swapsUrl, { headers: { 'Authorization': `Bearer ${token}` } });
 
-        if (isManager) {
-          fetchPromises.push(fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } }));
-        }
-
-        const responses = await Promise.all(fetchPromises);
-        const [swapsRes, usersRes] = responses;
-
-        if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
-        const swapsData = await swapsRes.json();
+        if (!res.ok) throw new Error('Falha ao buscar trocas de folga.');
+        const swapsData = await res.json();
         setAllSwaps(swapsData || []);
         
-        if (usersRes) {
-          if (!usersRes.ok) throw new Error('Falha ao buscar usuários.');
-          const usersData = await usersRes.json();
-          setAllUsers(usersData || []);
-        }
-
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -99,9 +81,7 @@ export default function SwapsPage() {
 
   useEffect(() => {
     let newFilteredData = allSwaps;
-    if (filters.status) {
-      newFilteredData = allSwaps.filter(swap => swap.status === filters.status);
-    }
+    if (filters.status) { newFilteredData = allSwaps.filter(swap => swap.status === filters.status); }
     setFilteredSwaps(newFilteredData);
   }, [filters, allSwaps]);
 
@@ -173,7 +153,9 @@ export default function SwapsPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Trocas de Folga</h1>
         {user.userType === 'collaborator' && (
-            <button onClick={() => setRequestModalOpen(true)}>+ Solicitar Troca</button>
+            <Link href="/dashboard/swaps/new">
+                <button>+ Solicitar Troca</button>
+            </Link>
         )}
       </div>
       
@@ -188,16 +170,7 @@ export default function SwapsPage() {
           onConfirm={handleConfirmSwap}
           onDecline={handleDeclineSwap}
       />
-
-      {isRequestModalOpen && (
-        <RequestSwapModal 
-          isOpen={isRequestModalOpen} 
-          onClose={() => setRequestModalOpen(false)} 
-          onSuccess={triggerRefetch} 
-          currentUser={user} 
-        />
-      )}
-
+      
       {isApproveModalOpen && selectedSwap && (
         <ApproveSwapModal 
           isOpen={isApproveModalOpen} 
