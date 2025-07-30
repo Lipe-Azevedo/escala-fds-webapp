@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { User } from '@/types';
+import { User, Holiday, Swap, Certificate } from '@/types';
+import { addDays, format } from 'date-fns';
+import { getDayStatus } from '@/lib/calendarUtils';
+import { ptBR } from 'date-fns/locale';
 
 interface RequestSwapModalProps {
   isOpen: boolean;
@@ -15,22 +18,63 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
   const [formData, setFormData] = useState({
     originalDate: '',
     newDate: '',
-    originalShift: currentUser.shift,
+    originalShift: '',
     newShift: '',
     reason: '',
   });
-
-  const [swapType, setSwapType] = useState<'day' | 'shift'>('day');
   
+  const [availableDaysOff, setAvailableDaysOff] = useState<{label: string, value: string}[]>([]);
+  const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setFormData(prev => ({ ...prev, originalShift: currentUser.shift }));
-  }, [currentUser.shift]);
+    if (!isOpen) return;
 
+    const fetchAndProcessSchedule = async () => {
+      setIsLoadingSchedule(true);
+      setError('');
+      const token = Cookies.get('authToken');
+      const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+      
+      try {
+        const [holidaysRes, swapsRes, certsRes] = await Promise.all([
+          fetch(`${apiURL}/api/holidays`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/swaps/user/${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/certificates/user/${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        
+        const holidays: Holiday[] = await holidaysRes.json();
+        const swaps: Swap[] = await swapsRes.json();
+        const certificates: Certificate[] = await certsRes.json();
 
-  if (!isOpen) return null;
+        const upcomingDaysOff: {label: string, value: string}[] = [];
+        const today = new Date();
+        for (let i = 0; i < 90; i++) {
+          const day = addDays(today, i);
+          const dayStatus = getDayStatus(day, currentUser, holidays, swaps.filter(s => s.status === 'approved'), certificates.filter(c => c.status === 'approved'));
+          
+          if(dayStatus.isDayOff) {
+            upcomingDaysOff.push({
+              value: format(day, 'yyyy-MM-dd'),
+              label: format(day, "dd/MM/yyyy (EEEE)", { locale: ptBR })
+            });
+          }
+        }
+        setAvailableDaysOff(upcomingDaysOff);
+        if (upcomingDaysOff.length > 0) {
+            setFormData(prev => ({...prev, originalDate: upcomingDaysOff[0].value}));
+        }
+
+      } catch(e) {
+        setError('Erro ao carregar sua escala de folgas.');
+      } finally {
+        setIsLoadingSchedule(false);
+      }
+    };
+
+    fetchAndProcessSchedule();
+  }, [isOpen, currentUser]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -47,7 +91,7 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
     
     const payload = {
         ...formData,
-        newDate: swapType === 'shift' ? formData.originalDate : formData.newDate
+        originalShift: "Folga", // O dia original é sempre uma folga
     };
 
     try {
@@ -59,10 +103,8 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
       
       const data = await res.json();
       if (!res.ok) { throw new Error(data.message || 'Falha ao criar solicitação.'); }
-
       onSuccess();
       onClose();
-      
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -80,35 +122,27 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
     color: 'rgb(var(--foreground-rgb))', border: '1px solid rgb(var(--card-border-rgb))'
   };
 
+  if (!isOpen) return null;
+
   return (
     <div style={modalOverlayStyle}>
       <div style={modalContentStyle}>
-        <h2>Solicitar Troca</h2>
+        <h2>Solicitar Troca de Folga</h2>
         <form onSubmit={handleSubmit}>
           
-          <div style={{ marginBottom: '20px' }}>
-            <label>O que você quer trocar?</label>
-            <select value={swapType} onChange={(e) => setSwapType(e.target.value as 'day' | 'shift')}>
-              <option value="day">Minha Folga por um Dia de Trabalho</option>
-              <option value="shift">Apenas o Turno (no mesmo dia)</option>
-            </select>
-          </div>
+          <label htmlFor="originalDate">Dia da minha Folga:</label>
+          <select id="originalDate" name="originalDate" value={formData.originalDate} onChange={handleChange} required disabled={isLoadingSchedule}>
+            {isLoadingSchedule ? <option>Carregando folgas...</option> : 
+             availableDaysOff.length > 0 ? 
+             availableDaysOff.map(d => <option key={d.value} value={d.value}>{d.label}</option>) :
+             <option>Nenhuma folga encontrada nos próximos 90 dias.</option>
+            }
+          </select>
 
-          <label htmlFor="originalDate">
-            {swapType === 'day' ? 'Dia da minha Folga:' : 'Dia do meu Turno:'}
-          </label>
-          <input type="date" id="originalDate" name="originalDate" value={formData.originalDate} onChange={handleChange} required />
+          <label htmlFor="newDate">Quero trabalhar no dia:</label>
+          <input type="date" id="newDate" name="newDate" value={formData.newDate} onChange={handleChange} required />
 
-          {swapType === 'day' && (
-            <>
-              <label htmlFor="newDate">Quero trabalhar no dia:</label>
-              <input type="date" id="newDate" name="newDate" value={formData.newDate} onChange={handleChange} required={swapType === 'day'} />
-            </>
-          )}
-
-          <label htmlFor="newShift">
-            {swapType === 'day' ? 'Para trabalhar no turno:' : 'Quero trocar para o turno:'}
-          </label>
+          <label htmlFor="newShift">Para trabalhar no turno:</label>
           <select id="newShift" name="newShift" value={formData.newShift} onChange={handleChange} required>
             <option value="">Selecione...</option>
             <option value="06:00-14:00">Manhã (06:00-14:00)</option>
@@ -116,16 +150,14 @@ export default function RequestSwapModal({ isOpen, onClose, onSuccess, currentUs
             <option value="22:00-06:00">Noite (22:00-06:00)</option>
           </select>
           
-          <input type="hidden" name="originalShift" value={formData.originalShift} />
-
           <label htmlFor="reason">Motivo:</label>
           <textarea id="reason" name="reason" value={formData.reason} onChange={handleChange} required rows={3}></textarea>
 
-          {error && <p style={{ color: '#f87171', textAlign: 'center' }}>{error}</p>}
+          {error && <p style={{ color: '#f87171' }}>{error}</p>}
           
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <button type="button" onClick={onClose} style={{ backgroundColor: '#4a5568'}}>Cancelar</button>
-            <button type="submit" disabled={isLoading}>{isLoading ? 'Enviando...' : 'Enviar Solicitação'}</button>
+            <button type="button" onClick={onClose} style={{backgroundColor: '#4a5568'}}>Cancelar</button>
+            <button type="submit" disabled={isLoading || isLoadingSchedule}>{isLoading ? 'Enviando...' : 'Enviar Solicitação'}</button>
           </div>
         </form>
       </div>

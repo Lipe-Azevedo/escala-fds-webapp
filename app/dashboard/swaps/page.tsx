@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { Swap, User, FilterConfig, Notification } from '@/types';
+import { Swap, User, FilterConfig } from '@/types';
 import SwapList from '@/components/swap/SwapList';
 import RequestSwapModal from '@/components/swap/RequestSwapModal';
 import ApproveSwapModal from '@/components/swap/ApproveSwapModal';
@@ -41,12 +41,14 @@ export default function SwapsPage() {
     markCategoryAsSeen('swaps');
   }, [searchParams, markCategoryAsSeen]);
 
+
   const triggerRefetch = () => setRefetchTrigger(c => c + 1);
 
   useEffect(() => {
     const fetchPageData = async () => {
       setIsLoading(true);
       setError('');
+
       const userDataString = localStorage.getItem('userData');
       if (!userDataString) {
         setIsLoading(false);
