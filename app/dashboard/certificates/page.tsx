@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import { Certificate, User, FilterConfig } from '@/types';
 import CertificateList from '@/components/certificate/CertificateList';
-import SubmitCertificateModal from '@/components/certificate/SubmitCertificateModal';
 import FilterBar from '@/components/common/FilterBar';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 const certificateFilterConfigs: FilterConfig[] = [
     { 
@@ -27,7 +27,6 @@ export default function CertificatesPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isModalOpen, setModalOpen] = useState(false);
   const [filters, setFilters] = useState({ status: '' });
   
   const searchParams = useSearchParams();
@@ -39,7 +38,7 @@ export default function CertificatesPage() {
     }
   }, [searchParams]);
 
-  const fetchCertificates = async (currentUser: User) => {
+  const fetchCertificates = useCallback(async (currentUser: User) => {
     setIsLoading(true);
     setError('');
     const token = Cookies.get('authToken');
@@ -60,7 +59,7 @@ export default function CertificatesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
@@ -74,7 +73,7 @@ export default function CertificatesPage() {
     if (user) {
         fetchCertificates(user);
     }
-  }, [user]);
+  }, [user, fetchCertificates]);
 
   useEffect(() => {
     let newFilteredData = allCertificates;
@@ -116,7 +115,9 @@ export default function CertificatesPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Atestados Médicos</h1>
         {user.userType === 'collaborator' && (
-            <button onClick={() => setModalOpen(true)}>+ Enviar Atestado</button>
+            <Link href="/dashboard/certificates/new">
+              <button>+ Enviar Atestado</button>
+            </Link>
         )}
       </div>
 
@@ -125,14 +126,6 @@ export default function CertificatesPage() {
       {isLoading && <p>Carregando atestados...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!isLoading && !error && <CertificateList certificates={filteredCertificates} currentUser={user} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />}
-
-      {isModalOpen && (
-        <SubmitCertificateModal 
-            isOpen={isModalOpen}
-            onClose={() => setModalOpen(false)}
-            onSuccess={() => { if(user) fetchCertificates(user); }}
-        />
-      )}
     </div>
   );
 }
