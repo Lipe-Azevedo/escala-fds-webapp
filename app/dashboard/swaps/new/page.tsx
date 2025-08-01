@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
-import { User, Holiday, Swap, Certificate } from '@/types';
+import { User, Holiday, Swap, Certificate, ShiftName } from '@/types';
 import { addDays, format, parseISO } from 'date-fns';
 import { getDayStatus } from '@/lib/calendarUtils';
 import CustomDatePicker from '@/components/common/CustomDatePicker/CustomDatePicker';
@@ -15,10 +15,11 @@ export default function NewSwapPage() {
   const [formData, setFormData] = useState({
     originalDate: '',
     newDate: '',
-    newShift: '' as User['shift'],
+    newShift: '' as ShiftName | '',
     reason: '',
   });
   
+  const [swapType, setSwapType] = useState<'day' | 'shift'>('day');
   const [availableDaysOff, setAvailableDaysOff] = useState<Set<string>>(new Set());
   const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
   const [error, setError] = useState('');
@@ -74,8 +75,8 @@ export default function NewSwapPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.originalDate || !formData.newDate || !formData.newShift) {
-        setError("Por favor, preencha todos os campos.");
+    if (!formData.originalDate || !formData.newShift || (swapType === 'day' && !formData.newDate)) {
+        setError("Por favor, preencha todos os campos obrigatórios.");
         return;
     }
     setError('');
@@ -86,7 +87,8 @@ export default function NewSwapPage() {
     
     const payload = {
         ...formData,
-        originalShift: "Folga",
+        newDate: swapType === 'shift' ? formData.originalDate : formData.newDate,
+        originalShift: swapType === 'day' ? "Folga" : currentUser?.shift,
     };
 
     try {
@@ -116,34 +118,49 @@ export default function NewSwapPage() {
         </div>
 
         <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '800px', margin: 'auto' }}>
-            <h1 style={{textAlign: 'center', marginBottom: '30px'}}>Solicitar Troca de Folga</h1>
+            <h1 style={{textAlign: 'center', marginBottom: '30px'}}>Solicitar Troca</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
             
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
-                <div>
-                    <label>1. Selecione o dia da sua folga:</label>
-                    {isLoadingSchedule ? <p>Carregando escala...</p> : (
-                    <CustomDatePicker
-                        selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
-                        onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
-                        isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
-                    />
-                    )}
-                </div>
-                <div>
-                    <label>2. Escolha o novo dia de trabalho:</label>
-                    {isLoadingSchedule ? <p>Carregando escala...</p> : (
+            <div>
+              <label>Tipo da Troca</label>
+              <select value={swapType} onChange={(e) => setSwapType(e.target.value as 'day' | 'shift')}>
+                <option value="day">Folga</option>
+                <option value="shift">Turno</option>
+              </select>
+            </div>
+
+            <div style={{display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap'}}>
+                {swapType === 'day' && (
+                    <div style={{flex: '1 1 320px', minWidth: '320px'}}>
+                        <label>Dia da Folga:</label>
+                        {isLoadingSchedule ? <p>Carregando escala...</p> : (
                         <CustomDatePicker
-                            selectedDate={formData.newDate ? parseISO(formData.newDate) : null}
-                            onDateSelect={(date) => setFormData({...formData, newDate: format(date, 'yyyy-MM-dd')})}
-                            isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+                            selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
+                            onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
+                            isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
                         />
-                    )}
+                        )}
+                    </div>
+                )}
+                <div style={{flex: '1 1 320px', minWidth: '320px'}}>
+                    <label>{swapType === 'day' ? 'Novo dia de trabalho:' : 'Dia de Trabalho:'}</label>
+                    <CustomDatePicker
+                        selectedDate={swapType === 'day' ? (formData.newDate ? parseISO(formData.newDate) : null) : (formData.originalDate ? parseISO(formData.originalDate) : null)}
+                        onDateSelect={(date) => {
+                            const formattedDate = format(date, 'yyyy-MM-dd');
+                            if (swapType === 'day') {
+                                setFormData({...formData, newDate: formattedDate});
+                            } else {
+                                setFormData({...formData, originalDate: formattedDate});
+                            }
+                        }}
+                        isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+                    />
                 </div>
             </div>
 
             <div>
-                <label>3. Escolha o turno em que você irá trabalhar:</label>
+                <label>Turno:</label>
                 <ShiftSelector 
                     selectedShift={formData.newShift}
                     onSelectShift={(shift) => setFormData({...formData, newShift: shift})}
@@ -151,7 +168,7 @@ export default function NewSwapPage() {
             </div>
             
             <div>
-                <label htmlFor="reason">4. Motivo da solicitação:</label>
+                <label htmlFor="reason">Motivo:</label>
                 <textarea id="reason" name="reason" value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})} required rows={3}></textarea>
             </div>
 

@@ -1,11 +1,11 @@
 :root {
-  --background-rgb: 26, 32, 44;       /* Cinza-azulado bem escuro */
-  --foreground-rgb: 226, 232, 240;     /* Texto quase branco */
+  --background-rgb: 26, 32, 44;
+  --foreground-rgb: 226, 232, 240;
   
-  --card-background-rgb: 45, 55, 72;  /* Cinza-azulado escuro para 'cartões' */
-  --card-border-rgb: 74, 85, 104;        /* Borda sutil para cartões */
+  --card-background-rgb: 45, 55, 72;
+  --card-border-rgb: 74, 85, 104;
 
-  --sidebar-background-rgb: 30, 41, 59; /* Cor da sidebar */
+  --sidebar-background-rgb: 30, 41, 59;
 
   --primary-color: #3b82f6;
   --primary-hover-color: #2563eb;
@@ -39,6 +39,7 @@ button {
   font-size: 14px;
   font-weight: 500;
   transition: background-color 0.2s ease;
+  font-family: inherit; /* Garante consistência da fonte */
 }
 
 button:hover {
@@ -61,6 +62,8 @@ input, select, textarea {
   border: 1px solid rgb(var(--input-border-rgb));
   border-radius: 6px;
   transition: border-color 0.2s ease;
+  font-family: inherit; /* Garante consistência da fonte */
+  font-size: 14px; /* Garante consistência do tamanho da fonte */
 }
 
 input:focus, select:focus, textarea:focus {

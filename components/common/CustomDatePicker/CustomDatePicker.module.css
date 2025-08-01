@@ -3,15 +3,19 @@
   border: 1px solid rgb(var(--card-border-rgb));
   border-radius: 8px;
   padding: 15px;
-  width: 100%;
+  width: 380px;
+  height: 380px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .monthName {
@@ -36,8 +40,10 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  grid-template-rows: auto repeat(6, 1fr);
+  gap: 4px;
   justify-items: center;
+  height: 100%;
 }
 
 .weekday {
@@ -45,7 +51,6 @@
   font-weight: 500;
   color: var(--text-secondary-color);
   text-align: center;
-  padding-bottom: 5px;
   width: 100%;
 }
 
@@ -53,8 +58,10 @@
   background-color: transparent;
   border: 1px solid transparent;
   color: var(--text-secondary-color);
-  width: 36px;
-  height: 36px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  padding: 0;
   margin: 0;
   border-radius: 6px;
   cursor: not-allowed;
@@ -63,6 +70,13 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease, color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.otherMonth {
+  opacity: 0.2;
+  pointer-events: none;
+  cursor: default;
 }
 
 .selectable {
@@ -86,7 +100,7 @@
     background-color: var(--primary-hover-color);
 }
 
-.day.otherMonth {
+.grid .day.otherMonth {
   opacity: 0.2;
   pointer-events: none;
   cursor: default;

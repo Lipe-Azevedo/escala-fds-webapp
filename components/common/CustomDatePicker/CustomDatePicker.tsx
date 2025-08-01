@@ -17,11 +17,8 @@ export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySele
 
   const gridDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
-    const monthEnd = endOfMonth(currentMonth);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
-    
-    let days = eachDayOfInterval({ start: startDate, end: addDays(startDate, 41) }); // Always generate 6 weeks (42 days)
-    
+    const days = eachDayOfInterval({ start: startDate, end: addDays(startDate, 41) });
     return days;
   }, [currentMonth]);
 
@@ -42,24 +39,27 @@ export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySele
           <div key={i} className={styles.weekday}>{day}</div>
         ))}
         {gridDays.map(day => {
-          const isSelectable = isDaySelectable(day);
           const isSelected = selectedDate && isSameDay(day, selectedDate);
           const isOtherMonth = !isSameMonth(day, currentMonth);
+          const isSelectable = !isOtherMonth && isDaySelectable(day);
 
-          let className = styles.day;
-          if (isOtherMonth) className += ` ${styles.otherMonth}`;
-          if (isSelected) className += ` ${styles.selected}`;
-          if (isSelectable) className += ` ${styles.selectable}`;
+          const classNames = [styles.day];
+          if (isOtherMonth) {
+            classNames.push(styles.otherMonth);
+          } else {
+            if (isSelectable) classNames.push(styles.selectable);
+            if (isSelected) classNames.push(styles.selected);
+          }
           
           return (
             <button
               type="button"
               key={day.toString()}
-              className={className}
+              className={classNames.join(' ')}
               onClick={() => isSelectable && onDateSelect(day)}
               disabled={!isSelectable}
             >
-              {format(day, 'd')}
+              <span>{format(day, 'd')}</span>
             </button>
           );
         })}

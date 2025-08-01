@@ -1,7 +1,7 @@
 export type TeamName = 'Security' | 'Support' | 'CustomerService' | '';
 export type PositionName = string;
+export type ShiftName = '06:00-14:00' | '14:00-22:00' | '22:00-06:00';
 export type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | 'Certificate' | '';
-
 
 export type User = {
   id: number;
@@ -11,7 +11,7 @@ export type User = {
   userType: 'master' | 'collaborator';
   team: TeamName;
   position: PositionName;
-  shift: string;
+  shift: ShiftName;
   weekdayOff: string;
   initialWeekendOff: string;
   createdAt: string;
@@ -33,8 +33,8 @@ export type Swap = {
   involvedCollaborator?: User;
   originalDate: string;
   newDate: string;
-  originalShift: string;
-  newShift: string;
+  originalShift: ShiftName | 'Folga' | string;
+  newShift: ShiftName;
   reason: string;
   status: 'pending' | 'approved' | 'rejected' | 'pending_confirmation';
   approvedBy?: User;
