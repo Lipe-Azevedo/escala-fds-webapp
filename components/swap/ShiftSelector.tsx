@@ -6,6 +6,7 @@ import styles from './ShiftSelector.module.css';
 interface ShiftSelectorProps {
   selectedShift: ShiftName | '';
   onSelectShift: (shift: ShiftName) => void;
+  disabledShift?: ShiftName | '';
 }
 
 const shifts: { value: ShiftName, label: string }[] = [
@@ -14,7 +15,7 @@ const shifts: { value: ShiftName, label: string }[] = [
     { value: '22:00-06:00', label: 'Noite' },
 ];
 
-export default function ShiftSelector({ selectedShift, onSelectShift }: ShiftSelectorProps) {
+export default function ShiftSelector({ selectedShift, onSelectShift, disabledShift }: ShiftSelectorProps) {
   return (
     <div className={styles.container}>
       {shifts.map(shift => (
@@ -23,6 +24,7 @@ export default function ShiftSelector({ selectedShift, onSelectShift }: ShiftSel
           type="button"
           className={`${styles.shiftButton} ${selectedShift === shift.value ? styles.selected : ''}`}
           onClick={() => onSelectShift(shift.value)}
+          disabled={shift.value === disabledShift}
         >
           {shift.label}
           <span className={styles.shiftTime}>{shift.value}</span>

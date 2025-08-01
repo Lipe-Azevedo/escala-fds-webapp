@@ -129,41 +129,46 @@ export default function NewSwapPage() {
               </select>
             </div>
 
-            <div style={{display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap'}}>
-                {swapType === 'day' && (
-                    <div style={{flex: '1 1 320px', minWidth: '320px'}}>
-                        <label>Dia da Folga:</label>
-                        {isLoadingSchedule ? <p>Carregando escala...</p> : (
-                        <CustomDatePicker
-                            selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
-                            onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
-                            isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
-                        />
-                        )}
-                    </div>
-                )}
-                <div style={{flex: '1 1 320px', minWidth: '320px'}}>
-                    <label>{swapType === 'day' ? 'Novo dia de trabalho:' : 'Dia de Trabalho:'}</label>
-                    <CustomDatePicker
-                        selectedDate={swapType === 'day' ? (formData.newDate ? parseISO(formData.newDate) : null) : (formData.originalDate ? parseISO(formData.originalDate) : null)}
-                        onDateSelect={(date) => {
-                            const formattedDate = format(date, 'yyyy-MM-dd');
-                            if (swapType === 'day') {
-                                setFormData({...formData, newDate: formattedDate});
-                            } else {
-                                setFormData({...formData, originalDate: formattedDate});
-                            }
-                        }}
-                        isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
-                    />
-                </div>
-            </div>
+            {swapType === 'day' ? (
+              <div style={{display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap'}}>
+                  <div style={{flex: '1 1 320px', minWidth: '320px'}}>
+                      <label>Dia da Folga:</label>
+                      {isLoadingSchedule ? <p>Carregando escala...</p> : (
+                      <CustomDatePicker
+                          selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
+                          onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
+                          isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+                      />
+                      )}
+                  </div>
+                  <div style={{flex: '1 1 320px', minWidth: '320px'}}>
+                      <label>Novo dia de trabalho:</label>
+                      <CustomDatePicker
+                          selectedDate={formData.newDate ? parseISO(formData.newDate) : null}
+                          onDateSelect={(date) => setFormData({...formData, newDate: format(date, 'yyyy-MM-dd')})}
+                          isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+                      />
+                  </div>
+              </div>
+            ) : (
+              <div>
+                  <label>Dia de Trabalho:</label>
+                  {isLoadingSchedule ? <p>Carregando escala...</p> : (
+                  <CustomDatePicker
+                      selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
+                      onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
+                      isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
+                  />
+                  )}
+              </div>
+            )}
 
             <div>
                 <label>Turno:</label>
                 <ShiftSelector 
                     selectedShift={formData.newShift}
                     onSelectShift={(shift) => setFormData({...formData, newShift: shift})}
+                    disabledShift={swapType === 'shift' ? currentUser?.shift : ''}
                 />
             </div>
             

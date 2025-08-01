@@ -26,6 +26,18 @@
     font-weight: bold;
 }
 
+.shiftButton:disabled {
+    background-color: transparent;
+    border-color: rgb(var(--input-border-rgb)); /* Mantém a borda com cor sutil */
+    color: var(--text-secondary-color);
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.shiftButton:disabled:hover {
+    border-color: rgb(var(--input-border-rgb)); /* Garante que a borda não mude no hover */
+}
+
 .shiftTime {
     display: block;
     font-size: 12px;
