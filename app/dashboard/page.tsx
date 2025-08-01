@@ -75,7 +75,7 @@ export default function DashboardHomePage() {
 
             if (currentUser.userType === 'master') {
                 const [swapsRes, certsRes] = await Promise.all([
-                    fetch(`${apiURL}/api/swaps`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetch(`${apiURL}/api/certificates`, { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
                 if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
@@ -144,18 +144,8 @@ export default function DashboardHomePage() {
           {isLoading ? <p>Carregando resumo...</p> : error ? <p style={{color: '#f87171'}}>{error}</p> : (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '25px' }}>
-                <DashboardSummaryCard 
-                  title="Trocas Pendentes" 
-                  value={pendingSwaps} 
-                  linkTo="/dashboard/swaps?status=pending" 
-                  linkLabel="Ver trocas"
-                />
-                <DashboardSummaryCard 
-                  title="Atestados Pendentes" 
-                  value={pendingCertificates} 
-                  linkTo="/dashboard/certificates?status=pending" 
-                  linkLabel="Ver atestados"
-                />
+                <DashboardSummaryCard title="Trocas Pendentes" value={pendingSwaps} linkTo="/dashboard/swaps?status=pending" linkLabel="Ver trocas"/>
+                <DashboardSummaryCard title="Atestados Pendentes" value={pendingCertificates} linkTo="/dashboard/certificates?status=pending" linkLabel="Ver atestados"/>
               </div>
               <div style={{marginTop: '40px'}}>
                 <h3>Colaboradores de plantão</h3>
@@ -187,7 +177,9 @@ export default function DashboardHomePage() {
         </div>
       ) : (
         <>
-          <Calendar user={user} />
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            <Calendar user={user} />
+          </div>
           <div style={{marginTop: '40px'}}>
             <h3>Colegas de plantão</h3>
             <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', overflow: 'hidden'}}>
