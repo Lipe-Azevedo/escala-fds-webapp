@@ -13,7 +13,10 @@ export const useCalendarData = (currentMonth: Date, user: CalendarUser | null) =
   const [error, setError] = useState('');
 
   const fetchData = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+        setIsLoading(false);
+        return;
+    };
     setIsLoading(true);
     setError('');
     

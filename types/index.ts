@@ -3,6 +3,7 @@ export type PositionName = string;
 export type ShiftName = '06:00-14:00' | '14:00-22:00' | '22:00-06:00';
 export type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | 'Certificate' | '';
 
+
 export type User = {
   id: number;
   firstName: string;
@@ -78,7 +79,7 @@ export type FilterConfig = {
   disabled?: boolean;
 };
 
-export type Notification = {
+export type Event = {
   id: number;
   message: string;
   link: string;
