@@ -3,6 +3,7 @@
 import { DaySchedule } from '@/types';
 import DayCell from '@/components/calendar/DayCell';
 import { isSameMonth } from 'date-fns';
+import styles from './CalendarGrid.module.css';
 
 interface CalendarGridProps {
   days: DaySchedule[];
@@ -12,9 +13,9 @@ interface CalendarGridProps {
 
 export default function CalendarGrid({ days, currentMonth, onDayClick }: CalendarGridProps) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', backgroundColor: 'rgb(var(--card-border-rgb))', border: '1px solid rgb(var(--card-border-rgb))' }}>
-      {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => 
-        <div key={day} style={{ fontWeight: 'bold', textAlign: 'center', padding: '10px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
+    <div className={styles.grid}>
+      {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => 
+        <div key={i} className={styles.weekday}>
           {day}
         </div>
       )}

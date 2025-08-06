@@ -11,101 +11,24 @@ import {
   differenceInCalendarWeeks,
   addDays,
 } from 'date-fns';
-import { User, Holiday, Swap, Certificate, DayOffReason, Comment } from '@/types';
-
-export interface DayInfo {
-  date: Date;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  isDayOff: boolean;
-  dayOffReason: DayOffReason;
-  isHoliday: boolean;
-  holidayName: string;
-  hasComment: boolean;
-  shift: string;
-}
-
-const weekdayMap: { [key: number]: string } = { 1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday' };
+import { User, Holiday, Swap, Certificate, DayOffReason, Comment, DaySchedule, DayIndicator, ShiftName } from '@/types';
 
 type CalendarUser = Pick<User, 'id' | 'shift' | 'weekdayOff' | 'initialWeekendOff' | 'createdAt' | 'superiorId'>;
 
 export function isRegularDayOff(date: Date, user: Pick<User, 'weekdayOff' | 'initialWeekendOff' | 'createdAt'>): boolean {
     const dayOfWeek = getDay(date);
-    if (weekdayMap[dayOfWeek] === user.weekdayOff) {
-        return true;
-    }
+    const weekdayMap: { [key: number]: string } = { 1: 'monday', 2: 'tuesday', 3: 'wednesday', 4: 'thursday', 5: 'friday' };
+    if (weekdayMap[dayOfWeek] === user.weekdayOff) { return true; }
     if ((dayOfWeek === 0 || dayOfWeek === 6) && user.initialWeekendOff && user.createdAt) {
         const userCreatedAt = new Date(user.createdAt);
         const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
         let firstOccurrence = new Date(userCreatedAt);
-        while (getDay(firstOccurrence) !== firstWeekendOffDay) {
-            firstOccurrence.setDate(firstOccurrence.getDate() + 1);
-        }
+        while (getDay(firstOccurrence) !== firstWeekendOffDay) { firstOccurrence.setDate(firstOccurrence.getDate() + 1); }
         const weeksDiff = differenceInCalendarWeeks(date, firstOccurrence, { weekStartsOn: 1 });
         const currentWeekendOffDay = (weeksDiff % 2 === 0) ? firstWeekendOffDay : (firstWeekendOffDay === 6 ? 0 : 6);
-        if (dayOfWeek === currentWeekendOffDay) {
-            return true;
-        }
+        if (dayOfWeek === currentWeekendOffDay) { return true; }
     }
     return false;
-}
-
-export function getDayStatus(
-  day: Date,
-  user: CalendarUser,
-  holidays: Holiday[],
-  swaps: Swap[],
-  certificates: Certificate[]
-): Omit<DayInfo, 'isCurrentMonth' | 'isToday' | 'hasComment'> {
-  const dateString = format(day, 'yyyy-MM-dd');
-  const holidaysMap = new Map(holidays.map(h => [h.date, h.name]));
-  const approvedSwapsMap = new Map();
-  swaps.forEach(s => {
-    approvedSwapsMap.set(s.originalDate, s);
-    approvedSwapsMap.set(s.newDate, s);
-  });
-  const certificateDaysMap = new Map();
-  certificates.forEach(cert => {
-    const start = new Date(cert.startDate.replace(/-/g, '/'));
-    const end = new Date(cert.endDate.replace(/-/g, '/'));
-    for (let d = start; d <= end; d = addDays(d, 1)) {
-        certificateDaysMap.set(format(d, 'yyyy-MM-dd'), true);
-    }
-  });
-
-  let isOff = false;
-  let reason: DayOffReason = '';
-  let shift = user.shift;
-  const holidayName = holidaysMap.get(dateString) || '';
-  
-  if (isRegularDayOff(day, user)) {
-    isOff = true;
-    reason = getDay(day) === 0 || getDay(day) === 6 ? 'Weekend' : 'Weekday';
-  }
-  
-  const swap = approvedSwapsMap.get(dateString);
-  if (swap) {
-    const isShiftChangeOnly = swap.originalDate === swap.newDate;
-    if (isShiftChangeOnly) { isOff = false; shift = swap.newShift; reason = ''; } 
-    else {
-        const isNewDayOff = dateString === swap.newDate;
-        if (isNewDayOff) { isOff = true; reason = 'Swap'; } 
-        else { isOff = false; shift = swap.newShift; reason = ''; }
-    }
-  }
-
-  if (certificateDaysMap.has(dateString)) {
-    isOff = true; reason = 'Certificate';
-  }
-  
-  return {
-    date: day,
-    isDayOff: isOff,
-    dayOffReason: reason,
-    isHoliday: !!holidayName,
-    holidayName: holidayName,
-    shift: isOff ? '' : shift,
-  };
 }
 
 export const generateCalendarGrid = (
@@ -113,26 +36,82 @@ export const generateCalendarGrid = (
   ) => {
     const monthStart = startOfMonth(month);
     const days = eachDayOfInterval({ start: startOfWeek(monthStart, { weekStartsOn: 0 }), end: endOfWeek(endOfMonth(month), { weekStartsOn: 0 }) });
-    const commentsMap = new Map(comments.map(c => [c.date, true]));
     
+    const holidaysMap = new Map(holidays.map(h => [h.date, h.name]));
+    const commentsMap = new Map(comments.map(c => [c.date, true]));
+    const approvedSwapsMap = new Map();
+    swaps.filter(s => s.status === 'approved').forEach(s => {
+        approvedSwapsMap.set(s.originalDate, s);
+        approvedSwapsMap.set(s.newDate, s);
+    });
+    const certificateDaysMap = new Map();
+    certificates.filter(c => c.status === 'approved').forEach(cert => {
+        const start = new Date(cert.startDate.replace(/-/g, '/'));
+        const end = new Date(cert.endDate.replace(/-/g, '/'));
+        for (let d = start; d <= end; d = addDays(d, 1)) {
+            certificateDaysMap.set(format(d, 'yyyy-MM-dd'), true);
+        }
+    });
+
     let workedCounter = 0;
     let holidaysWorkedCounter = 0;
 
-    const calendarGrid = days.map((day): DayInfo => {
-      const dayStatus = getDayStatus(day, user, holidays, swaps, certificates);
+    const calendarGrid: DaySchedule[] = days.map((day): DaySchedule => {
+      const dateString = format(day, 'yyyy-MM-dd');
+      let isOff: boolean = isRegularDayOff(day, user);
+      let shift: ShiftName = user.shift;
+      const indicators: DayIndicator[] = [];
+
+      const swapOnThisDate = approvedSwapsMap.get(dateString);
+
+      if (swapOnThisDate) {
+        if (swapOnThisDate.originalDate === swapOnThisDate.newDate) { // Troca de turno no mesmo dia
+          isOff = false;
+          shift = swapOnThisDate.newShift;
+        } else if (dateString === swapOnThisDate.newDate) { // Este é o novo dia de folga
+          isOff = true;
+        } else if (dateString === swapOnThisDate.originalDate) { // Este era o dia de folga, agora é de trabalho
+          isOff = false;
+          shift = swapOnThisDate.newShift;
+        }
+      }
       
-      if(isSameMonth(day, month) && !dayStatus.isDayOff) {
+      if (certificateDaysMap.has(dateString)) {
+        isOff = true; 
+        indicators.push({ type: 'certificate', label: 'Atestado' });
+      }
+
+      if (isOff) {
+        if (swapOnThisDate && dateString === swapOnThisDate.newDate) {
+          indicators.push({ type: 'swap_day_off', label: 'Folga (Troca)' });
+        } else if (!certificateDaysMap.has(dateString)) {
+          indicators.push({ type: 'day_off', label: 'Folga Programada' });
+        }
+      } else if (swapOnThisDate && swapOnThisDate.originalDate === swapOnThisDate.newDate) {
+        indicators.push({ type: 'swap_shift', label: `Troca de turno para ${shift}` });
+      }
+
+      const holidayName = holidaysMap.get(dateString);
+      if (holidayName) {
+        indicators.push({ type: 'holiday', label: `Feriado: ${holidayName}` });
+      }
+
+      if (commentsMap.has(dateString)) {
+        indicators.push({ type: 'comment', label: 'Comentário' });
+      }
+      
+      if(isSameMonth(day, month) && !isOff) {
           workedCounter++;
-          if (dayStatus.isHoliday) holidaysWorkedCounter++;
+          if (holidayName) holidaysWorkedCounter++;
       }
       
       return {
-        ...dayStatus,
-        isCurrentMonth: isSameMonth(day, month),
-        isToday: isToday(day),
-        hasComment: commentsMap.has(format(day, 'yyyy-MM-dd')),
+        date: dateString,
+        isDayOff: isOff,
+        shift: isOff ? undefined : shift,
+        indicators: indicators,
       };
     });
     
     return { calendarGrid, workedCounter, holidaysWorkedCounter };
-};
+}

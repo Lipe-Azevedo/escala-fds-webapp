@@ -6,6 +6,7 @@ import Cookies from 'js-cookie';
 import { User, Swap, Certificate } from '@/types';
 import Calendar from '@/components/calendar/Calendar';
 import DashboardSummaryCard from '@/components/common/DashboardSummaryCard';
+import CalendarSummary from '@/components/calendar/CalendarSummary';
 
 export default function DashboardHomePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -14,6 +15,7 @@ export default function DashboardHomePage() {
   const [pendingSwaps, setPendingSwaps] = useState(0);
   const [pendingCertificates, setPendingCertificates] = useState(0);
   const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
+  const [calendarSummary, setCalendarSummary] = useState({ workedDays: 0, holidaysWorked: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -70,14 +72,14 @@ export default function DashboardHomePage() {
             if (user.userType === 'master') {
                 const [swapsRes, certsRes] = await Promise.all([
                     fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${apiURL}/api/certificates`, { headers: { 'Authorization': `Bearer ${token}` } })
+                    fetch(`${apiURL}/api/certificates?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
                 if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
                 if (!certsRes.ok) throw new Error('Falha ao buscar atestados.');
                 const swaps: Swap[] = await swapsRes.json();
                 const certs: Certificate[] = await certsRes.json();
                 setPendingSwaps(swaps.length);
-                setPendingCertificates(certs.filter(c => c.status === 'pending').length);
+                setPendingCertificates(certs.length);
                 setUsersOnShift(allUsers.filter(u => u.shift && isShiftNow(u.shift)));
             } else {
                 const colleaguesOnShift = allUsers.filter(u => u.id !== user.id && u.shift === user.shift && isShiftNow(u.shift));
@@ -165,8 +167,16 @@ export default function DashboardHomePage() {
       ) : (
         <>
           <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-            <Calendar user={user} />
+            <Calendar user={user} onSummaryChange={setCalendarSummary} />
           </div>
+          
+          <div style={{marginTop: '20px'}}>
+            <CalendarSummary 
+                workedDays={calendarSummary.workedDays}
+                holidaysWorked={calendarSummary.holidaysWorked}
+            />
+          </div>
+
           <div style={{marginTop: '40px'}}>
             <h3>Colegas de plantão</h3>
             <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', overflow: 'hidden'}}>

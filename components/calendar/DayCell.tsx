@@ -1,7 +1,7 @@
 'use client';
 
-import { format, isToday } from 'date-fns';
-import { DaySchedule, DayIndicator } from '@/types';
+import { format, isToday, parseISO } from 'date-fns';
+import { DaySchedule } from '@/types';
 import styles from './DayCell.module.css';
 
 interface DayCellProps {
@@ -11,25 +11,28 @@ interface DayCellProps {
 }
 
 const indicatorColors: Record<string, string> = {
-    day_off: '#10b981', // Verde
-    swap_day_off: '#34d399', // Verde claro (destaque)
-    swap_shift: '#3b82f6', // Azul
-    holiday: '#f59e0b', // Amarelo
-    certificate: '#ef4444', // Vermelho
-    comment: '#6b7280', // Cinza
+    day_off: '#10b981',
+    swap_day_off: '#34d399',
+    swap_shift: '#3b82f6',
+    holiday: '#f59e0b',
+    certificate: '#ef4444',
+    comment: '#6b7280',
 }
 
 export default function DayCell({ day, isCurrentMonth, onClick }: DayCellProps) {
-  const dateObj = new Date(day.date.replace(/-/g, '/'));
+  const dateObj = parseISO(day.date);
   
-  const dayStyle: React.CSSProperties = {
-    color: isToday(dateObj) ? 'var(--primary-color)' : 'rgb(var(--foreground-rgb))',
-    opacity: isCurrentMonth ? 1 : 0.3,
-  };
-
+  const classNames = [styles.day];
+  if (!isCurrentMonth) {
+    classNames.push(styles.otherMonth);
+  }
+  if (isToday(dateObj)) {
+    classNames.push(styles.today);
+  }
+  
   return (
-    <div className={styles.dayCell} style={dayStyle} onClick={() => onClick(dateObj)}>
-      <div className={styles.dayNumber}>{format(dateObj, 'd')}</div>
+    <div className={classNames.join(' ')} onClick={() => onClick(dateObj)}>
+      <span className={styles.dayNumber}>{format(dateObj, 'd')}</span>
       <div className={styles.indicators}>
         {day.indicators.map((indicator, index) => (
             <span 

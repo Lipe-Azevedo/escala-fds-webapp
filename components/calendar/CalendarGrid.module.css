@@ -1,0 +1,16 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    justify-items: center;
+    flex-grow: 1;
+  }
+  
+  .weekday {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary-color);
+    text-align: center;
+    width: 100%;
+    padding-bottom: 5px;
+  }
