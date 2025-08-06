@@ -15,7 +15,7 @@ import { User, Holiday, Swap, Certificate, DayOffReason, Comment, DaySchedule, D
 
 export const indicatorColors: Record<DayIndicator['type'], string> = {
     day_off: '#10b981',
-    swap_day_off: '#6ee7b7',
+    swap_day_off: '#6ee7b0',
     swap_shift: '#3b82f6',
     holiday: '#f59e0b',
     certificate: '#ef4444',
@@ -38,6 +38,50 @@ export function isRegularDayOff(date: Date, user: Pick<User, 'weekdayOff' | 'ini
         if (dayOfWeek === currentWeekendOffDay) { return true; }
     }
     return false;
+}
+
+export function getDayStatus(
+  day: Date,
+  user: CalendarUser,
+  holidays: Holiday[],
+  swaps: Swap[],
+  certificates: Certificate[]
+): { isDayOff: boolean, reason: DayOffReason, shift: ShiftName } {
+  const dateString = format(day, 'yyyy-MM-dd');
+  
+  let isOff = isRegularDayOff(day, user);
+  let reason: DayOffReason = isOff ? (getDay(day) === 0 || getDay(day) === 6 ? 'Weekend' : 'Weekday') : '';
+  let shift = user.shift;
+
+  const swapOnThisDate = swaps.find(s => s.originalDate === dateString || s.newDate === dateString);
+
+  if (swapOnThisDate) {
+    if (swapOnThisDate.originalDate === swapOnThisDate.newDate) { // Troca de turno
+      isOff = false;
+      shift = swapOnThisDate.newShift;
+      reason = '';
+    } else if (dateString === swapOnThisDate.newDate) { // Novo dia de folga
+      isOff = true;
+      reason = 'Swap';
+    } else if (dateString === swapOnThisDate.originalDate) { // Folga cedida
+      isOff = false;
+      shift = swapOnThisDate.newShift;
+      reason = '';
+    }
+  }
+
+  const certificateOnThisDay = certificates.find(c => {
+    const start = new Date(c.startDate.replace(/-/g, '/'));
+    const end = new Date(c.endDate.replace(/-/g, '/'));
+    return day >= start && day <= end;
+  });
+
+  if (certificateOnThisDay) {
+    isOff = true; 
+    reason = 'Certificate';
+  }
+  
+  return { isDayOff: isOff, reason, shift };
 }
 
 export const generateCalendarGrid = (
