@@ -35,23 +35,28 @@ export default function DashboardHomePage() {
   }, [router]);
 
   useEffect(() => {
-    if (!user || user.userType !== 'master') return;
+    if (!user) return;
 
     const fetchWidgetsData = async () => {
         const token = Cookies.get('authToken');
         if (!token) return;
+
         const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         try {
-            const [swapsRes, certsRes] = await Promise.all([
-                fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch(`${apiURL}/api/certificates?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } })
-            ]);
-            if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
-            if (!certsRes.ok) throw new Error('Falha ao buscar atestados.');
-            const swaps: Swap[] = await swapsRes.json();
-            const certs: Certificate[] = await certsRes.json();
-            setPendingSwaps(swaps.length);
-            setPendingCertificates(certs.length);
+            if (user.userType === 'master') {
+                const [swapsRes, certsRes] = await Promise.all([
+                    fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${apiURL}/api/certificates?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+                if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
+                if (!certsRes.ok) throw new Error('Falha ao buscar atestados.');
+
+                const swaps: Swap[] = (await swapsRes.json()) || [];
+                const certs: Certificate[] = (await certsRes.json()) || [];
+                
+                setPendingSwaps(swaps.length);
+                setPendingCertificates(certs.length);
+            }
         } catch (error: any) { 
             console.error("Failed to fetch dashboard data", error);
         }
@@ -95,11 +100,14 @@ export default function DashboardHomePage() {
 
       {user.userType === 'master' ? (
         <div>
-          {/* ... (JSX do Master) ... */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '25px' }}>
+            <DashboardSummaryCard title="Trocas Pendentes" value={pendingSwaps} linkTo="/dashboard/swaps?status=pending" linkLabel="Ver trocas"/>
+            <DashboardSummaryCard title="Atestados Pendentes" value={pendingCertificates} linkTo="/dashboard/certificates?status=pending" linkLabel="Ver atestados"/>
+          </div>
         </div>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'flex-start', marginTop: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'stretch', marginTop: '20px' }}>
             <Calendar 
                 user={user} 
                 onSummaryChange={setCalendarSummary} 
