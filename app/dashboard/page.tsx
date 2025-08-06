@@ -21,21 +21,14 @@ export default function DashboardHomePage() {
     if (!shift || !shift.includes('-')) {
       return false;
     }
-  
     const now = new Date();
     const currentHour = now.getHours();
-    
     try {
       const parts = shift.split('-');
       if (parts.length !== 2) return false;
-
       const startHour = parseInt(parts[0].split(':')[0], 10);
       const endHour = parseInt(parts[1].split(':')[0], 10);
-  
-      if (isNaN(startHour) || isNaN(endHour)) {
-        return false;
-      }
-  
+      if (isNaN(startHour) || isNaN(endHour)) { return false; }
       if (startHour < endHour) {
         return currentHour >= startHour && currentHour < endHour;
       } else {
@@ -54,10 +47,12 @@ export default function DashboardHomePage() {
       router.push('/login');
       return;
     }
-    
     const currentUser = JSON.parse(userDataString);
     setUser(currentUser);
+  }, [router]);
 
+  useEffect(() => {
+    if (!user) return;
     const fetchData = async () => {
         setIsLoading(true);
         setError('');
@@ -66,33 +61,26 @@ export default function DashboardHomePage() {
           setIsLoading(false);
           return;
         }
-
         const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         try {
             const usersRes = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!usersRes.ok) throw new Error('Falha ao buscar usuários.');
             const allUsers: User[] = await usersRes.json();
 
-            if (currentUser.userType === 'master') {
+            if (user.userType === 'master') {
                 const [swapsRes, certsRes] = await Promise.all([
                     fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetch(`${apiURL}/api/certificates`, { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
                 if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
                 if (!certsRes.ok) throw new Error('Falha ao buscar atestados.');
-
                 const swaps: Swap[] = await swapsRes.json();
                 const certs: Certificate[] = await certsRes.json();
-                
-                setPendingSwaps(swaps.filter(s => s.status === 'pending').length);
+                setPendingSwaps(swaps.length);
                 setPendingCertificates(certs.filter(c => c.status === 'pending').length);
                 setUsersOnShift(allUsers.filter(u => u.shift && isShiftNow(u.shift)));
             } else {
-                const colleaguesOnShift = allUsers.filter(u => 
-                    u.id !== currentUser.id && 
-                    u.shift === currentUser.shift && 
-                    isShiftNow(u.shift)
-                );
+                const colleaguesOnShift = allUsers.filter(u => u.id !== user.id && u.shift === user.shift && isShiftNow(u.shift));
                 setUsersOnShift(colleaguesOnShift);
             }
         } catch (error: any) { 
@@ -102,9 +90,8 @@ export default function DashboardHomePage() {
             setIsLoading(false); 
         }
     };
-
     fetchData();
-  }, [router]);
+  }, [user]);
 
   const handleLogout = () => {
     Cookies.remove('authToken');
