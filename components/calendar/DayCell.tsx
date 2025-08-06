@@ -1,43 +1,45 @@
 'use client';
 
-import { format } from 'date-fns';
-import { DayInfo } from '@/hooks/useCalendar';
+import { format, isToday } from 'date-fns';
+import { DaySchedule, DayIndicator } from '@/types';
+import styles from './DayCell.module.css';
 
 interface DayCellProps {
-  day: DayInfo;
+  day: DaySchedule;
+  isCurrentMonth: boolean;
   onClick: (date: Date) => void;
 }
 
-const renderDayStatus = (day: DayInfo) => {
-    if (day.dayOffReason === 'Certificate') {
-      return <div style={{ fontSize: '12px', color: '#facc15', fontWeight: 'bold' }}>Atestado</div>;
-    }
-    if (day.dayOffReason === 'Swap') {
-      return <div style={{ fontSize: '12px', color: '#4ade80', fontWeight: 'bold' }}>Folga (Troca)</div>;
-    }
-    if (day.isDayOff) {
-      return <div style={{ fontSize: '12px', color: '#4ade80', fontWeight: 'bold' }}>Folga</div>;
-    }
-    return <div style={{ fontSize: '12px', color: 'var(--text-secondary-color)', marginTop: '5px' }}>{day.shift}</div>;
+const indicatorColors: Record<string, string> = {
+    day_off: '#10b981', // Verde
+    swap_day_off: '#34d399', // Verde claro (destaque)
+    swap_shift: '#3b82f6', // Azul
+    holiday: '#f59e0b', // Amarelo
+    certificate: '#ef4444', // Vermelho
+    comment: '#6b7280', // Cinza
 }
 
-export default function DayCell({ day, onClick }: DayCellProps) {
+export default function DayCell({ day, isCurrentMonth, onClick }: DayCellProps) {
+  const dateObj = new Date(day.date.replace(/-/g, '/'));
+  
   const dayStyle: React.CSSProperties = {
-    border: `1px solid rgb(var(--card-border-rgb))`,
-    padding: '10px',
-    minHeight: '100px',
-    color: day.isToday ? '#60a5fa' : 'rgb(var(--foreground-rgb))',
-    backgroundColor: day.isCurrentMonth ? 'rgb(var(--card-background-rgb))' : 'rgba(var(--background-rgb), 0.5)',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
+    color: isToday(dateObj) ? 'var(--primary-color)' : 'rgb(var(--foreground-rgb))',
+    opacity: isCurrentMonth ? 1 : 0.3,
   };
 
   return (
-    <div style={dayStyle} onClick={() => onClick(day.date)}>
-      <div style={{ fontWeight: 'bold' }}>{format(day.date, 'd')}</div>
-      {day.isHoliday && <div style={{ fontSize: '12px', color: '#f87171', fontWeight: 'bold' }}>{day.holidayName}</div>}
-      {day.hasComment && <div style={{ fontSize: '12px', color: '#fb923c' }}>&#9998; Comentário</div>}
-      {renderDayStatus(day)}
+    <div className={styles.dayCell} style={dayStyle} onClick={() => onClick(dateObj)}>
+      <div className={styles.dayNumber}>{format(dateObj, 'd')}</div>
+      <div className={styles.indicators}>
+        {day.indicators.map((indicator, index) => (
+            <span 
+                key={index}
+                className={styles.indicator}
+                style={{ backgroundColor: indicatorColors[indicator.type] || '#fff' }}
+                title={indicator.label}
+            ></span>
+        ))}
+      </div>
     </div>
   );
 }

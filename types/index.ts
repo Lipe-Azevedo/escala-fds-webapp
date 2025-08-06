@@ -84,3 +84,21 @@ export type Notification = {
   link: string;
   createdAt: string;
 };
+
+export interface DayIndicator {
+  type: 'day_off' | 'swap_day_off' | 'swap_shift' | 'holiday' | 'certificate' | 'comment';
+  label: string;
+}
+
+export interface DaySchedule {
+  date: string;
+  isDayOff: boolean;
+  shift?: ShiftName;
+  indicators: DayIndicator[];
+}
+
+export interface Schedule {
+  days: DaySchedule[];
+  workedDaysCount: number;
+  holidaysWorkedCount: number;
+}
