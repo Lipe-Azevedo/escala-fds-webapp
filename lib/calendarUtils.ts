@@ -13,6 +13,15 @@ import {
 } from 'date-fns';
 import { User, Holiday, Swap, Certificate, DayOffReason, Comment, DaySchedule, DayIndicator, ShiftName } from '@/types';
 
+export const indicatorColors: Record<DayIndicator['type'], string> = {
+    day_off: '#10b981',
+    swap_day_off: '#6ee7b7',
+    swap_shift: '#3b82f6',
+    holiday: '#f59e0b',
+    certificate: '#ef4444',
+    comment: '#6b7280',
+};
+
 type CalendarUser = Pick<User, 'id' | 'shift' | 'weekdayOff' | 'initialWeekendOff' | 'createdAt' | 'superiorId'>;
 
 export function isRegularDayOff(date: Date, user: Pick<User, 'weekdayOff' | 'initialWeekendOff' | 'createdAt'>): boolean {

@@ -24,9 +24,6 @@ export default function DashboardHomePage() {
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [calendarSummary, setCalendarSummary] = useState({ workedDays: 0, holidaysWorked: 0 });
 
-  const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (!userDataString) {
@@ -38,20 +35,25 @@ export default function DashboardHomePage() {
   }, [router]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.userType !== 'master') return;
 
     const fetchWidgetsData = async () => {
-        setIsLoading(true);
         const token = Cookies.get('authToken');
-        if (!token) { setIsLoading(false); return; }
-
+        if (!token) return;
         const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         try {
-            // ... (lógica de fetch inalterada)
+            const [swapsRes, certsRes] = await Promise.all([
+                fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${apiURL}/api/certificates?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } })
+            ]);
+            if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
+            if (!certsRes.ok) throw new Error('Falha ao buscar atestados.');
+            const swaps: Swap[] = await swapsRes.json();
+            const certs: Certificate[] = await certsRes.json();
+            setPendingSwaps(swaps.length);
+            setPendingCertificates(certs.length);
         } catch (error: any) { 
             console.error("Failed to fetch dashboard data", error);
-        } finally { 
-            setIsLoading(false); 
         }
     };
     fetchWidgetsData();
@@ -93,11 +95,11 @@ export default function DashboardHomePage() {
 
       {user.userType === 'master' ? (
         <div>
-          {/* ... (JSX do Master inalterado) ... */}
+          {/* ... (JSX do Master) ... */}
         </div>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '30px', alignItems: 'flex-start', marginTop: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', alignItems: 'flex-start', marginTop: '20px' }}>
             <Calendar 
                 user={user} 
                 onSummaryChange={setCalendarSummary} 
@@ -114,6 +116,7 @@ export default function DashboardHomePage() {
                 weeks={weeks}
                 selectedWeekIndex={selectedWeekIndex}
                 onWeekChange={setSelectedWeekIndex}
+                currentMonth={currentMonth}
             />
           </div>
           <div style={{marginTop: '20px'}}>

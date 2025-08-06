@@ -37,20 +37,35 @@
     overflow-y: auto;
 }
 
-.content ul {
+.eventList {
     list-style: none;
     padding: 0;
 }
 
-.content > ul > li {
+.eventList > li {
     margin-bottom: 15px;
 }
 
-.content > ul > li > ul {
-    list-style-type: ' - ';
-    padding-left: 20px;
+.indicatorList {
+    list-style-type: none;
+    padding-left: 0;
+    margin-top: 5px;
+}
+
+.indicatorItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 14px;
     color: var(--text-secondary-color);
+    margin-bottom: 5px;
+}
+
+.indicatorDash {
+    height: 12px;
+    width: 4px;
+    border-radius: 2px;
+    flex-shrink: 0;
 }
 
 .noEvents {

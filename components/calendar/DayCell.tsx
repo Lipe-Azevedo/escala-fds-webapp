@@ -1,8 +1,9 @@
 'use client';
 
 import { format, isToday, parseISO } from 'date-fns';
-import { DaySchedule, DayIndicator } from '@/types';
+import { DaySchedule } from '@/types';
 import styles from './DayCell.module.css';
+import { indicatorColors } from '@/lib/calendarUtils'; // Importa as cores
 
 interface DayCellProps {
   day: DaySchedule;
@@ -11,15 +12,6 @@ interface DayCellProps {
   isCurrentMonth: boolean;
   onClick: (date: Date) => void;
 }
-
-const indicatorColors: Record<DayIndicator['type'], string> = {
-    day_off: '#10b981',
-    swap_day_off: '#6ee7b7',
-    swap_shift: '#3b82f6',
-    holiday: '#f59e0b',
-    certificate: '#ef4444',
-    comment: '#6b7280',
-};
 
 export default function DayCell({ day, dayIndex, selectedWeekIndex, isCurrentMonth, onClick }: DayCellProps) {
   const dateObj = parseISO(day.date);
@@ -31,7 +23,7 @@ export default function DayCell({ day, dayIndex, selectedWeekIndex, isCurrentMon
   if (isToday(dateObj)) {
     classNames.push(styles.today);
   }
-  if (Math.floor(dayIndex / 7) === selectedWeekIndex) {
+  if (isCurrentMonth && Math.floor(dayIndex / 7) === selectedWeekIndex) {
     classNames.push(styles.highlighted);
   }
   

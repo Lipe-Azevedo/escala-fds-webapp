@@ -2,18 +2,24 @@
 
 import { DaySchedule } from '@/types';
 import styles from './WeeklyDetailsPanel.module.css';
-import { format, parseISO } from 'date-fns';
+import { format, isSameMonth, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { indicatorColors } from '@/lib/calendarUtils';
 
 interface WeeklyDetailsPanelProps {
   weeks: DaySchedule[][];
   selectedWeekIndex: number;
   onWeekChange: (index: number) => void;
+  currentMonth: Date;
 }
 
-export default function WeeklyDetailsPanel({ weeks, selectedWeekIndex, onWeekChange }: WeeklyDetailsPanelProps) {
+export default function WeeklyDetailsPanel({ weeks, selectedWeekIndex, onWeekChange, currentMonth }: WeeklyDetailsPanelProps) {
   const currentWeek = weeks[selectedWeekIndex] || [];
-  const eventsOfWeek = currentWeek.filter(day => day.indicators.length > 0);
+  
+  // Filtra para mostrar apenas eventos do mês atual
+  const eventsOfWeek = currentWeek.filter(day => 
+    day.indicators.length > 0 && isSameMonth(parseISO(day.date), currentMonth)
+  );
 
   const handlePrevWeek = () => {
     onWeekChange(Math.max(0, selectedWeekIndex - 1));
@@ -32,13 +38,19 @@ export default function WeeklyDetailsPanel({ weeks, selectedWeekIndex, onWeekCha
       </div>
       <div className={styles.content}>
         {eventsOfWeek.length > 0 ? (
-          <ul>
+          <ul className={styles.eventList}>
             {eventsOfWeek.map(day => (
               <li key={day.date}>
-                <strong>{format(parseISO(day.date), "EEEE, dd/MM", { locale: ptBR })}:</strong>
-                <ul>
+                <strong>{format(parseISO(day.date), "EEEE, dd/MM", { locale: ptBR })}</strong>
+                <ul className={styles.indicatorList}>
                   {day.indicators.map((indicator, index) => (
-                    <li key={index}>{indicator.label}</li>
+                    <li key={index} className={styles.indicatorItem}>
+                      <span 
+                        className={styles.indicatorDash}
+                        style={{ backgroundColor: indicatorColors[indicator.type] || '#ffffff' }}
+                      ></span>
+                      <span>{indicator.label}</span>
+                    </li>
                   ))}
                 </ul>
               </li>
