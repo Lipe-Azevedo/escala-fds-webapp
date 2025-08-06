@@ -2,9 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { User, DaySchedule } from '@/types';
-import { addMonths, subMonths } from 'date-fns';
+import { addMonths, subMonths, isSameMonth, parseISO } from 'date-fns';
 import { useCalendarData } from '@/hooks/useCalendarData';
-import { generateCalendarGrid } from '@/lib/calendarUtils';
 import CommentsModal from '@/components/comment/CommentsModal';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarGrid from '@/components/calendar/CalendarGrid';
@@ -14,16 +13,42 @@ type CalendarUser = Pick<User, 'id' | 'shift' | 'weekdayOff' | 'initialWeekendOf
 interface CalendarProps {
     user: CalendarUser;
     onSummaryChange: (summary: { workedDays: number, holidaysWorked: number }) => void;
+    calendarGrid: DaySchedule[];
+    currentMonth: Date;
+    isLoading: boolean;
+    error: string;
+    onPrevMonth: () => void;
+    onNextMonth: () => void;
+    onCommentAdded: () => void;
+    selectedWeekIndex: number;
 }
 
-export default function Calendar({ user, onSummaryChange }: CalendarProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { isLoading, error, data, fetchData } = useCalendarData(currentMonth, user);
-
-  const { calendarGrid, workedCounter, holidaysWorkedCounter } = useMemo(() => {
-    if (!user || !data) return { calendarGrid: [], workedCounter: 0, holidaysWorkedCounter: 0 };
-    return generateCalendarGrid(currentMonth, user, data.holidays, data.swaps, data.comments, data.certificates);
-  }, [currentMonth, user, data]);
+export default function Calendar({ 
+    user, 
+    onSummaryChange, 
+    calendarGrid,
+    currentMonth,
+    isLoading,
+    error,
+    onPrevMonth,
+    onNextMonth,
+    onCommentAdded,
+    selectedWeekIndex
+}: CalendarProps) {
+  
+  const { workedCounter, holidaysWorkedCounter } = useMemo(() => {
+    let workedDays = 0;
+    let holidaysWorked = 0;
+    calendarGrid.forEach(day => {
+        if(isSameMonth(new Date(day.date.replace(/-/g, '/')), currentMonth) && !day.isDayOff) {
+            workedDays++;
+            if (day.indicators.some(i => i.type === 'holiday')) {
+                holidaysWorked++;
+            }
+        }
+    });
+    return { workedCounter: workedDays, holidaysWorkedCounter: holidaysWorked };
+  }, [calendarGrid, currentMonth]);
 
   useEffect(() => {
     onSummaryChange({ workedDays: workedCounter, holidaysWorked: holidaysWorkedCounter });
@@ -36,20 +61,13 @@ export default function Calendar({ user, onSummaryChange }: CalendarProps) {
     setSelectedDate(date);
     setCommentModalOpen(true);
   };
-
-  const handleCommentAdded = () => {
-    fetchData(); 
-  }
   
-  const prevMonth = () => setCurrentMonth(prev => subMonths(prev, 1));
-  const nextMonth = () => setCurrentMonth(prev => addMonths(prev, 1));
-
   return (
     <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', borderRadius: '8px', padding: '20px'}}>
       <CalendarHeader 
         currentMonth={currentMonth}
-        onPrevMonth={prevMonth}
-        onNextMonth={nextMonth}
+        onPrevMonth={onPrevMonth}
+        onNextMonth={onNextMonth}
       />
       
       {isLoading ? <p>Carregando calendário...</p> : error ? <p style={{color: '#f87171'}}>{error}</p> : (
@@ -57,13 +75,14 @@ export default function Calendar({ user, onSummaryChange }: CalendarProps) {
             days={calendarGrid} 
             currentMonth={currentMonth} 
             onDayClick={handleDayClick} 
+            selectedWeekIndex={selectedWeekIndex}
         />
       )}
 
       <CommentsModal 
         isOpen={isCommentModalOpen}
         onClose={() => setCommentModalOpen(false)}
-        onCommentAdded={handleCommentAdded}
+        onCommentAdded={onCommentAdded}
         selectedDate={selectedDate}
         calendarUser={user}
       />

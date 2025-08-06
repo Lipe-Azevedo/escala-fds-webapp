@@ -1,4 +1,4 @@
-.day {
+.dayCell {
     width: 100%;
     aspect-ratio: 1 / 1;
     padding: 8px;
@@ -10,10 +10,10 @@
     justify-content: space-between;
     border-radius: 6px;
     background-color: transparent;
-    border: 1px solid transparent;
+    border: 1px solid rgb(var(--card-border-rgb));
 }
 
-.day:hover {
+.dayCell:hover {
     background-color: rgba(var(--input-background-rgb), 0.5);
 }
 
@@ -27,11 +27,12 @@
     font-weight: 500;
     align-self: flex-end;
     color: rgb(var(--foreground-rgb));
+    transition: all 0.2s ease;
 }
 
 .today .dayNumber {
-    color: var(--primary-color);
-    background-color: rgb(var(--foreground-rgb));
+    color: rgb(var(--card-background-rgb));
+    background-color: var(--primary-color);
     border-radius: 50%;
     width: 24px;
     height: 24px;
@@ -45,10 +46,16 @@
     flex-direction: column;
     gap: 3px;
     width: 100%;
+    min-height: 5px; /* Garante espaço para pelo menos alguns indicadores */
 }
 
 .indicator {
     height: 4px;
     width: 100%;
     border-radius: 2px;
+}
+
+.dayCell.highlighted {
+    background-color: rgba(var(--primary-color), 0.1);
+    border-color: var(--primary-color);
 }

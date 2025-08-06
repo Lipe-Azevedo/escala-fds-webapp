@@ -65,12 +65,12 @@ export const generateCalendarGrid = (
       const swapOnThisDate = approvedSwapsMap.get(dateString);
 
       if (swapOnThisDate) {
-        if (swapOnThisDate.originalDate === swapOnThisDate.newDate) { // Troca de turno no mesmo dia
+        if (swapOnThisDate.originalDate === swapOnThisDate.newDate) {
           isOff = false;
           shift = swapOnThisDate.newShift;
-        } else if (dateString === swapOnThisDate.newDate) { // Este é o novo dia de folga
+        } else if (dateString === swapOnThisDate.newDate) {
           isOff = true;
-        } else if (dateString === swapOnThisDate.originalDate) { // Este era o dia de folga, agora é de trabalho
+        } else if (dateString === swapOnThisDate.originalDate) {
           isOff = false;
           shift = swapOnThisDate.newShift;
         }
@@ -114,4 +114,17 @@ export const generateCalendarGrid = (
     });
     
     return { calendarGrid, workedCounter, holidaysWorkedCounter };
+};
+
+export function chunk<T>(array: T[], size: number): T[][] {
+    if (!array || array.length === 0) {
+        return [];
+    }
+    const chunked_arr: T[][] = [];
+    let index = 0;
+    while (index < array.length) {
+        chunked_arr.push(array.slice(index, size + index));
+        index += size;
+    }
+    return chunked_arr;
 }

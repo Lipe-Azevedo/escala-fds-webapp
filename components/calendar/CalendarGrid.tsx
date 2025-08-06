@@ -2,16 +2,17 @@
 
 import { DaySchedule } from '@/types';
 import DayCell from '@/components/calendar/DayCell';
-import { isSameMonth } from 'date-fns';
+import { isSameMonth, parseISO } from 'date-fns';
 import styles from './CalendarGrid.module.css';
 
 interface CalendarGridProps {
   days: DaySchedule[];
   currentMonth: Date;
+  selectedWeekIndex: number;
   onDayClick: (date: Date) => void;
 }
 
-export default function CalendarGrid({ days, currentMonth, onDayClick }: CalendarGridProps) {
+export default function CalendarGrid({ days, currentMonth, selectedWeekIndex, onDayClick }: CalendarGridProps) {
   return (
     <div className={styles.grid}>
       {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => 
@@ -20,11 +21,13 @@ export default function CalendarGrid({ days, currentMonth, onDayClick }: Calenda
         </div>
       )}
       
-      {days.map((day) => (
+      {days.map((day, index) => (
         <DayCell 
             key={day.date} 
-            day={day} 
-            isCurrentMonth={isSameMonth(new Date(day.date.replace(/-/g, '/')), currentMonth)}
+            day={day}
+            dayIndex={index}
+            selectedWeekIndex={selectedWeekIndex}
+            isCurrentMonth={isSameMonth(parseISO(day.date), currentMonth)}
             onClick={onDayClick} 
         />
       ))}
