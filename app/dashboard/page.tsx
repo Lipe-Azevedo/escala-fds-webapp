@@ -24,6 +24,10 @@ export default function DashboardHomePage() {
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [calendarSummary, setCalendarSummary] = useState({ workedDays: 0, holidaysWorked: 0 });
 
+  const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
+  const [isLoadingWidgets, setIsLoadingWidgets] = useState(true);
+  const [widgetsError, setWidgetsError] = useState('');
+
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (!userDataString) {
@@ -38,11 +42,32 @@ export default function DashboardHomePage() {
     if (!user) return;
 
     const fetchWidgetsData = async () => {
+        setIsLoadingWidgets(true);
+        setWidgetsError('');
         const token = Cookies.get('authToken');
-        if (!token) return;
+        if (!token) { setIsLoadingWidgets(false); return; }
 
         const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
         try {
+            const usersRes = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!usersRes.ok) throw new Error('Falha ao buscar usuários.');
+            const allUsers: User[] = await usersRes.json();
+            
+            const isShiftNow = (shift: string): boolean => {
+              if (!shift || !shift.includes('-')) { return false; }
+              const now = new Date();
+              const currentHour = now.getHours();
+              try {
+                const parts = shift.split('-');
+                if (parts.length !== 2) return false;
+                const startHour = parseInt(parts[0].split(':')[0], 10);
+                const endHour = parseInt(parts[1].split(':')[0], 10);
+                if (isNaN(startHour) || isNaN(endHour)) { return false; }
+                if (startHour < endHour) { return currentHour >= startHour && currentHour < endHour; } 
+                else { return currentHour >= startHour || currentHour < endHour; }
+              } catch (error) { return false; }
+            };
+
             if (user.userType === 'master') {
                 const [swapsRes, certsRes] = await Promise.all([
                     fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -50,15 +75,19 @@ export default function DashboardHomePage() {
                 ]);
                 if (!swapsRes.ok) throw new Error('Falha ao buscar trocas.');
                 if (!certsRes.ok) throw new Error('Falha ao buscar atestados.');
-
-                const swaps: Swap[] = (await swapsRes.json()) || [];
-                const certs: Certificate[] = (await certsRes.json()) || [];
-                
+                const swaps: Swap[] = await swapsRes.json() || [];
+                const certs: Certificate[] = await certsRes.json() || [];
                 setPendingSwaps(swaps.length);
                 setPendingCertificates(certs.length);
+                setUsersOnShift(allUsers.filter(u => u.shift && isShiftNow(u.shift)));
+            } else {
+                const colleaguesOnShift = allUsers.filter(u => u.id !== user.id && u.shift === user.shift && isShiftNow(u.shift));
+                setUsersOnShift(colleaguesOnShift);
             }
         } catch (error: any) { 
-            console.error("Failed to fetch dashboard data", error);
+            setWidgetsError(error.message);
+        } finally { 
+            setIsLoadingWidgets(false); 
         }
     };
     fetchWidgetsData();
@@ -89,6 +118,22 @@ export default function DashboardHomePage() {
     router.push('/login');
   };
   
+  const tableHeaderStyle: React.CSSProperties = {
+    padding: '12px 15px',
+    textAlign: 'left',
+    fontWeight: 'bold',
+    color: '#a0aec0',
+    textTransform: 'uppercase',
+    fontSize: '12px',
+    borderBottom: '2px solid rgb(var(--card-border-rgb))',
+  };
+
+  const tableCellStyle: React.CSSProperties = {
+    padding: '12px 15px',
+    textAlign: 'left',
+    borderBottom: '1px solid rgb(var(--card-border-rgb))',
+  };
+
   if (!user) return <div>Carregando...</div>;
 
   return (
@@ -103,6 +148,32 @@ export default function DashboardHomePage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '25px' }}>
             <DashboardSummaryCard title="Trocas Pendentes" value={pendingSwaps} linkTo="/dashboard/swaps?status=pending" linkLabel="Ver trocas"/>
             <DashboardSummaryCard title="Atestados Pendentes" value={pendingCertificates} linkTo="/dashboard/certificates?status=pending" linkLabel="Ver atestados"/>
+          </div>
+          <div style={{marginTop: '40px'}}>
+            <h3>Colaboradores de plantão</h3>
+            <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', overflow: 'hidden'}}>
+              {isLoadingWidgets ? <p style={{padding: '20px'}}>Carregando...</p> : 
+               usersOnShift.length > 0 ? (
+                <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                  <thead>
+                    <tr>
+                      <th style={{...tableHeaderStyle, width: '50%'}}>Nome</th>
+                      <th style={tableHeaderStyle}>Equipe</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {usersOnShift.map(u => (
+                      <tr key={u.id}>
+                        <td style={tableCellStyle}>{u.firstName} {u.lastName}</td>
+                        <td style={tableCellStyle}>{u.team}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p style={{color: 'var(--text-secondary-color)', padding: '20px'}}>Nenhum colaborador no turno atual.</p>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -132,6 +203,32 @@ export default function DashboardHomePage() {
                 workedDays={calendarSummary.workedDays}
                 holidaysWorked={calendarSummary.holidaysWorked}
             />
+          </div>
+          <div style={{marginTop: '40px'}}>
+            <h3>Colegas de plantão</h3>
+            <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', overflow: 'hidden'}}>
+              {isLoadingWidgets ? <p style={{padding: '20px'}}>Carregando...</p> : 
+               usersOnShift.length > 0 ? (
+                <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                    <thead>
+                        <tr>
+                            <th style={{...tableHeaderStyle, width: '50%'}}>Nome</th>
+                            <th style={tableHeaderStyle}>Equipe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {usersOnShift.map(u => (
+                            <tr key={u.id}>
+                                <td style={tableCellStyle}>{u.firstName} {u.lastName}</td>
+                                <td style={tableCellStyle}>{u.team}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+              ) : (
+                <p style={{color: 'var(--text-secondary-color)', padding: '20px'}}>Nenhum outro colaborador no seu turno agora.</p>
+              )}
+            </div>
           </div>
         </>
       )}
