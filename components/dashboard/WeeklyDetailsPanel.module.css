@@ -4,7 +4,6 @@
     padding: 20px;
     border: 1px solid rgb(var(--card-border-rgb));
     height: 100%;
-    min-height: 400px;
     display: flex;
     flex-direction: column;
 }
@@ -44,6 +43,7 @@
 
 .eventList > li {
     margin-bottom: 15px;
+    text-transform: capitalize;
 }
 
 .indicatorList {

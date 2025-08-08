@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { User, DaySchedule } from '@/types';
 import { addMonths, subMonths, isSameMonth, parseISO } from 'date-fns';
-import { useCalendarData } from '@/hooks/useCalendarData';
 import CommentsModal from '@/components/comment/CommentsModal';
 import CalendarHeader from '@/components/calendar/CalendarHeader';
 import CalendarGrid from '@/components/calendar/CalendarGrid';
@@ -40,7 +39,7 @@ export default function Calendar({
     let workedDays = 0;
     let holidaysWorked = 0;
     calendarGrid.forEach(day => {
-        if(isSameMonth(new Date(day.date.replace(/-/g, '/')), currentMonth) && !day.isDayOff) {
+        if(isSameMonth(parseISO(day.date), currentMonth) && !day.isDayOff) {
             workedDays++;
             if (day.indicators.some(i => i.type === 'holiday')) {
                 holidaysWorked++;
@@ -63,14 +62,14 @@ export default function Calendar({
   };
   
   return (
-    <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', borderRadius: '8px', padding: '20px'}}>
+    <div style={{backgroundColor: 'rgb(var(--card-background-rgb))', borderRadius: '8px', padding: '20px', display: 'flex', flexDirection: 'column', height: '100%'}}>
       <CalendarHeader 
         currentMonth={currentMonth}
         onPrevMonth={onPrevMonth}
         onNextMonth={onNextMonth}
       />
       
-      {isLoading ? <p>Carregando calendário...</p> : error ? <p style={{color: '#f87171'}}>{error}</p> : (
+      {isLoading ? <p style={{flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Carregando calendário...</p> : error ? <p style={{color: '#f87171'}}>{error}</p> : (
         <CalendarGrid 
             days={calendarGrid} 
             currentMonth={currentMonth} 

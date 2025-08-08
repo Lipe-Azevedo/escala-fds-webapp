@@ -3,7 +3,7 @@
 import { format, isToday, parseISO } from 'date-fns';
 import { DaySchedule } from '@/types';
 import styles from './DayCell.module.css';
-import { indicatorColors } from '@/lib/calendarUtils'; // Importa as cores
+import { indicatorColors } from '@/lib/calendarUtils';
 
 interface DayCellProps {
   day: DaySchedule;

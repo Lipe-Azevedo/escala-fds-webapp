@@ -16,7 +16,6 @@ interface WeeklyDetailsPanelProps {
 export default function WeeklyDetailsPanel({ weeks, selectedWeekIndex, onWeekChange, currentMonth }: WeeklyDetailsPanelProps) {
   const currentWeek = weeks[selectedWeekIndex] || [];
   
-  // Filtra para mostrar apenas eventos do mês atual
   const eventsOfWeek = currentWeek.filter(day => 
     day.indicators.length > 0 && isSameMonth(parseISO(day.date), currentMonth)
   );
