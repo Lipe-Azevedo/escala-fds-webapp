@@ -34,7 +34,7 @@ export type Swap = {
   involvedCollaborator?: User;
   originalDate: string;
   newDate: string;
-  originalShift: ShiftName | 'Folga' | string;
+  originalShift: ShiftName | 'Folga';
   newShift: ShiftName;
   reason: string;
   status: 'pending' | 'approved' | 'rejected' | 'pending_confirmation';
@@ -79,7 +79,7 @@ export type FilterConfig = {
   disabled?: boolean;
 };
 
-export type Event = {
+export type Notification = {
   id: number;
   message: string;
   link: string;

@@ -1,0 +1,85 @@
+.pageContainer {
+    max-width: 1200px;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.mainContent {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.calendarContainer {
+    background-color: rgb(var(--card-background-rgb));
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid rgb(var(--card-border-rgb));
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.monthName {
+  font-size: 1.1rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.navButton {
+  background: none; border: none; color: var(--text-secondary-color);
+  font-size: 20px; cursor: pointer; padding: 5px 10px; border-radius: 4px;
+}
+.navButton:hover { background-color: rgb(var(--input-background-rgb)); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  flex-grow: 1;
+}
+
+.weekday {
+  font-size: 12px; font-weight: 500; color: var(--text-secondary-color); text-align: center;
+}
+
+.day {
+    width: 100%; aspect-ratio: 1 / 1; padding: 4px; box-sizing: border-box;
+    cursor: pointer; transition: background-color 0.2s ease;
+    display: flex; flex-direction: column; justify-content: space-between;
+    border-radius: 6px; border: 1px solid transparent;
+}
+.day:hover { background-color: rgba(var(--input-background-rgb), 0.5); }
+
+.otherMonth { opacity: 0.3; pointer-events: none; }
+
+.dayNumberWrapper {
+    align-self: flex-end; width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; transition: all 0.2s ease;
+}
+.dayNumberWrapper span { font-weight: 500; color: rgb(var(--foreground-rgb)); }
+.today span { color: rgb(var(--card-background-rgb)); }
+.today { background-color: var(--primary-color); }
+
+.indicators { display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 10px; }
+.indicator { height: 3px; width: 100%; border-radius: 2px; }
+
+.highlighted { background-color: rgba(var(--primary-color), 0.1); }
+
+.onShiftWidget {
+    background-color: rgb(var(--card-background-rgb));
+    border: 1px solid rgb(var(--card-border-rgb));
+    border-radius: 8px;
+    padding: 20px;
+}
