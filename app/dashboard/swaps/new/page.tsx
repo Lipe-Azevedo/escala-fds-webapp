@@ -49,9 +49,9 @@ export default function NewSwapPage() {
           fetch(`${apiURL}/api/certificates/user/${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
         
-        const holidays: Holiday[] = await holidaysRes.json();
-        const swaps: Swap[] = await swapsRes.json();
-        const certificates: Certificate[] = await certsRes.json();
+        const holidays: Holiday[] = (await holidaysRes.json()) || [];
+        const swaps: Swap[] = (await swapsRes.json()) || [];
+        const certificates: Certificate[] = (await certsRes.json()) || [];
 
         const upcomingDaysOff = new Set<string>();
         const today = new Date();
@@ -111,12 +111,6 @@ export default function NewSwapPage() {
   
   return (
     <div>
-        <div style={{ marginBottom: '20px' }}>
-            <Link href="/dashboard/swaps" style={{ textDecoration: 'none', color: 'var(--primary-color)' }}>
-            &larr; Voltar para Trocas
-            </Link>
-        </div>
-
         <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '800px', margin: 'auto' }}>
             <h1 style={{textAlign: 'center', marginBottom: '30px'}}>Solicitar Troca</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
@@ -151,7 +145,7 @@ export default function NewSwapPage() {
                   </div>
               </div>
             ) : (
-              <div>
+              <div style={{maxWidth: '380px', margin: '0 auto'}}>
                   <label>Dia de Trabalho:</label>
                   {isLoadingSchedule ? <p>Carregando escala...</p> : (
                   <CustomDatePicker
