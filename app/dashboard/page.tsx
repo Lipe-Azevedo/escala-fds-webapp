@@ -8,9 +8,8 @@ import { getDayStatus } from '@/lib/calendarUtils';
 import CustomDatePicker from '@/components/common/CustomDatePicker/CustomDatePicker';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import ShiftSelector from '@/components/swap/ShiftSelector';
 
-export default function NewSwapPage() {
+export default function DashboardHomePage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
     originalDate: '',
@@ -19,12 +18,12 @@ export default function NewSwapPage() {
     reason: '',
   });
   
-  const [swapType, setSwapType] = useState<'day' | 'shift'>('day');
   const [availableDaysOff, setAvailableDaysOff] = useState<Set<string>>(new Set());
-  const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
@@ -37,21 +36,23 @@ export default function NewSwapPage() {
     if (!currentUser) return;
 
     const fetchAndProcessSchedule = async () => {
-      setIsLoadingSchedule(true);
+      setIsLoading(true);
       setError('');
       const token = Cookies.get('authToken');
       const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       
       try {
-        const [holidaysRes, swapsRes, certsRes] = await Promise.all([
+        const [holidaysRes, swapsRes, certsRes, usersRes] = await Promise.all([
           fetch(`${apiURL}/api/holidays`, { headers: { 'Authorization': `Bearer ${token}` } }),
           fetch(`${apiURL}/api/swaps/user/${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${apiURL}/api/certificates/user/${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+          fetch(`${apiURL}/api/certificates/user/${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
         
         const holidays: Holiday[] = await holidaysRes.json();
         const swaps: Swap[] = await swapsRes.json();
         const certificates: Certificate[] = await certsRes.json();
+        const allUsers: User[] = await usersRes.json() || [];
 
         const upcomingDaysOff = new Set<string>();
         const today = new Date();
@@ -63,61 +64,70 @@ export default function NewSwapPage() {
           }
         }
         setAvailableDaysOff(upcomingDaysOff);
+
+        const isShiftNow = (shift: string): boolean => {
+          if (!shift || !shift.includes('-')) { return false; }
+          const now = new Date();
+          const currentHour = now.getHours();
+          try {
+            const parts = shift.split('-');
+            if (parts.length !== 2) return false;
+            const startHour = parseInt(parts[0].split(':')[0], 10);
+            const endHour = parseInt(parts[1].split(':')[0], 10);
+            if (isNaN(startHour) || isNaN(endHour)) { return false; }
+            if (startHour < endHour) { return currentHour >= startHour && currentHour < endHour; } 
+            else { return currentHour >= startHour || currentHour < endHour; }
+          } catch (error) { return false; }
+        };
+
+        const colleaguesOnShift = allUsers.filter(u => 
+            u.id !== currentUser.id && 
+            u.shift === currentUser.shift && 
+            isShiftNow(u.shift)
+        );
+        setUsersOnShift(colleaguesOnShift);
+
       } catch(e) {
-        setError('Erro ao carregar sua escala de folgas.');
+        setError('Erro ao carregar dados da página.');
       } finally {
-        setIsLoadingSchedule(false);
+        setIsLoading(false);
       }
     };
 
     fetchAndProcessSchedule();
   }, [currentUser]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.originalDate || !formData.newShift || (swapType === 'day' && !formData.newDate)) {
-        setError("Por favor, preencha todos os campos obrigatórios.");
-        return;
-    }
-    setError('');
-    setIsLoading(true);
-
-    const token = Cookies.get('authToken');
-    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    
-    const payload = {
-    ...formData,
-    originalShift: "Folga",
-    };
-
-    try {
-      const res = await fetch(`${apiURL}/api/swaps`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(payload)
-      });
-      
-      const data = await res.json();
-      if (!res.ok) { throw new Error(data.message || 'Falha ao criar solicitação.'); }
-      
-      router.push('/dashboard/swaps');
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleLogout = () => {
+    Cookies.remove('authToken');
+    localStorage.removeItem('userData');
+    router.push('/login');
   };
+
+  const tableHeaderStyle: React.CSSProperties = {
+    padding: '12px 15px', textAlign: 'left', fontWeight: 'bold', color: '#a0aec0',
+    textTransform: 'uppercase', fontSize: '12px', borderBottom: '2px solid rgb(var(--card-border-rgb))',
+  };
+
+  const tableCellStyle: React.CSSProperties = {
+    padding: '12px 15px', textAlign: 'left', borderBottom: '1px solid rgb(var(--card-border-rgb))',
+  };
+
+  if (!currentUser) {
+    return <div>Carregando...</div>;
+  }
   
   return (
     <div>
-        <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '800px', margin: 'auto' }}>
-            <h1 style={{textAlign: 'center', marginBottom: '30px'}}>Solicitar Troca</h1>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h1>Meu Calendário</h1>
+            <button onClick={handleLogout}>Sair</button>
+        </div>
 
+        <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '800px', margin: '20px auto 0' }}>
             <div style={{display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap'}}>
                 <div style={{flex: '1 1 320px', minWidth: '320px'}}>
                     <label>Dia da Folga:</label>
-                    {isLoadingSchedule ? <p>Carregando escala...</p> : (
+                    {isLoading ? <p>Carregando escala...</p> : (
                     <CustomDatePicker
                         selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
                         onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
@@ -135,27 +145,31 @@ export default function NewSwapPage() {
                 </div>
             </div>
 
-            <div>
-                <label>Turno:</label>
-                <ShiftSelector 
-                    selectedShift={formData.newShift}
-                    onSelectShift={(shift) => setFormData({...formData, newShift: shift})}
-                    disabledShift={swapType === 'shift' ? currentUser?.shift : ''}
-                />
+            <div style={{marginTop: '40px'}}>
+              <h3>Colegas de plantão</h3>
+              <div style={{border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', overflow: 'hidden'}}>
+                {isLoading ? <p style={{padding: '20px'}}>Carregando...</p> : usersOnShift.length > 0 ? (
+                  <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                      <thead>
+                          <tr>
+                              <th style={{...tableHeaderStyle, width: '50%'}}>Nome</th>
+                              <th style={tableHeaderStyle}>Equipe</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {usersOnShift.map(u => (
+                              <tr key={u.id}>
+                                  <td style={tableCellStyle}>{u.firstName} {u.lastName}</td>
+                                  <td style={tableCellStyle}>{u.team}</td>
+                              </tr>
+                          ))}
+                      </tbody>
+                  </table>
+                ) : (
+                  <p style={{color: 'var(--text-secondary-color)', padding: '20px', textAlign: 'center'}}>Nenhum outro colaborador no seu turno agora.</p>
+                )}
+              </div>
             </div>
-            
-            <div>
-                <label htmlFor="reason">Motivo:</label>
-                <textarea id="reason" name="reason" value={formData.reason} onChange={(e) => setFormData({...formData, reason: e.target.value})} required rows={3}></textarea>
-            </div>
-
-            {error && <p style={{ color: '#f87171', textAlign: 'center' }}>{error}</p>}
-            
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <Link href="/dashboard/swaps"><button type="button" style={{backgroundColor: '#4a5568'}}>Cancelar</button></Link>
-                <button type="submit" disabled={isLoading || isLoadingSchedule}>{isLoading ? 'Enviando...' : 'Enviar Solicitação'}</button>
-            </div>
-            </form>
         </div>
     </div>
   );
