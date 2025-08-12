@@ -5,20 +5,12 @@ import Cookies from 'js-cookie';
 import { User, Holiday, Swap, Certificate, ShiftName } from '@/types';
 import { addDays, format, parseISO } from 'date-fns';
 import { getDayStatus } from '@/lib/calendarUtils';
-import CustomDatePicker from '@/components/common/CustomDatePicker/CustomDatePicker';
+import DashboardCalendar from '@/components/dashboard/DashboardCalendar'; // Import atualizado
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 export default function DashboardHomePage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({
-    originalDate: '',
-    newDate: '',
-    newShift: '' as ShiftName | '',
-    reason: '',
-  });
   
-  const [availableDaysOff, setAvailableDaysOff] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -35,35 +27,15 @@ export default function DashboardHomePage() {
   useEffect(() => {
     if (!currentUser) return;
 
-    const fetchAndProcessSchedule = async () => {
+    const fetchPageData = async () => {
       setIsLoading(true);
       setError('');
       const token = Cookies.get('authToken');
       const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       
       try {
-        const [holidaysRes, swapsRes, certsRes, usersRes] = await Promise.all([
-          fetch(`${apiURL}/api/holidays`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${apiURL}/api/swaps/user/${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${apiURL}/api/certificates/user/${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } })
-        ]);
-        
-        const holidays: Holiday[] = await holidaysRes.json();
-        const swaps: Swap[] = await swapsRes.json();
-        const certificates: Certificate[] = await certsRes.json();
+        const usersRes = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
         const allUsers: User[] = await usersRes.json() || [];
-
-        const upcomingDaysOff = new Set<string>();
-        const today = new Date();
-        for (let i = 0; i < 90; i++) {
-          const day = addDays(today, i);
-          const dayStatus = getDayStatus(day, currentUser, holidays, swaps.filter(s => s.status === 'approved'), certificates.filter(c => c.status === 'approved'));
-          if(dayStatus.isDayOff) {
-            upcomingDaysOff.add(format(day, 'yyyy-MM-dd'));
-          }
-        }
-        setAvailableDaysOff(upcomingDaysOff);
 
         const isShiftNow = (shift: string): boolean => {
           if (!shift || !shift.includes('-')) { return false; }
@@ -94,7 +66,7 @@ export default function DashboardHomePage() {
       }
     };
 
-    fetchAndProcessSchedule();
+    fetchPageData();
   }, [currentUser]);
 
   const handleLogout = () => {
@@ -126,22 +98,20 @@ export default function DashboardHomePage() {
         <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '800px', margin: '20px auto 0' }}>
             <div style={{display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap'}}>
                 <div style={{flex: '1 1 320px', minWidth: '320px'}}>
-                    <label>Dia da Folga:</label>
-                    {isLoading ? <p>Carregando escala...</p> : (
-                    <CustomDatePicker
-                        selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
-                        onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
-                        isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
-                    />
+                    <label>Calendário:</label>
+                    {isLoading ? <p>Carregando...</p> : (
+                    <DashboardCalendar />
                     )}
                 </div>
-                <div style={{flex: '1 1 320px', minWidth: '320px'}}>
-                    <label>Novo dia de trabalho:</label>
-                    <CustomDatePicker
-                        selectedDate={formData.newDate ? parseISO(formData.newDate) : null}
-                        onDateSelect={(date) => setFormData({...formData, newDate: format(date, 'yyyy-MM-dd')})}
-                        isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
-                    />
+                <div style={{
+                              flex: '1 1 320px', 
+                              minWidth: '320px', 
+                              background: 'rgb(var(--card-background-rgb))', 
+                              border: '1px solid rgb(var(--card-border-rgb))', 
+                              borderRadius: '8px', boxSizing: 'border-box', 
+                              height: '380px'
+                            }}>
+                    {/* Painel vazio com o mesmo tamanho */}
                 </div>
             </div>
 

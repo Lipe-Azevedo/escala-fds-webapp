@@ -64,7 +64,7 @@
   padding: 0;
   margin: 0;
   border-radius: 6px;
-  cursor: not-allowed;
+  cursor: pointer;
   opacity: 0.6;
   display: flex;
   align-items: center;
@@ -79,29 +79,9 @@
   cursor: default;
 }
 
-.selectable {
-  opacity: 1;
-  color: rgb(var(--foreground-rgb));
-  cursor: pointer;
-}
-
-.selectable:hover {
-  background-color: rgb(var(--input-background-rgb));
-}
-
 .selected {
   background-color: var(--primary-color);
   color: var(--primary-text-color);
   font-weight: bold;
   opacity: 1;
-}
-
-.selected:hover {
-    background-color: var(--primary-hover-color);
-}
-
-.grid .day.otherMonth {
-  opacity: 0.2;
-  pointer-events: none;
-  cursor: default;
 }

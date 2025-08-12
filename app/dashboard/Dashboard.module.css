@@ -1,5 +1,5 @@
 .pageContainer {
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 20px auto;
     display: flex;
     flex-direction: column;
@@ -10,17 +10,20 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-    align-items: flex-start;
+    align-items: stretch;
 }
 
+/* --- Estilos do Calendário --- */
 .calendarContainer {
-    background-color: rgb(var(--card-background-rgb));
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid rgb(var(--card-border-rgb));
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  background-color: rgb(var(--card-background-rgb));
+  border: 1px solid rgb(var(--card-border-rgb));
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendarHeader {
@@ -37,10 +40,17 @@
 }
 
 .navButton {
-  background: none; border: none; color: var(--text-secondary-color);
-  font-size: 20px; cursor: pointer; padding: 5px 10px; border-radius: 4px;
+  background: none;
+  border: none;
+  color: var(--text-secondary-color);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
 }
-.navButton:hover { background-color: rgb(var(--input-background-rgb)); }
+.navButton:hover {
+  background-color: rgb(var(--input-background-rgb));
+}
 
 .grid {
   display: grid;
@@ -50,36 +60,89 @@
 }
 
 .weekday {
-  font-size: 12px; font-weight: 500; color: var(--text-secondary-color); text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary-color);
+  text-align: center;
 }
 
 .day {
-    width: 100%; aspect-ratio: 1 / 1; padding: 4px; box-sizing: border-box;
-    cursor: pointer; transition: background-color 0.2s ease;
-    display: flex; flex-direction: column; justify-content: space-between;
-    border-radius: 6px; border: 1px solid transparent;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 6px;
+  border: 1px solid transparent;
 }
-.day:hover { background-color: rgba(var(--input-background-rgb), 0.5); }
+.day:hover {
+  background-color: rgba(var(--input-background-rgb), 0.5);
+}
 
-.otherMonth { opacity: 0.3; pointer-events: none; }
+.otherMonth {
+  opacity: 0.3;
+  pointer-events: none;
+}
 
 .dayNumberWrapper {
-    align-self: flex-end; width: 24px; height: 24px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 50%; transition: all 0.2s ease;
+  align-self: flex-end;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
 }
-.dayNumberWrapper span { font-weight: 500; color: rgb(var(--foreground-rgb)); }
-.today span { color: rgb(var(--card-background-rgb)); }
-.today { background-color: var(--primary-color); }
+.dayNumberWrapper span {
+  font-weight: 500;
+  color: rgb(var(--foreground-rgb));
+}
+.today span {
+  color: rgb(var(--card-background-rgb));
+}
+.today {
+  background-color: var(--primary-color);
+}
 
-.indicators { display: flex; flex-direction: column; gap: 2px; width: 100%; min-height: 10px; }
-.indicator { height: 3px; width: 100%; border-radius: 2px; }
+.indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 10px;
+}
+.indicator {
+  height: 3px;
+  width: 100%;
+  border-radius: 2px;
+}
 
-.highlighted { background-color: rgba(var(--primary-color), 0.1); }
+.highlighted {
+  background-color: rgba(var(--primary-color), 0.1);
+}
 
 .onShiftWidget {
     background-color: rgb(var(--card-background-rgb));
     border: 1px solid rgb(var(--card-border-rgb));
     border-radius: 8px;
     padding: 20px;
+}
+.tableHeader {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: bold;
+    color: #a0aec0;
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 2px solid rgb(var(--card-border-rgb));
+}
+.tableCell {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid rgb(var(--card-border-rgb));
 }

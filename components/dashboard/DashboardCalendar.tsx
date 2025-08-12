@@ -1,19 +1,19 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay, addDays } from 'date-fns';
+import { format, startOfMonth, addMonths, subMonths, isSameMonth, isSameDay, addDays, eachDayOfInterval, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import styles from './CustomDatePicker.module.css';
+import styles from './DashboardCalendar.module.css';
 
-interface CustomDatePickerProps {
-  selectedDate: Date | null;
-  onDateSelect: (date: Date) => void;
-  isDaySelectable: (date: Date) => boolean;
+// A interface de props será expandida no futuro para receber os indicadores
+interface DashboardCalendarProps {
   initialMonth?: Date;
+  // Adicionaremos mais props aqui depois
 }
 
-export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySelectable, initialMonth }: CustomDatePickerProps) {
-  const [currentMonth, setCurrentMonth] = useState(initialMonth || selectedDate || new Date());
+export default function DashboardCalendar({ initialMonth }: DashboardCalendarProps) {
+  const [currentMonth, setCurrentMonth] = useState(initialMonth || new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Exemplo, pode ser removido
 
   const gridDays = useMemo(() => {
     const monthStart = startOfMonth(currentMonth);
@@ -41,13 +41,11 @@ export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySele
         {gridDays.map(day => {
           const isSelected = selectedDate && isSameDay(day, selectedDate);
           const isOtherMonth = !isSameMonth(day, currentMonth);
-          const isSelectable = !isOtherMonth && isDaySelectable(day);
-
+          
           const classNames = [styles.day];
           if (isOtherMonth) {
             classNames.push(styles.otherMonth);
           } else {
-            if (isSelectable) classNames.push(styles.selectable);
             if (isSelected) classNames.push(styles.selected);
           }
           
@@ -56,8 +54,7 @@ export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySele
               type="button"
               key={day.toString()}
               className={classNames.join(' ')}
-              onClick={() => isSelectable && onDateSelect(day)}
-              disabled={!isSelectable}
+              onClick={() => !isOtherMonth && setSelectedDate(day)}
             >
               <span>{format(day, 'd')}</span>
             </button>
