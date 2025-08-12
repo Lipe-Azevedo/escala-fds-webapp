@@ -1,6 +1,6 @@
 'use client';
 
-import { DaySchedule } from '@/types';
+import { DaySchedule, DayIndicator } from '@/types';
 import styles from './WeeklyDetailsPanel.module.css';
 import { format, isSameMonth, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -20,20 +20,15 @@ export default function WeeklyDetailsPanel({ weeks, selectedWeekIndex, onWeekCha
     day.indicators.length > 0 && isSameMonth(parseISO(day.date), currentMonth)
   );
 
-  const handlePrevWeek = () => {
-    onWeekChange(Math.max(0, selectedWeekIndex - 1));
-  };
-
-  const handleNextWeek = () => {
-    onWeekChange(Math.min(weeks.length - 1, selectedWeekIndex + 1));
-  };
+  const handlePrevWeek = () => onWeekChange(Math.max(0, selectedWeekIndex - 1));
+  const handleNextWeek = () => onWeekChange(Math.min(weeks.length - 1, selectedWeekIndex + 1));
 
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <button onClick={handlePrevWeek} disabled={selectedWeekIndex === 0}>&lt;</button>
-        <span>Semana {selectedWeekIndex + 1} de {weeks.length}</span>
-        <button onClick={handleNextWeek} disabled={selectedWeekIndex === weeks.length - 1}>&gt;</button>
+        <button onClick={handlePrevWeek} disabled={selectedWeekIndex === 0} className={styles.navButton}>&lt;</button>
+        <h2 className={styles.title}>Semana {selectedWeekIndex + 1} de {weeks.length}</h2>
+        <button onClick={handleNextWeek} disabled={selectedWeekIndex === weeks.length - 1} className={styles.navButton}>&gt;</button>
       </div>
       <div className={styles.content}>
         {eventsOfWeek.length > 0 ? (
@@ -44,10 +39,7 @@ export default function WeeklyDetailsPanel({ weeks, selectedWeekIndex, onWeekCha
                 <ul className={styles.indicatorList}>
                   {day.indicators.map((indicator, index) => (
                     <li key={index} className={styles.indicatorItem}>
-                      <span 
-                        className={styles.indicatorDash}
-                        style={{ backgroundColor: indicatorColors[indicator.type] || '#ffffff' }}
-                      ></span>
+                      <span className={styles.indicatorDash} style={{ backgroundColor: indicatorColors[indicator.type] || '#ffffff' }} />
                       <span>{indicator.label}</span>
                     </li>
                   ))}

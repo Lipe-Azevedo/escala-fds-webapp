@@ -1,63 +1,61 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { format, startOfMonth, addMonths, subMonths, isSameMonth, isSameDay, addDays, eachDayOfInterval, startOfWeek } from 'date-fns';
+import { useMemo } from 'react';
+import { format, startOfMonth, addMonths, subMonths, isSameMonth, addDays, eachDayOfInterval, startOfWeek, parseISO, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import styles from './DashboardCalendar.module.css';
+import { DaySchedule, DayIndicator } from '@/types';
+import { indicatorColors } from '@/lib/calendarUtils';
 
-// A interface de props será expandida no futuro para receber os indicadores
 interface DashboardCalendarProps {
-  initialMonth?: Date;
-  // Adicionaremos mais props aqui depois
+  currentMonth: Date;
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
+  onDateSelect: (date: Date) => void;
+  calendarGrid: DaySchedule[];
+  selectedWeekIndex: number;
 }
 
-export default function DashboardCalendar({ initialMonth }: DashboardCalendarProps) {
-  const [currentMonth, setCurrentMonth] = useState(initialMonth || new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Exemplo, pode ser removido
-
-  const gridDays = useMemo(() => {
-    const monthStart = startOfMonth(currentMonth);
-    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
-    const days = eachDayOfInterval({ start: startDate, end: addDays(startDate, 41) });
-    return days;
-  }, [currentMonth]);
-
-  const handlePrevMonth = () => setCurrentMonth(prev => subMonths(prev, 1));
-  const handleNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1));
-
+export default function DashboardCalendar({ currentMonth, onPrevMonth, onNextMonth, onDateSelect, calendarGrid, selectedWeekIndex }: DashboardCalendarProps) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <button type="button" onClick={handlePrevMonth} className={styles.navButton}>&lt;</button>
-        <span className={styles.monthName}>
+        <button type="button" onClick={onPrevMonth} className={styles.navButton}>&lt;</button>
+        <h2 className={styles.monthName}>
           {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
-        </span>
-        <button type="button" onClick={handleNextMonth} className={styles.navButton}>&gt;</button>
+        </h2>
+        <button type="button" onClick={onNextMonth} className={styles.navButton}>&gt;</button>
       </div>
       <div className={styles.grid}>
         {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
           <div key={i} className={styles.weekday}>{day}</div>
         ))}
-        {gridDays.map(day => {
-          const isSelected = selectedDate && isSameDay(day, selectedDate);
-          const isOtherMonth = !isSameMonth(day, currentMonth);
-          
-          const classNames = [styles.day];
-          if (isOtherMonth) {
-            classNames.push(styles.otherMonth);
-          } else {
-            if (isSelected) classNames.push(styles.selected);
+        {calendarGrid.map((day, index) => {
+          const dateObj = parseISO(day.date);
+          const isCurrentMonth = isSameMonth(dateObj, currentMonth);
+          const dayClasses = [styles.day];
+          if (!isCurrentMonth) {
+            dayClasses.push(styles.otherMonth);
+          }
+          if (isCurrentMonth && Math.floor(index / 7) === selectedWeekIndex) {
+            dayClasses.push(styles.highlighted);
           }
           
           return (
-            <button
-              type="button"
-              key={day.toString()}
-              className={classNames.join(' ')}
-              onClick={() => !isOtherMonth && setSelectedDate(day)}
+            <div
+              key={day.date}
+              className={dayClasses.join(' ')}
+              onClick={() => isCurrentMonth && onDateSelect(dateObj)}
             >
-              <span>{format(day, 'd')}</span>
-            </button>
+              <div className={`${styles.dayNumberWrapper} ${isToday(dateObj) ? styles.today : ''}`}>
+                <span>{format(dateObj, 'd')}</span>
+              </div>
+              <div className={styles.indicators}>
+                {day.indicators.map((indicator, i) => (
+                  <span key={i} className={styles.indicator} style={{ backgroundColor: indicatorColors[indicator.type] }} title={indicator.label}></span>
+                ))}
+              </div>
+            </div>
           );
         })}
       </div>
