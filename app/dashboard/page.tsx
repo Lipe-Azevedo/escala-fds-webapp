@@ -19,6 +19,8 @@ export default function DashboardHomePage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { isLoading: isLoadingCalendar, error: calendarError, data: calendarRawData, fetchData: refetchCalendar } = useCalendarData(currentMonth, user);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
+  const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
+  const [isLoadingWidgets, setIsLoadingWidgets] = useState(true);
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
@@ -33,6 +35,41 @@ export default function DashboardHomePage() {
       router.push('/login');
     }
   }, [router]);
+
+  useEffect(() => {
+    if (!user || user.userType === 'master') {
+        setIsLoadingWidgets(false);
+        return;
+    };
+    const fetchUsers = async () => {
+        setIsLoadingWidgets(true);
+        const token = Cookies.get('authToken');
+        const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+        try {
+            const usersRes = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const allUsers: User[] = await usersRes.json() || [];
+
+            const isShiftNow = (shift: string): boolean => {
+                if (!shift || !shift.includes('-')) return false;
+                const now = new Date();
+                const currentHour = now.getHours();
+                try {
+                    const [startStr, endStr] = shift.split('-');
+                    const startHour = parseInt(startStr, 10);
+                    const endHour = parseInt(endStr, 10);
+                    if (isNaN(startHour) || isNaN(endHour)) return false;
+                    return startHour < endHour ? currentHour >= startHour && currentHour < endHour : currentHour >= startHour || currentHour < endHour;
+                } catch (error) { return false; }
+            };
+            setUsersOnShift(allUsers.filter(u => u.id !== user.id && u.shift === user.shift && isShiftNow(u.shift)));
+        } catch (e) {
+            console.error('Erro ao buscar usuários de plantão', e);
+        } finally {
+            setIsLoadingWidgets(false);
+        }
+    };
+    fetchUsers();
+  }, [user]);
 
   const { calendarGrid, weeks, workedDays, holidaysWorked } = useMemo(() => {
     if (!user || !calendarRawData) return { calendarGrid: [], weeks: [], workedDays: 0, holidaysWorked: 0 };
@@ -61,38 +98,63 @@ export default function DashboardHomePage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className={styles.header}>
         <h1>Meu Calendário</h1>
         <button onClick={handleLogout}>Sair</button>
       </div>
 
-      <div className={styles.pageContainer}>
-        <div className={styles.mainCard}>
-            <div className={styles.contentGrid}>
-                {isLoadingCalendar ? <p>Carregando...</p> : 
-                <>
-                    <DashboardCalendar
-                      currentMonth={currentMonth}
-                      onPrevMonth={() => setCurrentMonth(prev => subMonths(prev, 1))}
-                      onNextMonth={() => setCurrentMonth(prev => addMonths(prev, 1))}
-                      calendarGrid={calendarGrid}
-                      selectedWeekIndex={selectedWeekIndex}
-                      onDateSelect={() => {}}
-                    />
-                    <WeeklyDetailsPanel 
-                        weeks={weeks}
-                        selectedWeekIndex={selectedWeekIndex}
-                        onWeekChange={setSelectedWeekIndex}
-                        currentMonth={currentMonth}
-                    />
-                </>
-                }
-            </div>
-            
+      <div className={styles.mainCard}>
+        <div className={styles.contentGrid}>
+            {isLoadingCalendar ? <p>Carregando...</p> : 
+            <>
+                <DashboardCalendar
+                  currentMonth={currentMonth}
+                  onPrevMonth={() => setCurrentMonth(prev => subMonths(prev, 1))}
+                  onNextMonth={() => setCurrentMonth(prev => addMonths(prev, 1))}
+                  calendarGrid={calendarGrid}
+                  selectedWeekIndex={selectedWeekIndex}
+                  onDateSelect={() => {}}
+                />
+                <WeeklyDetailsPanel 
+                    weeks={weeks}
+                    selectedWeekIndex={selectedWeekIndex}
+                    onWeekChange={setSelectedWeekIndex}
+                    currentMonth={currentMonth}
+                />
+            </>
+            }
+        </div>
+        
+        {!isLoadingCalendar &&
             <CalendarSummary 
                 workedDays={workedDays}
                 holidaysWorked={holidaysWorked}
             />
+        }
+        
+        <div className={styles.onShiftWidget}>
+          <h3>Colegas de plantão</h3>
+            {isLoadingWidgets ? <p style={{padding: '20px', textAlign: 'center'}}>Carregando...</p> : usersOnShift.length > 0 ? (
+              <table style={{width: '100%', borderCollapse: 'collapse'}}>
+                <thead>
+                  <tr>
+                    <th className={styles.tableHeader}>Nome</th>
+                    <th className={styles.tableHeader}>Equipe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usersOnShift.map(u => (
+                    <tr key={u.id}>
+                      <td className={styles.tableCell}>{u.firstName} {u.lastName}</td>
+                      <td className={styles.tableCell}>{u.team}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p style={{color: 'var(--text-secondary-color)', textAlign: 'center', padding: '20px'}}>Nenhum colega no seu turno agora.</p>
+            )
+          }
         </div>
       </div>
     </div>
