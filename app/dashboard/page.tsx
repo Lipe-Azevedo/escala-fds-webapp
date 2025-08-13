@@ -10,6 +10,7 @@ import CalendarSummary from '@/components/dashboard/CalendarSummary';
 import { useCalendarData } from '@/hooks/useCalendarData';
 import { generateCalendarGrid, chunk } from '@/lib/calendarUtils';
 import { addMonths, subMonths, isSameWeek, parseISO } from 'date-fns';
+import styles from './Dashboard.module.css';
 
 export default function DashboardHomePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -18,7 +19,6 @@ export default function DashboardHomePage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { isLoading: isLoadingCalendar, error: calendarError, data: calendarRawData, fetchData: refetchCalendar } = useCalendarData(currentMonth, user);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
-  const [calendarSummary, setCalendarSummary] = useState({ workedDays: 0, holidaysWorked: 0 });
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
@@ -34,11 +34,11 @@ export default function DashboardHomePage() {
     }
   }, [router]);
 
-  const { calendarGrid, weeks } = useMemo(() => {
-    if (!user || !calendarRawData) return { calendarGrid: [], weeks: [] };
-    const { calendarGrid } = generateCalendarGrid(currentMonth, user, calendarRawData.holidays, calendarRawData.swaps, calendarRawData.comments, calendarRawData.certificates);
+  const { calendarGrid, weeks, workedDays, holidaysWorked } = useMemo(() => {
+    if (!user || !calendarRawData) return { calendarGrid: [], weeks: [], workedDays: 0, holidaysWorked: 0 };
+    const { calendarGrid, workedCounter, holidaysWorkedCounter } = generateCalendarGrid(currentMonth, user, calendarRawData.holidays, calendarRawData.swaps, calendarRawData.comments, calendarRawData.certificates);
     const weeks = chunk(calendarGrid, 7);
-    return { calendarGrid, weeks };
+    return { calendarGrid, weeks, workedDays: workedCounter, holidaysWorked: holidaysWorkedCounter };
   }, [currentMonth, user, calendarRawData]);
 
   useEffect(() => {
@@ -66,31 +66,34 @@ export default function DashboardHomePage() {
         <button onClick={handleLogout}>Sair</button>
       </div>
 
-      <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '820px', margin: '20px auto 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'stretch' }}>
-          {isLoadingCalendar ? <p>Carregando...</p> : 
-            <>
-              <DashboardCalendar
-                currentMonth={currentMonth}
-                onPrevMonth={() => setCurrentMonth(prev => subMonths(prev, 1))}
-                onNextMonth={() => setCurrentMonth(prev => addMonths(prev, 1))}
-                calendarGrid={calendarGrid}
-                selectedWeekIndex={selectedWeekIndex}
-                onDateSelect={() => {}}
-              />
-              <WeeklyDetailsPanel 
-                  weeks={weeks}
-                  selectedWeekIndex={selectedWeekIndex}
-                  onWeekChange={setSelectedWeekIndex}
-                  currentMonth={currentMonth}
-              />
-            </>
-          }
+      <div className={styles.pageContainer}>
+        <div className={styles.mainCard}>
+            <div className={styles.contentGrid}>
+                {isLoadingCalendar ? <p>Carregando...</p> : 
+                <>
+                    <DashboardCalendar
+                      currentMonth={currentMonth}
+                      onPrevMonth={() => setCurrentMonth(prev => subMonths(prev, 1))}
+                      onNextMonth={() => setCurrentMonth(prev => addMonths(prev, 1))}
+                      calendarGrid={calendarGrid}
+                      selectedWeekIndex={selectedWeekIndex}
+                      onDateSelect={() => {}}
+                    />
+                    <WeeklyDetailsPanel 
+                        weeks={weeks}
+                        selectedWeekIndex={selectedWeekIndex}
+                        onWeekChange={setSelectedWeekIndex}
+                        currentMonth={currentMonth}
+                    />
+                </>
+                }
+            </div>
+            
+            <CalendarSummary 
+                workedDays={workedDays}
+                holidaysWorked={holidaysWorked}
+            />
         </div>
-        <CalendarSummary 
-            workedDays={calendarSummary.workedDays}
-            holidaysWorked={calendarSummary.holidaysWorked}
-        />
       </div>
     </div>
   );

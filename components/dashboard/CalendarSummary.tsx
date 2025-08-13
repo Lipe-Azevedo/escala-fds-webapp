@@ -1,5 +1,7 @@
 'use client';
 
+import styles from './CalendarSummary.module.css';
+
 interface CalendarSummaryProps {
   workedDays: number;
   holidaysWorked: number;
@@ -7,15 +9,7 @@ interface CalendarSummaryProps {
 
 export default function CalendarSummary({ workedDays, holidaysWorked }: CalendarSummaryProps) {
   return (
-    <div style={{
-        display: 'flex', 
-        gap: '20px', 
-        justifyContent: 'center', 
-        padding: '15px', 
-        background: 'rgb(var(--card-background-rgb))', // Corrigido
-        border: '1px solid rgb(var(--card-border-rgb))', 
-        borderRadius: '8px'
-    }}>
+    <div className={styles.container}>
       <span><strong>Dias Trabalhados no Mês:</strong> {workedDays}</span>
       <span><strong>(Sendo {holidaysWorked} em feriados)</strong></span>
     </div>
