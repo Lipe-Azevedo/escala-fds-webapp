@@ -3,8 +3,8 @@
     gap: 20px;
     justify-content: center;
     padding: 15px;
-    background: rgb(var(--card-background-rgb));
+    background: rgb(var(--input-background-rgb));
     border: 1px solid rgb(var(--card-border-rgb));
     border-radius: 8px;
-    margin: 0 30px 30px;
+    margin: 0 30px 15px; /* Adiciona margem lateral e reduz a margem inferior */
 }

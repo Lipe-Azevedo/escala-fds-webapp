@@ -2,13 +2,13 @@
   background-color: rgb(var(--card-background-rgb));
   border: 1px solid rgb(var(--card-border-rgb));
   border-radius: 8px;
-  padding: 20px;
+  padding: 15px;
   width: 380px;
   height: 380px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  margin:  30px;
+  margin: 0 auto;
 }
 
 .header {
@@ -21,17 +21,21 @@
 .monthName {
   font-weight: 500;
   text-transform: capitalize;
-  font-size: 1.1rem;
-  margin: 0;
-  text-align: center;
-  flex-grow: 1;
 }
 
 .navButton {
-  background: none; border: none; color: rgb(var(--foreground-rgb)); font-size: 20px;
-  cursor: pointer; padding: 5px 10px; border-radius: 4px;
+  background: none;
+  border: none;
+  color: rgb(var(--foreground-rgb));
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
 }
-.navButton:hover { background-color: rgb(var(--input-background-rgb)); }
+
+.navButton:hover {
+  background-color: rgb(var(--input-background-rgb));
+}
 
 .grid {
   display: grid;
@@ -43,33 +47,78 @@
 }
 
 .weekday {
-  font-size: 12px; font-weight: 500; color: var(--text-secondary-color);
-  text-align: center; width: 100%;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary-color);
+  text-align: center;
+  width: 100%;
 }
 
 .day {
-  width: 100%; aspect-ratio: 1 / 1; padding: 4px; box-sizing: border-box;
-  cursor: pointer; transition: background-color 0.2s ease;
-  display: flex; flex-direction: column; justify-content: space-between;
-  border-radius: 6px; border: 1px solid transparent;
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: rgb(var(--foreground-rgb));
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  padding: 4px;
+  margin: 0;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  box-sizing: border-box;
+  cursor: pointer;
 }
-.day:hover { background-color: rgba(var(--input-background-rgb), 0.5); }
 
-.otherMonth { opacity: 0.3; pointer-events: none; }
-
-.dayNumberWrapper {
-  align-self: flex-end; width: 24px; height: 24px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%; transition: all 0.2s ease;
+.day:hover {
+  background-color: rgba(var(--input-background-rgb), 0.5);
 }
-.dayNumberWrapper span { font-weight: 500; color: rgb(var(--foreground-rgb)); }
-.today span { color: rgb(var(--card-background-rgb)); }
-.today { background-color: var(--primary-color); }
+
+.otherMonth {
+  background-color: rgb(var(--input-background-rgb));
+  pointer-events: none;
+  cursor: default;
+}
+
+.otherMonth span {
+  opacity: 0.3;
+}
+
+
+.selected {
+  background-color: var(--primary-color);
+  color: var(--primary-text-color);
+  font-weight: bold;
+}
+
+.selected:hover {
+    background-color: var(--primary-hover-color);
+}
 
 .indicators {
-  display: flex; flex-direction: column; gap: 2px;
-  width: 100%; min-height: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  padding: 0 4px;
+  box-sizing: border-box;
+  min-height: 4px;
 }
-.indicator { height: 3px; width: 100%; border-radius: 2px; }
 
-.highlighted { background-color: rgba(var(--primary-color), 0.1); }
+.indicator {
+  height: 4px;
+  flex-grow: 1;
+  border-radius: 2px;
+  max-width: 8px;
+}
+
+.highlighted {
+  background-color: rgb(var(--card-border-rgb), 0.8); 
+}
+
+.highlighted.selected {
+  background-color: var(--primary-color);
+}

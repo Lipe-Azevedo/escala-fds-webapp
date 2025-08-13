@@ -105,24 +105,29 @@ export default function DashboardHomePage() {
 
       <div className={styles.mainCard}>
         <div className={styles.contentGrid}>
-            {isLoadingCalendar ? <p>Carregando...</p> : 
-            <>
-                <DashboardCalendar
-                  currentMonth={currentMonth}
-                  onPrevMonth={() => setCurrentMonth(prev => subMonths(prev, 1))}
-                  onNextMonth={() => setCurrentMonth(prev => addMonths(prev, 1))}
-                  calendarGrid={calendarGrid}
+          {isLoadingCalendar ? <p>Carregando...</p> : 
+          <>
+              <DashboardCalendar
+                currentMonth={currentMonth}
+                onPrevMonth={() => setCurrentMonth(prev => subMonths(prev, 1))}
+                onNextMonth={() => setCurrentMonth(prev => addMonths(prev, 1))}
+                calendarGrid={calendarGrid}
+                selectedWeekIndex={selectedWeekIndex}
+                onDateSelect={(date) => {
+                  const weekIndex = weeks.findIndex(week => week.some(day => isSameWeek(parseISO(day.date), date, { weekStartsOn: 0 })));
+                  if (weekIndex !== -1) {
+                    setSelectedWeekIndex(weekIndex);
+                  }
+                }}
+              />
+              <WeeklyDetailsPanel 
+                  weeks={weeks}
                   selectedWeekIndex={selectedWeekIndex}
-                  onDateSelect={() => {}}
-                />
-                <WeeklyDetailsPanel 
-                    weeks={weeks}
-                    selectedWeekIndex={selectedWeekIndex}
-                    onWeekChange={setSelectedWeekIndex}
-                    currentMonth={currentMonth}
-                />
-            </>
-            }
+                  onWeekChange={setSelectedWeekIndex}
+                  currentMonth={currentMonth}
+              />
+          </>
+          }
         </div>
         
         {!isLoadingCalendar &&

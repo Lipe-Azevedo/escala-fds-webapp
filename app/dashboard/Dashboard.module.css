@@ -1,17 +1,9 @@
 .header {
   display: flex;
-  justify-content: space-between; /* Pushes items to opposite ends */
-  align-items: center; /* Vertically aligns items in the middle */
-  width: 100%; /* Ensures the container takes full width */
-  margin-bottom: 1rem; /* Example margin */
-}
-
-.pageContainer {
-    max-width: 1000px;
-    margin: 20px auto;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .mainCard {
@@ -21,18 +13,22 @@
     display: flex;
     flex-direction: column;
     gap: 25px;
-    margin: 30px;
 }
 
 .contentGrid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
     gap: 25px;
-    align-items: stretch;
+    align-items: flex-start;
+    justify-content: center;
 }
 
-.onShiftWidget {
-    margin: 0 30px; /* Adiciona a margem lateral de 30px */
+.onShiftWidget h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary-color);
 }
 
 .tableHeader {
