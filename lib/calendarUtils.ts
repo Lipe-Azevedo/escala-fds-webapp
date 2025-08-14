@@ -88,7 +88,9 @@ export const generateCalendarGrid = (
     month: Date, user: CalendarUser, holidays: Holiday[], swaps: Swap[], comments: Comment[], certificates: Certificate[]
   ) => {
     const monthStart = startOfMonth(month);
-    const days = eachDayOfInterval({ start: startOfWeek(monthStart, { weekStartsOn: 0 }), end: endOfWeek(endOfMonth(month), { weekStartsOn: 0 }) });
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 });
+    const endDate = addDays(startDate, 41); // Garante sempre 6 semanas (42 dias)
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
     
     const holidaysMap = new Map(holidays.map(h => [h.date, h.name]));
     const commentsMap = new Map(comments.map(c => [c.date, true]));
