@@ -5,17 +5,43 @@ import { User } from '@/types';
 import Link from 'next/link';
 import styles from './Profile.module.css';
 import { getDay, differenceInCalendarWeeks } from 'date-fns';
-import { translate } from '@/lib/translations'; 
+import { translate } from '@/lib/translations';
+import Cookies from 'js-cookie';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
+  const [superiorName, setSuperiorName] = useState<string>('N/A');
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
-      setUser(JSON.parse(userDataString));
+      const currentUser = JSON.parse(userDataString);
+      setUser(currentUser);
+
+      if (currentUser.superiorId) {
+        fetchSuperior(currentUser.superiorId);
+      }
     }
   }, []);
+
+  const fetchSuperior = async (superiorId: number) => {
+    const token = Cookies.get('authToken');
+    const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    try {
+      const res = await fetch(`${apiURL}/api/users`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const users: User[] = await res.json();
+        const superior = users.find(u => u.id === superiorId);
+        if (superior) {
+          setSuperiorName(`${superior.firstName} ${superior.lastName}`);
+        }
+      }
+    } catch (error) {
+      console.error("Falha ao ir buscar o nome do superior", error);
+    }
+  };
 
   const getCurrentWeekendOff = (): string => {
     if (!user || !user.initialWeekendOff || !user.createdAt) return 'N/A';
@@ -34,6 +60,7 @@ export default function ProfilePage() {
 
     return currentWeekendOffDay === 6 ? 'Sábado' : 'Domingo';
   };
+
 
   if (!user) {
     return <p>A carregar perfil...</p>;
@@ -82,6 +109,10 @@ export default function ProfilePage() {
                     <div className={styles.infoItem}>
                         <span className={styles.infoLabel}>Cargo</span>
                         <span className={styles.infoValue}>{translate(user.position)}</span>
+                    </div>
+                     <div className={styles.infoItem}>
+                        <span className={styles.infoLabel}>Superior Direto</span>
+                        <span className={styles.infoValue}>{superiorName}</span>
                     </div>
                     <div className={styles.infoItem}>
                         <span className={styles.infoLabel}>Turno</span>
