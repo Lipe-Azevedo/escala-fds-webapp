@@ -1,6 +1,7 @@
 'use client';
 
 import { Holiday } from '@/types';
+import { translate } from '@/lib/translations'; // Importação da função centralizada
 
 interface HolidayListProps {
   holidays: Holiday[];
@@ -30,15 +31,6 @@ const actionButtonStyle: React.CSSProperties = {
 };
 
 export default function HolidayList({ holidays, onEdit }: HolidayListProps) {
-  const formatType = (type: Holiday['type']) => {
-    switch(type) {
-      case 'national': return 'Nacional';
-      case 'state': return 'Estadual';
-      case 'city': return 'Municipal';
-      default: return type;
-    }
-  }
-
   return (
     <div style={{ overflowX: 'auto', backgroundColor: `rgb(var(--card-background-rgb))`, borderRadius: '8px', border: `1px solid rgb(var(--card-border-rgb))` }}>
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -55,7 +47,7 @@ export default function HolidayList({ holidays, onEdit }: HolidayListProps) {
             <tr key={holiday.id}>
               <td style={tableCellStyle}>{holiday.name}</td>
               <td style={tableCellStyle}>{new Date(holiday.date.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</td>
-              <td style={tableCellStyle}>{formatType(holiday.type)}</td>
+              <td style={tableCellStyle}>{translate(holiday.type)}</td>
               <td style={{...tableCellStyle, textAlign: 'right'}}>
                 <button onClick={() => onEdit(holiday)} style={actionButtonStyle}>Editar</button>
               </td>

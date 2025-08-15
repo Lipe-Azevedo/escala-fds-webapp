@@ -1,27 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { User, TeamName, PositionName } from '@/types';
+import { User } from '@/types';
+import { translate } from '@/lib/translations';
 
 interface UserListProps {
   users: User[];
   onEdit: (user: User) => void;
-}
-
-const translate = (value: TeamName | PositionName | string | undefined): string => {
-    if (!value) return 'N/A';
-    const translations: Record<string, string> = {
-        'Security': 'Segurança',
-        'Support': 'Suporte',
-        'CustomerService': 'Atendimento',
-        'SupervisorI': 'Supervisor I',
-        'SupervisorII': 'Supervisor II',
-        'BackendDeveloper': 'Dev. Backend',
-        'FrontendDeveloper': 'Dev. Frontend',
-        'Attendant': 'Atendente',
-        'Master': 'Master',
-    };
-    return translations[value] || value;
 }
 
 const tableHeaderStyle: React.CSSProperties = {

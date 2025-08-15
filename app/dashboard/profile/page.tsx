@@ -5,29 +5,7 @@ import { User } from '@/types';
 import Link from 'next/link';
 import styles from './Profile.module.css';
 import { getDay, differenceInCalendarWeeks } from 'date-fns';
-
-const translate = (value: string | undefined): string => {
-    if (!value) return 'N/A';
-    const translations: Record<string, string> = {
-        'Security': 'Segurança',
-        'Support': 'Suporte',
-        'CustomerService': 'Atendimento',
-        'SupervisorI': 'Supervisor I',
-        'SupervisorII': 'Supervisor II',
-        'BackendDeveloper': 'Dev. Backend',
-        'FrontendDeveloper': 'Dev. Frontend',
-        'Attendant': 'Atendente',
-        'Master': 'Master',
-        'monday': 'Segunda-feira',
-        'tuesday': 'Terça-feira',
-        'wednesday': 'Quarta-feira',
-        'thursday': 'Quinta-feira',
-        'friday': 'Sexta-feira',
-        'saturday': 'Sábado',
-        'sunday': 'Domingo',
-    };
-    return translations[value] || value;
-}
+import { translate } from '@/lib/translations'; 
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -56,7 +34,6 @@ export default function ProfilePage() {
 
     return currentWeekendOffDay === 6 ? 'Sábado' : 'Domingo';
   };
-
 
   if (!user) {
     return <p>A carregar perfil...</p>;
