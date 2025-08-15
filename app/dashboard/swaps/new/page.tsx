@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import { User, Holiday, Swap, Certificate, ShiftName } from '@/types';
 import { addDays, format, parseISO } from 'date-fns';
 import { getDayStatus } from '@/lib/calendarUtils';
-import CustomDatePicker from '@/components/swap/DatePicker';
+import DatePicker from '@/components/swap/DatePicker'; 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ShiftSelector from '@/components/swap/ShiftSelector';
@@ -128,7 +128,7 @@ export default function NewSwapPage() {
                   <div style={{flex: '1 1 320px', minWidth: '320px'}}>
                       <label>Dia da Folga:</label>
                       {isLoadingSchedule ? <p>Carregando escala...</p> : (
-                      <CustomDatePicker
+                      <DatePicker
                           selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
                           onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
                           isDaySelectable={(date) => availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
@@ -137,7 +137,7 @@ export default function NewSwapPage() {
                   </div>
                   <div style={{flex: '1 1 320px', minWidth: '320px'}}>
                       <label>Novo dia de trabalho:</label>
-                      <CustomDatePicker
+                      <DatePicker
                           selectedDate={formData.newDate ? parseISO(formData.newDate) : null}
                           onDateSelect={(date) => setFormData({...formData, newDate: format(date, 'yyyy-MM-dd')})}
                           isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}
@@ -148,7 +148,7 @@ export default function NewSwapPage() {
               <div style={{maxWidth: '380px', margin: '0 auto'}}>
                   <label>Dia de Trabalho:</label>
                   {isLoadingSchedule ? <p>Carregando escala...</p> : (
-                  <CustomDatePicker
+                  <DatePicker
                       selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
                       onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
                       isDaySelectable={(date) => !availableDaysOff.has(format(date, 'yyyy-MM-dd'))}

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { User } from '@/types';
 import { format } from 'date-fns';
-import CustomDateRangePicker from '@/components/certificate/DateRangePicker';
+import DateRangePicker from '@/components/certificate/DateRangePicker'; 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -70,7 +70,7 @@ export default function NewCertificatePage() {
             
             <div>
                 <label>1. Selecione o período do atestado no calendário:</label>
-                <CustomDateRangePicker
+                <DateRangePicker
                     selectedRange={selectedRange}
                     onRangeSelect={setSelectedRange}
                 />

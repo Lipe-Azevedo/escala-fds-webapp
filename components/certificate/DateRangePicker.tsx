@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, addMonths, subMonths, isSameMonth, isSameDay, addDays, isAfter, isBefore, eachDayOfInterval, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import styles from './CustomDateRangePicker.module.css';
+import styles from './DateRangePicker.module.css';
 
 interface DateRange {
   start: Date | null;

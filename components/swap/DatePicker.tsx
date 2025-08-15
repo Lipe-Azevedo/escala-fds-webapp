@@ -3,16 +3,16 @@
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import styles from './CustomDatePicker.module.css';
+import styles from './DatePicker.module.css';
 
-interface CustomDatePickerProps {
+interface DatePickerProps {
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
   isDaySelectable: (date: Date) => boolean;
   initialMonth?: Date;
 }
 
-export default function CustomDatePicker({ selectedDate, onDateSelect, isDaySelectable, initialMonth }: CustomDatePickerProps) {
+export default function DatePicker({ selectedDate, onDateSelect, isDaySelectable, initialMonth }: DatePickerProps) {
   const [currentMonth, setCurrentMonth] = useState(initialMonth || selectedDate || new Date());
 
   const gridDays = useMemo(() => {

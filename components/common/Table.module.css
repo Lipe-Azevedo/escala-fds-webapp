@@ -1,0 +1,37 @@
+.tableWrapper {
+  overflow-x: auto;
+  background-color: rgb(var(--card-background-rgb));
+  border-radius: 8px;
+  border: 1px solid rgb(var(--card-border-rgb));
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.header {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: bold;
+  color: var(--text-secondary-color);
+  text-transform: uppercase;
+  font-size: 12px;
+  border-bottom: 2px solid rgb(var(--card-border-rgb));
+}
+
+.cell {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid rgb(var(--card-border-rgb));
+  white-space: nowrap;
+}
+
+.actionsCell {
+  text-align: right;
+}
+
+.actionButton {
+  padding: 6px 12px;
+  font-size: 12px;
+}
