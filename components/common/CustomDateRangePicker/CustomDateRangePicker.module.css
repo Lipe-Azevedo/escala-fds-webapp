@@ -1,21 +1,23 @@
 .container {
-    background-color: rgb(var(--card-background-rgb));
-    border: 1px solid rgb(var(--card-border-rgb));
-    border-radius: 8px;
-    padding: 15px;
-    width: 100%;
-    max-width: 350px;
-    margin: 0 auto;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-  }
+  background-color: rgb(var(--card-background-rgb));
+  border: 1px solid rgb(var(--card-border-rgb));
+  border-radius: 8px;
+  padding: 15px;
+  width: 380px;
+  height: 400px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
   
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgb(var(--card-border-rgb));
   }
   
   .monthName {
@@ -63,7 +65,7 @@
     height: auto;
     padding: 0;
     margin: 0;
-    border-radius: 0;
+    border-radius: 6px; /* Alterado para arredondar as bordas */
     cursor: not-allowed;
     opacity: 0.6;
     display: flex;

@@ -4,7 +4,7 @@
     padding: 15px;
     border: 1px solid rgb(var(--card-border-rgb));
     width: 380px;
-    height: 380px;
+    height: 400px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -16,6 +16,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
+    padding-bottom: 10px; 
+    border-bottom: 1px solid rgb(var(--card-border-rgb)); 
 }
 
 .title {
