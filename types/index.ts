@@ -18,6 +18,8 @@ export type User = {
   createdAt: string;
   superiorId?: number;
   birthday?: string;
+  phoneNumber?: string;
+
 };
 
 export type Holiday = {
