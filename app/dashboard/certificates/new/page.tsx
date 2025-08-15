@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { User } from '@/types';
 import { format } from 'date-fns';
-import CustomDateRangePicker from '@/components/common/CustomDateRangePicker/CustomDateRangePicker';
+import CustomDateRangePicker from '@/components/certificate/DateRangePicker';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 

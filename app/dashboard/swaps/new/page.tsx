@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import { User, Holiday, Swap, Certificate, ShiftName } from '@/types';
 import { addDays, format, parseISO } from 'date-fns';
 import { getDayStatus } from '@/lib/calendarUtils';
-import CustomDatePicker from '@/components/common/CustomDatePicker/CustomDatePicker';
+import CustomDatePicker from '@/components/swap/DatePicker';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ShiftSelector from '@/components/swap/ShiftSelector';
