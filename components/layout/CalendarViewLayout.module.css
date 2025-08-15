@@ -1,9 +1,0 @@
-.container {
-    display: grid;
-    /* Define duas colunas de tamanho fixo, com um tamanho máximo que corresponde ao nosso calendário */
-    grid-template-columns: repeat(2, minmax(0, 400px));
-    gap: 30px;
-    align-items: stretch;
-    justify-content: center; /* Centraliza o conjunto se a tela for muito larga */
-    margin-top: 20px;
-}
