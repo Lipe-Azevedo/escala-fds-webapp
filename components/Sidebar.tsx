@@ -14,7 +14,6 @@ const navItems = [
     { href: '/dashboard/certificates', label: 'Atestados', key: 'certificates' },
     { href: '/dashboard/comments', label: 'Comentários', key: 'comments' },
     { href: '/dashboard/holidays', label: 'Feriados', key: 'holidays', masterOnly: true },
-    { href: '/dashboard/profile', label: 'Meu Perfil', key: 'profile' },
 ];
 
 export default function Sidebar() {
@@ -53,9 +52,11 @@ export default function Sidebar() {
           </ul>
         </nav>
       </div>
-      <div className={styles.userProfile}>
-        {user ? user.firstName.charAt(0) : ''}
-      </div>
+      <Link href="/dashboard/profile" title="Meu Perfil" style={{ textDecoration: 'none', alignSelf: 'center' }}>
+        <div className={styles.userProfile}>
+          {user ? user.firstName.charAt(0) : ''}
+        </div>
+      </Link>
     </aside>
   );
 }
