@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, addMonths, subMonths, isSameMonth, isSameDay, addDays, isAfter, isBefore, eachDayOfInterval, startOfWeek } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import panelStyles from '../common/Panel.module.css';
 import styles from './DateRangePicker.module.css';
 
 interface DateRange {
@@ -10,14 +11,14 @@ interface DateRange {
   end: Date | null;
 }
 
-interface CustomDateRangePickerProps {
+interface DateRangePickerProps {
   selectedRange: DateRange;
   onRangeSelect: (range: DateRange) => void;
   isDaySelectable?: (date: Date) => boolean;
   initialMonth?: Date;
 }
 
-export default function CustomDateRangePicker({ selectedRange, onRangeSelect, isDaySelectable = () => true, initialMonth }: CustomDateRangePickerProps) {
+export default function DateRangePicker({ selectedRange, onRangeSelect, isDaySelectable = () => true, initialMonth }: DateRangePickerProps) {
   const [currentMonth, setCurrentMonth] = useState(initialMonth || selectedRange.start || new Date());
 
   const gridDays = useMemo(() => {
@@ -44,17 +45,17 @@ export default function CustomDateRangePicker({ selectedRange, onRangeSelect, is
   const handleNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1));
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <button type="button" onClick={handlePrevMonth} className={styles.navButton}>&lt;</button>
-        <span className={styles.monthName}>
+    <div className={`${panelStyles.container} ${styles.container}`}>
+      <div className={panelStyles.header}>
+        <button type="button" onClick={handlePrevMonth} className={panelStyles.navButton}>&lt;</button>
+        <span className={panelStyles.headerTitle}>
           {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
         </span>
-        <button type="button" onClick={handleNextMonth} className={styles.navButton}>&gt;</button>
+        <button type="button" onClick={handleNextMonth} className={panelStyles.navButton}>&gt;</button>
       </div>
-      <div className={styles.grid}>
+      <div className={`${panelStyles.grid} ${styles.grid}`}>
         {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
-          <div key={i} className={styles.weekday}>{day}</div>
+          <div key={i} className={`${panelStyles.weekday} ${styles.weekday}`}>{day}</div>
         ))}
         {gridDays.map(day => {
           const isSelectable = isDaySelectable(day);

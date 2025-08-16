@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import panelStyles from '../common/Panel.module.css';
 import styles from './DatePicker.module.css';
 
 interface DatePickerProps {
@@ -26,17 +27,17 @@ export default function DatePicker({ selectedDate, onDateSelect, isDaySelectable
   const handleNextMonth = () => setCurrentMonth(prev => addMonths(prev, 1));
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <button type="button" onClick={handlePrevMonth} className={styles.navButton}>&lt;</button>
-        <span className={styles.monthName}>
+    <div className={panelStyles.container}>
+      <div className={panelStyles.header}>
+        <button type="button" onClick={handlePrevMonth} className={panelStyles.navButton}>&lt;</button>
+        <span className={panelStyles.headerTitle}>
           {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
         </span>
-        <button type="button" onClick={handleNextMonth} className={styles.navButton}>&gt;</button>
+        <button type="button" onClick={handleNextMonth} className={panelStyles.navButton}>&gt;</button>
       </div>
-      <div className={styles.grid}>
+      <div className={`${panelStyles.grid} ${styles.grid}`}>
         {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
-          <div key={i} className={styles.weekday}>{day}</div>
+          <div key={i} className={panelStyles.weekday}>{day}</div>
         ))}
         {gridDays.map(day => {
           const isSelected = selectedDate && isSameDay(day, selectedDate);

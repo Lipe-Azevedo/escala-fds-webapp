@@ -1,10 +1,11 @@
 'use client';
 
-import { DaySchedule, DayIndicator } from '@/types';
-import styles from './WeeklyDetailsPanel.module.css';
+import { DaySchedule } from '@/types';
 import { format, isSameMonth, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { indicatorColors } from '@/lib/calendarUtils';
+import panelStyles from '../common/Panel.module.css';
+import styles from './WeeklyDetailsPanel.module.css';
 
 interface WeeklyDetailsPanelProps {
   weeks: DaySchedule[][];
@@ -24,11 +25,11 @@ export default function WeeklyDetailsPanel({ weeks, selectedWeekIndex, onWeekCha
   const handleNextWeek = () => onWeekChange(Math.min(weeks.length - 1, selectedWeekIndex + 1));
 
   return (
-    <div className={styles.panel}>
-      <div className={styles.header}>
-        <button onClick={handlePrevWeek} disabled={selectedWeekIndex === 0} className={styles.navButton}>&lt;</button>
-        <h2 className={styles.title}>Semana {selectedWeekIndex + 1} de {weeks.length}</h2>
-        <button onClick={handleNextWeek} disabled={selectedWeekIndex === weeks.length - 1} className={styles.navButton}>&gt;</button>
+    <div className={panelStyles.container}>
+      <div className={panelStyles.header}>
+        <button onClick={handlePrevWeek} disabled={selectedWeekIndex === 0} className={panelStyles.navButton}>&lt;</button>
+        <h2 className={panelStyles.headerTitle}>Semana {selectedWeekIndex + 1} de {weeks.length}</h2>
+        <button onClick={handleNextWeek} disabled={selectedWeekIndex === weeks.length - 1} className={panelStyles.navButton}>&gt;</button>
       </div>
       <div className={styles.content}>
         {eventsOfWeek.length > 0 ? (

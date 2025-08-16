@@ -1,59 +1,5 @@
-.container {
-  background-color: rgb(var(--card-background-rgb));
-  border: 1px solid rgb(var(--card-border-rgb));
-  border-radius: 8px;
-  padding: 15px;
-  width: 380px;
-  height: 400px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  margin: 0 auto;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgb(var(--card-border-rgb)); 
-}
-
-.monthName {
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.navButton {
-  background: none;
-  border: none;
-  color: rgb(var(--foreground-rgb));
-  font-size: 20px;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
-
-.navButton:hover {
-  background-color: rgb(var(--input-background-rgb));
-}
-
 .grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
   grid-template-rows: auto repeat(6, 1fr);
-  gap: 4px;
-  justify-items: center;
-  height: 100%;
-}
-
-.weekday {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary-color);
-  text-align: center;
-  width: 100%;
 }
 
 .day {
@@ -62,9 +8,7 @@
   color: var(--text-secondary-color);
   width: 100%;
   aspect-ratio: 1 / 1;
-  height: auto;
   padding: 0;
-  margin: 0;
   border-radius: 6px;
   cursor: not-allowed;
   opacity: 0.6;
@@ -74,36 +18,25 @@
   transition: background-color 0.2s ease, color 0.2s ease;
   box-sizing: border-box;
 }
-
 .otherMonth {
   opacity: 0.2;
   pointer-events: none;
   cursor: default;
 }
-
 .selectable {
   opacity: 1;
   color: rgb(var(--foreground-rgb));
   cursor: pointer;
 }
-
 .selectable:hover {
   background-color: rgb(var(--input-background-rgb));
 }
-
 .selected {
   background-color: var(--primary-color);
   color: var(--primary-text-color);
   font-weight: bold;
   opacity: 1;
 }
-
 .selected:hover {
     background-color: var(--primary-hover-color);
-}
-
-.grid .day.otherMonth {
-  opacity: 0.2;
-  pointer-events: none;
-  cursor: default;
 }

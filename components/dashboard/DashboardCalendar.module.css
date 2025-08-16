@@ -1,59 +1,5 @@
-.container {
-  background-color: rgb(var(--card-background-rgb));
-  border: 1px solid rgb(var(--card-border-rgb));
-  border-radius: 8px;
-  padding: 15px;
-  width: 380px;
-  height: 400px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  margin: 0 auto;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 10px; 
-  border-bottom: 1px solid rgb(var(--card-border-rgb)); 
-}
-
-.monthName {
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.navButton {
-  background: none;
-  border: none;
-  color: rgb(var(--foreground-rgb));
-  font-size: 20px;
-  cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 4px;
-}
-
-.navButton:hover {
-  background-color: rgb(var(--input-background-rgb));
-}
-
 .grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
   grid-template-rows: auto repeat(6, 1fr);
-  gap: 4px;
-  justify-items: center;
-  height: 100%;
-}
-
-.weekday {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary-color);
-  text-align: center;
-  width: 100%;
 }
 
 .day {
@@ -62,9 +8,7 @@
   color: rgb(var(--foreground-rgb));
   width: 100%;
   aspect-ratio: 1 / 1;
-  height: auto;
   padding: 4px;
-  margin: 0;
   border-radius: 6px;
   display: flex;
   flex-direction: column;
@@ -74,32 +18,25 @@
   box-sizing: border-box;
   cursor: pointer;
 }
-
 .day:hover {
   background-color: rgba(var(--input-background-rgb), 0.5);
 }
-
 .otherMonth {
   background-color: rgb(var(--input-background-rgb));
   pointer-events: none;
   cursor: default;
 }
-
 .otherMonth span {
   opacity: 0.3;
 }
-
-
 .selected {
   background-color: var(--primary-color);
   color: var(--primary-text-color);
   font-weight: bold;
 }
-
 .selected:hover {
     background-color: var(--primary-hover-color);
 }
-
 .indicators {
   display: flex;
   justify-content: center;
@@ -109,18 +46,15 @@
   box-sizing: border-box;
   min-height: 4px;
 }
-
 .indicator {
   height: 4px;
   flex-grow: 1;
   border-radius: 2px;
   max-width: 8px;
 }
-
 .highlighted {
-  background-color: rgb(var(--card-border-rgb), 0.8); 
+  background-color: rgba(var(--card-border-rgb), 0.8); 
 }
-
 .highlighted.selected {
   background-color: var(--primary-color);
 }
