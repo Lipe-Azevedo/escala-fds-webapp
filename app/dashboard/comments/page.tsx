@@ -11,24 +11,33 @@ const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfi
   if (!user) return [];
 
   const isMaster = user.userType === 'master';
-  const isSuperior = user.position.includes('Supervisor');
+  const isSupervisor = user.position.includes('Supervisor');
+  const canSeeSubordinates = isMaster || isSupervisor;
   
   const userOptions = [ { value: '', label: 'Todos' }, ...allUsers.map(u => ({ value: u.id.toString(), label: `${u.firstName} ${u.lastName}`})) ];
 
-  return [
+  const configs: FilterConfig[] = [
     { name: 'startDate', label: 'Data Início', type: 'date' },
     { name: 'endDate', label: 'Data Fim', type: 'date' },
-    { name: 'collaboratorId', label: 'Destinatário', type: 'select', options: userOptions, disabled: !isMaster && !isSuperior },
-    { name: 'authorId', label: 'Autor', type: 'select', options: userOptions, disabled: isSuperior },
+  ];
+
+  if (canSeeSubordinates) {
+      configs.push({ name: 'collaboratorId', label: 'Destinatário', type: 'select', options: userOptions });
+  }
+
+  configs.push(
+    { name: 'authorId', label: 'Autor', type: 'select', options: userOptions, disabled: !isMaster },
     { name: 'team', label: 'Equipe', type: 'select', options: [
         { value: '', label: 'Todas' }, { value: 'Security', label: 'Segurança' }, { value: 'Support', label: 'Suporte' }, { value: 'CustomerService', label: 'Atendimento' },
       ], disabled: !isMaster 
     },
     { name: 'shift', label: 'Turno', type: 'select', options: [
         { value: '', label: 'Todos' }, { value: '06:00-14:00', label: 'Manhã' }, { value: '14:00-22:00', label: 'Tarde' }, { value: '22:00-06:00', label: 'Noite' },
-      ], disabled: !isMaster && !isSuperior
+      ], disabled: !canSeeSubordinates
     }
-  ];
+  );
+  
+  return configs;
 };
 
 export default function CommentsPage() {
@@ -89,13 +98,14 @@ export default function CommentsPage() {
     const user = currentUser;
     if(user){
         const initialFilters: Partial<typeof filters> = {};
-        if (user.userType === 'collaborator') { initialFilters.collaboratorId = user.id.toString(); }
-        else if (user.position.includes('Supervisor')) { initialFilters.authorId = user.id.toString(); }
+        if (user.userType === 'collaborator' && !user.position.includes('Supervisor')) { 
+            initialFilters.collaboratorId = user.id.toString(); 
+        }
         setFilters(prev => ({...prev, ...initialFilters}));
     }
   }, [currentUser]);
 
-  useEffect(() => { fetchComments(); }, [filters]);
+  useEffect(() => { if(currentUser) fetchComments(); }, [filters, currentUser]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -112,7 +122,7 @@ export default function CommentsPage() {
           )}
       </div>
       <FilterBar configs={generateFilterConfigs(currentUser, users)} filters={filters} onFilterChange={handleFilterChange} />
-      {isLoading ? <p>Carregando...</p> : error ? <p style={{color: 'red'}}>{error}</p> : <CommentList comments={comments} />}
+      {isLoading ? <p>A carregar...</p> : error ? <p style={{color: 'red'}}>{error}</p> : <CommentList comments={comments} />}
       {isCreateModalOpen && (
         <CreateCommentModal isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} onSuccess={fetchComments} users={users} />
       )}

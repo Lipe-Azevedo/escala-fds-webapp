@@ -1,0 +1,32 @@
+.card {
+  background-color: rgb(var(--card-background-rgb));
+  border: 1px solid rgb(var(--card-border-rgb));
+  border-radius: 8px;
+  padding: 25px;
+  margin-top: 20px;
+}
+
+.section {
+    padding: 20px 0;
+}
+
+.section:not(:last-child) {
+    border-bottom: 1px solid rgb(var(--card-border-rgb));
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 25px;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.actions {
+  margin-top: 30px; 
+  display: flex; 
+  justify-content: flex-end; 
+  gap: 10px;
+}

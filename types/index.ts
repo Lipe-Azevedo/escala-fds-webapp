@@ -1,7 +1,31 @@
-export type TeamName = 'Security' | 'Support' | 'CustomerService' | '';
-export type PositionName = string;
-export type ShiftName = '06:00-14:00' | '14:00-22:00' | '22:00-06:00';
-export type DayOffReason = 'Weekday' | 'Weekend' | 'Swap' | 'Holiday' | 'Certificate' | '';
+export type TeamName = 
+  | 'Security' 
+  | 'Support' 
+  | 'CustomerService' 
+  | '';
+
+export type PositionName = 
+  | 'RiskAnalyst' 
+  | 'SupervisorI' 
+  | 'SupervisorII' 
+  | 'BackendDeveloper' 
+  | 'FrontendDeveloper' 
+  | 'Attendant' 
+  | 'Master'
+  | '';
+
+export type ShiftName = 
+  |'06:00-14:00' 
+  | '14:00-22:00' 
+  | '22:00-06:00';
+
+export type DayOffReason = 
+  | 'Weekday' 
+  | 'Weekend' 
+  | 'Swap' 
+  | 'Holiday' 
+  | 'Certificate' 
+  | '';
 
 
 export type User = {
@@ -9,7 +33,9 @@ export type User = {
   firstName: string;
   lastName: string;
   email: string;
-  userType: 'master' | 'collaborator';
+  userType: 
+    | 'master' 
+    | 'collaborator';
   team: TeamName;
   position: PositionName;
   shift: ShiftName;
@@ -19,14 +45,16 @@ export type User = {
   superiorId?: number;
   birthday?: string;
   phoneNumber?: string;
-
 };
 
 export type Holiday = {
   id: number;
   name: string;
   date: string;
-  type: 'national' | 'state' | 'city';
+  type: 
+    | 'national' 
+    | 'state' 
+    | 'city';
   repeatsAnnually: boolean;
 };
 
@@ -39,7 +67,11 @@ export type Swap = {
   originalShift: ShiftName | 'Folga';
   newShift: ShiftName;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected' | 'pending_confirmation';
+  status: 
+    | 'pending' 
+    | 'approved' 
+    | 'rejected' 
+    | 'pending_confirmation';
   approvedBy?: User;
   createdAt: string;
   approvedAt?: string;
@@ -51,7 +83,10 @@ export type Certificate = {
   startDate: string;
   endDate: string;
   reason: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 
+    | 'pending' 
+    | 'approved' 
+    | 'rejected';
   approvedBy?: User;
   createdAt: string;
   approvedAt?: string;
@@ -75,7 +110,10 @@ export type FilterOption = {
 export type FilterConfig = {
   name: string;
   label: string;
-  type: 'text' | 'date' | 'select';
+  type: 
+    | 'text' 
+    | 'date' 
+    | 'select';
   placeholder?: string;
   options?: FilterOption[];
   disabled?: boolean;
@@ -89,7 +127,13 @@ export type Notification = {
 };
 
 export interface DayIndicator {
-  type: 'day_off' | 'swap_day_off' | 'swap_shift' | 'holiday' | 'certificate' | 'comment';
+  type: 
+    | 'day_off' 
+    | 'swap_day_off' 
+    | 'swap_shift' 
+    | 'holiday' 
+    | 'certificate' 
+    | 'comment';
   label: string;
 }
 

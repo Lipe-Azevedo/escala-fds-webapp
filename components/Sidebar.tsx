@@ -9,7 +9,7 @@ import { useNotifications } from '@/context/NotificationContext';
 
 const navItems = [
     { href: '/dashboard', label: 'Início', key: 'home' },
-    { href: '/dashboard/users', label: 'Colaboradores', key: 'users', masterOnly: true },
+    { href: '/dashboard/users', label: 'Colaboradores', key: 'users', managerOnly: true },
     { href: '/dashboard/swaps', label: 'Trocas de Folga', key: 'swaps' },
     { href: '/dashboard/certificates', label: 'Atestados', key: 'certificates' },
     { href: '/dashboard/comments', label: 'Comentários', key: 'comments' },
@@ -28,6 +28,8 @@ export default function Sidebar() {
     }
   }, []);
   
+  const canViewManagerItems = user?.userType === 'master' || user?.position.includes('Supervisor');
+
   return (
     <aside className={styles.sidebar}>
       <div>
@@ -36,9 +38,12 @@ export default function Sidebar() {
         </div>
         <nav className={styles.nav}>
           <ul>
-            {navItems.map(({ href, label, key, masterOnly }) => {
+            {navItems.map(({ href, label, key, masterOnly, managerOnly }) => {
               if (masterOnly && user?.userType !== 'master') {
                 return null;
+              }
+              if (managerOnly && !canViewManagerItems) {
+                  return null;
               }
               return (
                 <li key={href}>

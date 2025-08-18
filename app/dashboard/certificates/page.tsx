@@ -18,16 +18,17 @@ const certificateFilterConfigs: FilterConfig[] = [
         { value: 'pending', label: 'Pendentes' },
         { value: 'approved', label: 'Aprovados' },
         { value: 'rejected', label: 'Rejeitados' },
-    ]}
+    ]},
+    { name: 'startDate', label: 'Data Início', type: 'date' },
+    { name: 'endDate', label: 'Data Fim', type: 'date' },
 ];
 
 export default function CertificatesPage() {
-  const [allCertificates, setAllCertificates] = useState<Certificate[]>([]);
-  const [filteredCertificates, setFilteredCertificates] = useState<Certificate[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filters, setFilters] = useState({ status: '' });
+  const [filters, setFilters] = useState({ status: '', startDate: '', endDate: '' });
   
   const searchParams = useSearchParams();
 
@@ -38,50 +39,45 @@ export default function CertificatesPage() {
     }
   }, [searchParams]);
 
-  const fetchCertificates = useCallback(async (currentUser: User) => {
+  const fetchCertificates = useCallback(async () => {
+    const userDataString = localStorage.getItem('userData');
+    if (!userDataString) return;
+    const currentUser = JSON.parse(userDataString);
+
     setIsLoading(true);
     setError('');
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     
-    let url = `${apiURL}/api/certificates`;
-    if (currentUser.userType !== 'master') {
-      url = `${apiURL}/api/certificates/user/${currentUser.id}`;
-    }
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+        if(value) params.append(key, value);
+    });
+
+    let url = `${apiURL}/api/certificates?${params.toString()}`;
 
     try {
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!res.ok) throw new Error('Falha ao buscar atestados.');
+      if (!res.ok) throw new Error('Falha ao ir buscar os atestados.');
       const data: Certificate[] = await res.json();
-      setAllCertificates(data || []);
+      setCertificates(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
-      const currentUser = JSON.parse(userDataString);
-      setUser(currentUser);
+      setUser(JSON.parse(userDataString));
     }
   }, []);
   
   useEffect(() => {
-    if (user) {
-        fetchCertificates(user);
-    }
-  }, [user, fetchCertificates]);
-
-  useEffect(() => {
-    let newFilteredData = allCertificates;
-    if(filters.status) {
-        newFilteredData = newFilteredData.filter(c => c.status === filters.status);
-    }
-    setFilteredCertificates(newFilteredData);
-  }, [filters, allCertificates]);
+    fetchCertificates();
+  }, [fetchCertificates]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -98,16 +94,16 @@ export default function CertificatesPage() {
         });
         if (!res.ok) {
           const errData = await res.json();
-          throw new Error(errData.message || 'Falha ao atualizar status do atestado.');
+          throw new Error(errData.message || 'Falha ao atualizar o status do atestado.');
         }
-        if(user) fetchCertificates(user);
+        fetchCertificates();
     } catch (err: any) {
         setError(err.message);
     }
   };
 
   if (!user) {
-    return <div>Carregando...</div>;
+    return <div>A carregar...</div>;
   }
 
   return (
@@ -123,9 +119,9 @@ export default function CertificatesPage() {
 
       <FilterBar configs={certificateFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
 
-      {isLoading && <p>Carregando atestados...</p>}
+      {isLoading && <p>A carregar atestados...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && <CertificateList certificates={filteredCertificates} currentUser={user} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />}
+      {!isLoading && !error && <CertificateList certificates={certificates} currentUser={user} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />}
     </div>
   );
 }
