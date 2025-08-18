@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { User, Swap, Certificate, DaySchedule, Holiday, Comment } from '@/types';
+import { User } from '@/types';
 import WeeklyDetailsPanel from '@/components/dashboard/WeeklyDetailsPanel';
 import DashboardCalendar from '@/components/dashboard/DashboardCalendar';
 import CalendarSummary from '@/components/dashboard/CalendarSummary';
@@ -17,7 +17,7 @@ export default function DashboardHomePage() {
   const router = useRouter();
   
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { isLoading: isLoadingCalendar, error: calendarError, data: calendarRawData, fetchData: refetchCalendar } = useCalendarData(currentMonth, user);
+  const { isLoading: isLoadingCalendar, data: calendarRawData} = useCalendarData(currentMonth, user);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
   const [isLoadingWidgets, setIsLoadingWidgets] = useState(true);
@@ -40,7 +40,8 @@ export default function DashboardHomePage() {
     if (!user || user.userType === 'master') {
         setIsLoadingWidgets(false);
         return;
-    };
+    }
+     
     const fetchUsers = async () => {
         setIsLoadingWidgets(true);
         const token = Cookies.get('authToken');
@@ -138,7 +139,7 @@ export default function DashboardHomePage() {
         }
         
         <div className={styles.onShiftWidget}>
-          <h3>Colegas de plantão</h3>
+          <h3>Colaboradores de plantão</h3>
             {isLoadingWidgets ? <p style={{padding: '20px', textAlign: 'center'}}>Carregando...</p> : usersOnShift.length > 0 ? (
               <table style={{width: '100%', borderCollapse: 'collapse'}}>
                 <thead>
