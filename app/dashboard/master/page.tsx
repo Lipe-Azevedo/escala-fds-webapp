@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { User, Swap, Certificate } from '@/types';
 import DashboardSummaryCard from '@/components/master/DashboardSummaryCard';
 import styles from './MasterDashboard.module.css';
+import { useRouter } from 'next/navigation'; // 1. Importar o useRouter
 
 export default function MasterDashboardPage() {
     const [stats, setStats] = useState({
@@ -14,6 +15,7 @@ export default function MasterDashboardPage() {
     });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const router = useRouter(); // 2. Inicializar o router
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -52,10 +54,22 @@ export default function MasterDashboardPage() {
 
         fetchStats();
     }, []);
+    
+    // 3. Adicionar a função de logout
+    const handleLogout = () => {
+        Cookies.remove('authToken');
+        localStorage.removeItem('userData');
+        router.push('/login');
+    };
 
     return (
         <div>
-            <h1>Dashboard do Administrador</h1>
+            {/* 4. Adicionar o cabeçalho com o botão */}
+            <div className={styles.header}>
+                <h1>Dashboard do Administrador</h1>
+                <button onClick={handleLogout}>Sair</button>
+            </div>
+
             {isLoading ? (
                 <p>A carregar estatísticas...</p>
             ) : error ? (
