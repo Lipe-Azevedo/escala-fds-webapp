@@ -28,7 +28,7 @@ export default function Sidebar() {
     }
   }, []);
   
-  const canViewManagerItems = user?.userType === 'master' || user?.position.includes('Supervisor');
+  const canViewManagerItems = user?.userType === 'master' || (user?.position && user.position.includes('Supervisor'));
 
   return (
     <aside className={styles.sidebar}>

@@ -42,7 +42,6 @@ export default function CertificatesPage() {
   const fetchCertificates = useCallback(async () => {
     const userDataString = localStorage.getItem('userData');
     if (!userDataString) return;
-    const currentUser = JSON.parse(userDataString);
 
     setIsLoading(true);
     setError('');

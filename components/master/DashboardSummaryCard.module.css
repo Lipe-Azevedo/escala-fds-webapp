@@ -1,0 +1,31 @@
+.card {
+  background-color: rgb(var(--card-background-rgb));
+  border: 1px solid rgb(var(--card-border-rgb));
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 150px;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text-secondary-color);
+  font-weight: 500;
+}
+
+.value {
+  margin: 10px 0;
+  font-size: 36px;
+  font-weight: bold;
+  color: rgb(var(--foreground-rgb));
+}
+
+.link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  align-self: flex-start;
+}
