@@ -4,15 +4,15 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { User } from '@/types';
-import WeeklyDetailsPanel from '@/components/dashboard/WeeklyDetailsPanel';
-import DashboardCalendar from '@/components/dashboard/DashboardCalendar';
-import CalendarSummary from '@/components/dashboard/CalendarSummary';
+import WeeklyDetailsPanel from '@/components/collaborator/WeeklyDetailsPanel';
+import DashboardCalendar from '@/components/collaborator/DashboardCalendar';
+import CalendarSummary from '@/components/collaborator/CalendarSummary';
 import { useCalendarData } from '@/hooks/useCalendarData';
 import { generateCalendarGrid, chunk } from '@/lib/calendarUtils';
 import { addMonths, subMonths, isSameWeek, parseISO } from 'date-fns';
-import styles from './Dashboard.module.css';
+import styles from './CollaboratorDashboard.module.css';
 
-export default function DashboardHomePage() {
+export default function CollaboratorDashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   
