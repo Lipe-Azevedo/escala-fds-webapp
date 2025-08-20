@@ -54,9 +54,17 @@ export default function UsersPage() {
       if (!res.ok) throw new Error('Falha ao ir buscar os utilizadores.');
       
       const data: User[] = await res.json();
-      const collaborators = data.filter(u => u.userType === 'collaborator');
-      setAllUsers(collaborators);
-      setFilteredUsers(collaborators);
+      console.log("API Users Response:", data); // Diagnóstico
+
+      if (Array.isArray(data)) {
+        const collaborators = data.filter(u => u.userType !== 'master');
+        setAllUsers(collaborators);
+        setFilteredUsers(collaborators);
+      } else {
+        setAllUsers([]);
+        setFilteredUsers([]);
+        console.error("API did not return a valid user array.");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

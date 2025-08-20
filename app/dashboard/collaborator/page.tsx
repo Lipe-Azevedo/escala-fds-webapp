@@ -8,9 +8,11 @@ import WeeklyDetailsPanel from '@/components/collaborator/WeeklyDetailsPanel';
 import DashboardCalendar from '@/components/collaborator/DashboardCalendar';
 import CalendarSummary from '@/components/collaborator/CalendarSummary';
 import { useCalendarData } from '@/hooks/useCalendarData';
-import { generateCalendarGrid, chunk } from '@/lib/calendarUtils';
+import { generateCalendarGrid, chunk, isRegularDayOff } from '@/lib/calendarUtils';
 import { addMonths, subMonths, isSameWeek, parseISO, isSameMonth, isSameDay } from 'date-fns';
 import styles from './CollaboratorDashboard.module.css';
+import tableStyles from '@/components/common/Table.module.css'; // Importando estilos da tabela
+import { translate } from '@/lib/translations';
 
 export default function CollaboratorDashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -27,7 +29,7 @@ export default function CollaboratorDashboardPage() {
     if (userDataString) {
       const currentUser = JSON.parse(userDataString);
       if (currentUser.userType === 'master') {
-        router.push('/dashboard/users');
+        router.push('/dashboard/master');
       } else {
         setUser(currentUser);
       }
@@ -37,7 +39,7 @@ export default function CollaboratorDashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!user || user.userType === 'master') {
+    if (!user) {
         setIsLoadingWidgets(false);
         return;
     }
@@ -49,11 +51,11 @@ export default function CollaboratorDashboardPage() {
         try {
             const usersRes = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
             const allUsers: User[] = await usersRes.json() || [];
+            const today = new Date();
 
             const isShiftNow = (shift: string): boolean => {
                 if (!shift || !shift.includes('-')) return false;
-                const now = new Date();
-                const currentHour = now.getHours();
+                const currentHour = today.getHours();
                 try {
                     const [startStr, endStr] = shift.split('-');
                     const startHour = parseInt(startStr, 10);
@@ -62,7 +64,17 @@ export default function CollaboratorDashboardPage() {
                     return startHour < endHour ? currentHour >= startHour && currentHour < endHour : currentHour >= startHour || currentHour < endHour;
                 } catch (error) { return false; }
             };
-            setUsersOnShift(allUsers.filter(u => u.id !== user.id && u.shift === user.shift && isShiftNow(u.shift)));
+            
+            const onShiftNow = allUsers.filter(u => {
+              const isWorkingToday = !isRegularDayOff(today, u);
+              const isShiftActive = isShiftNow(u.shift);
+              const isNotCurrentUser = u.id !== user.id;
+
+              return isWorkingToday && isShiftActive && isNotCurrentUser;
+            });
+            
+            setUsersOnShift(onShiftNow);
+
         } catch (e) {
             console.error('Erro ao buscar usuários de plantão', e);
         } finally {
@@ -168,22 +180,26 @@ export default function CollaboratorDashboardPage() {
         <div className={styles.onShiftWidget}>
           <h3>Colaboradores de plantão</h3>
             {isLoadingWidgets ? <p style={{padding: '20px', textAlign: 'center'}}>Carregando...</p> : usersOnShift.length > 0 ? (
-              <table style={{width: '100%', borderCollapse: 'collapse'}}>
-                <thead>
-                  <tr>
-                    <th className={styles.tableHeader}>Nome</th>
-                    <th className={styles.tableHeader}>Equipe</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {usersOnShift.map(u => (
-                    <tr key={u.id}>
-                      <td className={styles.tableCell}>{u.firstName} {u.lastName}</td>
-                      <td className={styles.tableCell}>{u.team}</td>
+              <div className={tableStyles.tableWrapper}>
+                <table className={tableStyles.table}>
+                  <thead>
+                    <tr>
+                      <th className={tableStyles.header}>Nome</th>
+                      <th className={tableStyles.header}>Equipe</th>
+                      <th className={tableStyles.header}>Cargo</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {usersOnShift.map(u => (
+                      <tr key={u.id}>
+                        <td className={tableStyles.cell}>{u.firstName} {u.lastName}</td>
+                        <td className={tableStyles.cell}>{translate(u.team)}</td>
+                        <td className={tableStyles.cell}>{translate(u.position)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             ) : (
               <p style={{color: 'var(--text-secondary-color)', textAlign: 'center', padding: '20px'}}>Nenhum colega no seu turno agora.</p>
             )
