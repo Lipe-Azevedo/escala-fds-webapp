@@ -6,6 +6,7 @@ import { Comment, User, FilterConfig } from '@/types';
 import CommentList from '@/components/comment/CommentList';
 import CreateCommentModal from '@/components/comment/CreateCommentModal';
 import FilterBar from '@/components/common/FilterBar';
+import { useNotifications } from '@/context/NotificationContext';
 
 const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfig[] => {
   if (!user) return [];
@@ -13,7 +14,7 @@ const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfi
   const isMaster = user.userType === 'master';
   const isSupervisor = user.position.includes('Supervisor');
   const canSeeSubordinates = isMaster || isSupervisor;
-  
+
   const userOptions = [ { value: '', label: 'Todos' }, ...allUsers.map(u => ({ value: u.id.toString(), label: `${u.firstName} ${u.lastName}`})) ];
 
   const configs: FilterConfig[] = [
@@ -29,14 +30,14 @@ const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfi
     { name: 'authorId', label: 'Autor', type: 'select', options: userOptions, disabled: !isMaster },
     { name: 'team', label: 'Equipe', type: 'select', options: [
         { value: '', label: 'Todas' }, { value: 'Security', label: 'Segurança' }, { value: 'Support', label: 'Suporte' }, { value: 'CustomerService', label: 'Atendimento' },
-      ], disabled: !isMaster 
+      ], disabled: !isMaster
     },
     { name: 'shift', label: 'Turno', type: 'select', options: [
         { value: '', label: 'Todos' }, { value: '06:00-14:00', label: 'Manhã' }, { value: '14:00-22:00', label: 'Tarde' }, { value: '22:00-06:00', label: 'Noite' },
       ], disabled: !canSeeSubordinates
     }
   );
-  
+
   return configs;
 };
 
@@ -47,8 +48,16 @@ export default function CommentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-  
   const [filters, setFilters] = useState({ collaboratorId: '', authorId: '', startDate: '', endDate: '', team: '', shift: '' });
+
+  const { getUnreadIdsForCategory, markCategoryAsSeen } = useNotifications();
+  const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());
+
+  useEffect(() => {
+    const unreadIds = getUnreadIdsForCategory('comments');
+    setPageUnreadIds(unreadIds);
+    markCategoryAsSeen('comments');
+  }, []);
 
   const fetchUsers = async () => {
     const token = Cookies.get('authToken');
@@ -98,8 +107,8 @@ export default function CommentsPage() {
     const user = currentUser;
     if(user){
         const initialFilters: Partial<typeof filters> = {};
-        if (user.userType === 'collaborator' && !user.position.includes('Supervisor')) { 
-            initialFilters.collaboratorId = user.id.toString(); 
+        if (user.userType === 'collaborator' && !user.position.includes('Supervisor')) {
+            initialFilters.collaboratorId = user.id.toString();
         }
         setFilters(prev => ({...prev, ...initialFilters}));
     }
@@ -110,9 +119,9 @@ export default function CommentsPage() {
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
-  
+
   const canAddComment = currentUser?.userType === 'master' || currentUser?.position.includes('Supervisor');
-  
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -122,7 +131,9 @@ export default function CommentsPage() {
           )}
       </div>
       <FilterBar configs={generateFilterConfigs(currentUser, users)} filters={filters} onFilterChange={handleFilterChange} />
-      {isLoading ? <p>A carregar...</p> : error ? <p style={{color: 'red'}}>{error}</p> : <CommentList comments={comments} />}
+      {isLoading ? <p>A carregar...</p> : error ? <p style={{color: 'red'}}>{error}</p> : (
+        <CommentList comments={comments} unreadIds={pageUnreadIds} />
+      )}
       {isCreateModalOpen && (
         <CreateCommentModal isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} onSuccess={fetchComments} users={users} />
       )}

@@ -19,22 +19,22 @@ const generateFilterConfigs = (allUsers: User[], currentUser: User | null): Filt
     ];
 
     return [
-        { 
-            name: 'status', 
-            label: 'Status', 
-            type: 'select', 
+        {
+            name: 'status',
+            label: 'Status',
+            type: 'select',
             options: [
-                { value: '', label: 'Todos' }, 
-                { value: 'pending', label: 'Pendentes' }, 
-                { value: 'approved', label: 'Aprovadas' }, 
-                { value: 'rejected', label: 'Rejeitadas' }, 
+                { value: '', label: 'Todos' },
+                { value: 'pending', label: 'Pendentes' },
+                { value: 'approved', label: 'Aprovadas' },
+                { value: 'rejected', label: 'Rejeitadas' },
                 { value: 'pending_confirmation', label: 'Aguardando Confirmação'}
             ]
         },
-        { 
-            name: 'requesterId', 
-            label: 'Solicitante', 
-            type: 'select', 
+        {
+            name: 'requesterId',
+            label: 'Solicitante',
+            type: 'select',
             options: userOptions,
             disabled: !isManager
         },
@@ -52,18 +52,23 @@ export default function SwapsPage() {
     const [isApproveModalOpen, setApproveModalOpen] = useState(false);
     const [selectedSwap, setSelectedSwap] = useState<Swap | null>(null);
     const [filters, setFilters] = useState({ status: '', requesterId: '', startDate: '', endDate: '' });
-    
+
     const { getUnreadIdsForCategory, markCategoryAsSeen } = useNotifications();
-    const unreadSwapIds = getUnreadIdsForCategory('swaps');
+    const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());
     const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const unreadIds = getUnreadIdsForCategory('swaps');
+        setPageUnreadIds(unreadIds);
+        markCategoryAsSeen('swaps');
+    }, []);
 
     useEffect(() => {
         const statusFromUrl = searchParams.get('status');
         if (statusFromUrl) {
             setFilters(prev => ({ ...prev, status: statusFromUrl }));
         }
-        markCategoryAsSeen('swaps');
-    }, [searchParams, markCategoryAsSeen]);
+    }, [searchParams]);
 
     const fetchPageData = async () => {
         setIsLoading(true);
@@ -77,20 +82,20 @@ export default function SwapsPage() {
         }
         const currentUser: User = JSON.parse(userDataString);
         setUser(currentUser);
-        
+
         const token = Cookies.get('authToken');
         const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-        
+
         try {
             const isManager = currentUser.userType === 'master' || (currentUser.position && currentUser.position.includes('Supervisor'));
-            
+
             const params = new URLSearchParams();
             Object.entries(filters).forEach(([key, value]) => {
                 if(value) params.append(key, value);
             });
-            
+
             let swapsUrl = `${apiURL}/api/swaps?${params.toString()}`;
-            
+
             const [swapsRes, usersRes] = await Promise.all([
                 fetch(swapsUrl, { headers: { 'Authorization': `Bearer ${token}` } }),
                 isManager ? fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } }) : Promise.resolve({ ok: false, json: () => Promise.resolve([]) })
@@ -99,12 +104,12 @@ export default function SwapsPage() {
             if (!swapsRes.ok) throw new Error('Falha ao ir buscar as trocas de folga.');
             const swapsData = await swapsRes.json();
             setSwaps(swapsData || []);
-            
+
             if (usersRes && usersRes.ok) {
                 const usersData = await usersRes.json();
                 setAllUsers(usersData || []);
             }
-            
+
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -191,26 +196,26 @@ export default function SwapsPage() {
                     </Link>
                 )}
             </div>
-            
+
             <FilterBar configs={generateFilterConfigs(allUsers, user)} filters={filters} onFilterChange={handleFilterChange} />
 
             {isLoading && <p>A atualizar...</p>}
-            <SwapList 
-                swaps={swaps} 
-                currentUser={user} 
-                unreadIds={unreadSwapIds}
+            <SwapList
+                swaps={swaps}
+                currentUser={user}
+                unreadIds={pageUnreadIds}
                 onApproveClick={handleApproveClick}
                 onReject={handleReject}
                 onConfirm={handleConfirmSwap}
                 onDecline={handleDeclineSwap}
             />
-            
+
             {isApproveModalOpen && selectedSwap && (
-                <ApproveSwapModal 
-                    isOpen={isApproveModalOpen} 
-                    onClose={() => setApproveModalOpen(false)} 
-                    onConfirm={handleConfirmApproval} 
-                    swap={selectedSwap} 
+                <ApproveSwapModal
+                    isOpen={isApproveModalOpen}
+                    onClose={() => setApproveModalOpen(false)}
+                    onConfirm={handleConfirmApproval}
+                    swap={selectedSwap}
                 />
             )}
         </div>

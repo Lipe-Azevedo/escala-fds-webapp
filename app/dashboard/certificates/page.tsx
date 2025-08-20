@@ -7,12 +7,13 @@ import CertificateList from '@/components/certificate/CertificateList';
 import FilterBar from '@/components/common/FilterBar';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useNotifications } from '@/context/NotificationContext';
 
 const certificateFilterConfigs: FilterConfig[] = [
-    { 
-      name: 'status', 
-      label: 'Status', 
-      type: 'select', 
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select',
       options: [
         { value: '', label: 'Todos os Status' },
         { value: 'pending', label: 'Pendentes' },
@@ -29,8 +30,16 @@ export default function CertificatesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ status: '', startDate: '', endDate: '' });
-  
+
   const searchParams = useSearchParams();
+  const { getUnreadIdsForCategory, markCategoryAsSeen } = useNotifications();
+  const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());
+
+  useEffect(() => {
+    const unreadIds = getUnreadIdsForCategory('certificates');
+    setPageUnreadIds(unreadIds);
+    markCategoryAsSeen('certificates');
+  }, []);
 
   useEffect(() => {
     const statusFromUrl = searchParams.get('status');
@@ -40,20 +49,24 @@ export default function CertificatesPage() {
   }, [searchParams]);
 
   const fetchCertificates = useCallback(async () => {
-    const userDataString = localStorage.getItem('userData');
-    if (!userDataString) return;
+    if (!user) return;
 
     setIsLoading(true);
     setError('');
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    
+
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
         if(value) params.append(key, value);
     });
 
-    let url = `${apiURL}/api/certificates?${params.toString()}`;
+    let url;
+    if (user.userType === 'collaborator') {
+      url = `${apiURL}/api/certificates/user/${user.id}?${params.toString()}`;
+    } else {
+      url = `${apiURL}/api/certificates?${params.toString()}`;
+    }
 
     try {
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -65,7 +78,7 @@ export default function CertificatesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [filters]);
+  }, [filters, user]);
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
@@ -73,10 +86,12 @@ export default function CertificatesPage() {
       setUser(JSON.parse(userDataString));
     }
   }, []);
-  
+
   useEffect(() => {
-    fetchCertificates();
-  }, [fetchCertificates]);
+    if (user) {
+        fetchCertificates();
+    }
+  }, [user, fetchCertificates]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -120,7 +135,15 @@ export default function CertificatesPage() {
 
       {isLoading && <p>A carregar atestados...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && <CertificateList certificates={certificates} currentUser={user} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />}
+      {!isLoading && !error && (
+        <CertificateList
+          certificates={certificates}
+          currentUser={user}
+          unreadIds={pageUnreadIds}
+          onApprove={updateCertificateStatus}
+          onReject={updateCertificateStatus}
+        />
+      )}
     </div>
   );
 }
