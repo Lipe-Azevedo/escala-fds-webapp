@@ -27,7 +27,7 @@ export default function Sidebar() {
       setUser(JSON.parse(userDataString));
     }
   }, []);
-  
+
   const canViewManagerItems = user?.userType === 'master' || (user?.position && user.position.includes('Supervisor'));
 
   return (
@@ -45,9 +45,17 @@ export default function Sidebar() {
               if (managerOnly && !canViewManagerItems) {
                   return null;
               }
+
+              let isActive = false;
+              if (href === '/dashboard') {
+                isActive = pathname === '/dashboard' || pathname === '/dashboard/master' || pathname === '/dashboard/collaborator';
+              } else {
+                isActive = pathname.startsWith(href);
+              }
+
               return (
                 <li key={href}>
-                  <Link href={href} className={`${styles.navLink} ${pathname.startsWith(href) && href !== '/dashboard' || pathname === href ? styles.active : ''}`}>
+                  <Link href={href} className={`${styles.navLink} ${isActive ? styles.active : ''}`}>
                     <span>{label}</span>
                     {unreadByCategory[key] && <span className={styles.notificationDot}></span>}
                   </Link>

@@ -9,7 +9,7 @@ import DashboardCalendar from '@/components/collaborator/DashboardCalendar';
 import CalendarSummary from '@/components/collaborator/CalendarSummary';
 import { useCalendarData } from '@/hooks/useCalendarData';
 import { generateCalendarGrid, chunk } from '@/lib/calendarUtils';
-import { addMonths, subMonths, isSameWeek, parseISO } from 'date-fns';
+import { addMonths, subMonths, isSameWeek, parseISO, isSameMonth, isSameDay } from 'date-fns';
 import styles from './CollaboratorDashboard.module.css';
 
 export default function CollaboratorDashboardPage() {
@@ -72,21 +72,48 @@ export default function CollaboratorDashboardPage() {
     fetchUsers();
   }, [user]);
 
-  const { calendarGrid, weeks, workedDays, holidaysWorked } = useMemo(() => {
-    if (!user || !calendarRawData) return { calendarGrid: [], weeks: [], workedDays: 0, holidaysWorked: 0 };
+  const { calendarGrid, workedDays, holidaysWorked } = useMemo(() => {
+    if (!user || !calendarRawData) return { calendarGrid: [], workedDays: 0, holidaysWorked: 0 };
     const { calendarGrid, workedCounter, holidaysWorkedCounter } = generateCalendarGrid(currentMonth, user, calendarRawData.holidays, calendarRawData.swaps, calendarRawData.comments, calendarRawData.certificates);
-    const weeks = chunk(calendarGrid, 7);
-    return { calendarGrid, weeks, workedDays: workedCounter, holidaysWorked: holidaysWorkedCounter };
+    return { calendarGrid, workedDays: workedCounter, holidaysWorked: holidaysWorkedCounter };
   }, [currentMonth, user, calendarRawData]);
 
-  useEffect(() => {
-    if (calendarGrid.length > 0) {
-        const today = new Date();
-        const currentDayIndex = calendarGrid.findIndex(day => isSameWeek(today, parseISO(day.date), { weekStartsOn: 0 }));
-        setSelectedWeekIndex(currentDayIndex !== -1 ? Math.floor(currentDayIndex / 7) : 0);
-    }
-  }, [calendarGrid]);
+  const weeks = useMemo(() => chunk(calendarGrid, 7), [calendarGrid]);
   
+  const displayWeeks = useMemo(() => {
+    return weeks.filter(week =>
+      week.some(day => isSameMonth(parseISO(day.date), currentMonth))
+    );
+  }, [weeks, currentMonth]);
+
+  useEffect(() => {
+    if (weeks.length > 0) {
+      const today = new Date();
+      const currentWeekIndex = weeks.findIndex(week => week.some(day => isSameDay(parseISO(day.date), today)));
+      if (currentWeekIndex !== -1) {
+          setSelectedWeekIndex(currentWeekIndex);
+      } else {
+          const firstWeekOfMonthIndex = weeks.findIndex(week => week.some(day => isSameMonth(parseISO(day.date), currentMonth)));
+          setSelectedWeekIndex(firstWeekOfMonthIndex > -1 ? firstWeekOfMonthIndex : 0);
+      }
+    }
+  }, [weeks, currentMonth]);
+  
+  const selectedDisplayWeekIndex = useMemo(() => {
+    if (!weeks[selectedWeekIndex]) return -1;
+    const selectedWeekStartDate = weeks[selectedWeekIndex][0].date;
+    return displayWeeks.findIndex(week => week[0].date === selectedWeekStartDate);
+  }, [selectedWeekIndex, weeks, displayWeeks]);
+
+  const handleWeekChange = (newDisplayIndex: number) => {
+    if (newDisplayIndex < 0 || newDisplayIndex >= displayWeeks.length) return;
+    const targetWeekStartDate = displayWeeks[newDisplayIndex][0].date;
+    const newGlobalIndex = weeks.findIndex(week => week[0].date === targetWeekStartDate);
+    if (newGlobalIndex !== -1) {
+      setSelectedWeekIndex(newGlobalIndex);
+    }
+  };
+
   const handleLogout = () => {
     Cookies.remove('authToken');
     localStorage.removeItem('userData');
@@ -122,9 +149,9 @@ export default function CollaboratorDashboardPage() {
                 }}
               />
               <WeeklyDetailsPanel 
-                  weeks={weeks}
-                  selectedWeekIndex={selectedWeekIndex}
-                  onWeekChange={setSelectedWeekIndex}
+                  weeks={displayWeeks}
+                  selectedWeekIndex={selectedDisplayWeekIndex}
+                  onWeekChange={handleWeekChange}
                   currentMonth={currentMonth}
               />
           </>
