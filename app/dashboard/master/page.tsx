@@ -5,7 +5,6 @@ import Cookies from 'js-cookie';
 import { User, Swap, Certificate } from '@/types';
 import DashboardSummaryCard from '@/components/master/DashboardSummaryCard';
 import styles from './MasterDashboard.module.css';
-import { useRouter } from 'next/navigation';
 import { isRegularDayOff } from '@/lib/calendarUtils';
 import tableStyles from '@/components/common/Table.module.css';
 import { translate } from '@/lib/translations';
@@ -15,7 +14,6 @@ export default function MasterDashboardPage() {
     const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    const router = useRouter();
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -79,17 +77,10 @@ export default function MasterDashboardPage() {
         fetchDashboardData();
     }, []);
     
-    const handleLogout = () => {
-        Cookies.remove('authToken');
-        localStorage.removeItem('userData');
-        router.push('/login');
-    };
-
     return (
         <div>
             <div className={styles.header}>
                 <h1>Dashboard do Administrador</h1>
-                <button onClick={handleLogout}>Sair</button>
             </div>
 
             {isLoading ? (

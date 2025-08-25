@@ -11,7 +11,7 @@ import { useCalendarData } from '@/hooks/useCalendarData';
 import { generateCalendarGrid, chunk, isRegularDayOff } from '@/lib/calendarUtils';
 import { addMonths, subMonths, isSameWeek, parseISO, isSameMonth, isSameDay } from 'date-fns';
 import styles from './CollaboratorDashboard.module.css';
-import tableStyles from '@/components/common/Table.module.css'; // Importando estilos da tabela
+import tableStyles from '@/components/common/Table.module.css';
 import { translate } from '@/lib/translations';
 
 export default function CollaboratorDashboardPage() {
@@ -125,12 +125,6 @@ export default function CollaboratorDashboardPage() {
       setSelectedWeekIndex(newGlobalIndex);
     }
   };
-
-  const handleLogout = () => {
-    Cookies.remove('authToken');
-    localStorage.removeItem('userData');
-    router.push('/login');
-  };
   
   if (!user || user.userType === 'master') {
     return <div>Carregando...</div>;
@@ -140,7 +134,6 @@ export default function CollaboratorDashboardPage() {
     <div>
       <div className={styles.header}>
         <h1>Meu Calendário</h1>
-        <button onClick={handleLogout}>Sair</button>
       </div>
 
       <div className={styles.mainCard}>

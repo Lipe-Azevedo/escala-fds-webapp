@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import styles from './Sidebar.module.css';
 import { User } from '../types';
 import { useNotifications } from '@/context/NotificationContext';
+import ProfileDropdown from './common/ProfileDropdown';
+import Cookies from 'js-cookie';
 
 const navItems = [
     { href: '/dashboard', label: 'Início', key: 'home' },
@@ -18,6 +20,7 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const { unreadByCategory } = useNotifications();
 
@@ -28,6 +31,12 @@ export default function Sidebar() {
     }
   }, []);
 
+  const handleLogout = () => {
+    Cookies.remove('authToken');
+    localStorage.removeItem('userData');
+    router.push('/login');
+  };
+  
   const canViewManagerItems = user?.userType === 'master' || (user?.position && user.position.includes('Supervisor'));
 
   return (
@@ -65,11 +74,7 @@ export default function Sidebar() {
           </ul>
         </nav>
       </div>
-      <Link href="/dashboard/profile" title="Meu Perfil" style={{ textDecoration: 'none', alignSelf: 'center' }}>
-        <div className={styles.userProfile}>
-          {user ? user.firstName.charAt(0) : ''}
-        </div>
-      </Link>
+      <ProfileDropdown user={user} onLogout={handleLogout} />
     </aside>
   );
 }
