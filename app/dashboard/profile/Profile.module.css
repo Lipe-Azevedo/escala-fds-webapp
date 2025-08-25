@@ -5,11 +5,7 @@
   margin-bottom: 20px;
 }
 
-.profileCard {
-  background-color: rgb(var(--card-background-rgb));
-  border: 1px solid rgb(var(--card-border-rgb));
-  border-radius: 8px;
-  padding: 25px;
+.profileSection {
   display: flex;
   flex-direction: column;
   gap: 30px;

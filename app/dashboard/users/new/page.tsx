@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { TeamName, PositionName, User } from '@/types';
 import styles from './NewUser.module.css';
+import cardStyles from '@/components/common/Card.module.css';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const positionsByTeam: Record<TeamName, { value: PositionName, label: string }[]> = {
   'Security': [
@@ -109,7 +111,7 @@ export default function NewUserPage() {
   return (
     <div>
         <h1>Criar Novo Colaborador</h1>
-        <div className={styles.card}>
+        <div className={cardStyles.card}>
             <form onSubmit={handleSubmit}>
                 <div className={styles.section}>
                     <div className={styles.formGrid}>
@@ -211,7 +213,7 @@ export default function NewUserPage() {
                     <Link href="/dashboard/users">
                         <button type="button" style={{ backgroundColor: '#4a5568'}}>Cancelar</button>
                     </Link>
-                    <button type="submit" disabled={isLoading}>{isLoading ? 'A salvar...' : 'Salvar Utilizador'}</button>
+                    <button type="submit" disabled={isLoading}>{isLoading ? <LoadingSpinner size={16} strokeWidth={2} /> : 'Salvar Utilizador'}</button>
                 </div>
             </form>
         </div>

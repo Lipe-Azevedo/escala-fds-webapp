@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Cookies from 'js-cookie';
-import { User } from '@/types';
 import { format } from 'date-fns';
 import DateRangePicker from '@/components/certificate/DateRangePicker'; 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import cardStyles from '@/components/common/Card.module.css';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface DateRange {
   start: Date | null;
@@ -64,7 +65,7 @@ export default function NewCertificatePage() {
             </Link>
         </div>
 
-        <div style={{ padding: '25px', background: 'rgb(var(--card-background-rgb))', borderRadius: '8px', maxWidth: '500px', margin: 'auto' }}>
+        <div className={cardStyles.card} style={{ maxWidth: '500px', margin: 'auto' }}>
             <h1 style={{textAlign: 'center', marginBottom: '30px'}}>Enviar Atestado Médico</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
             
@@ -85,7 +86,7 @@ export default function NewCertificatePage() {
             
             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                 <Link href="/dashboard/certificates"><button type="button" style={{backgroundColor: '#4a5568'}}>Cancelar</button></Link>
-                <button type="submit" disabled={isLoading}>{isLoading ? 'Enviando...' : 'Enviar Atestado'}</button>
+                <button type="submit" disabled={isLoading}>{isLoading ? <LoadingSpinner size={16} strokeWidth={2} /> : 'Enviar Atestado'}</button>
             </div>
             </form>
         </div>

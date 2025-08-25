@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { User } from '@/types';
 import Link from 'next/link';
 import styles from './Profile.module.css';
+import cardStyles from '@/components/common/Card.module.css'; // Importar o novo estilo
 import { getDay, differenceInCalendarWeeks } from 'date-fns';
 import { translate } from '@/lib/translations';
 import Cookies from 'js-cookie';
@@ -75,7 +76,7 @@ export default function ProfilePage() {
         </Link>
       </div>
 
-      <div className={styles.profileCard}>
+      <div className={cardStyles.card}>
         <div className={styles.profileSection}>
             <h2 className={styles.sectionTitle}>Informações Pessoais</h2>
             <div className={styles.infoGrid}>

@@ -11,8 +11,10 @@ import { useCalendarData } from '@/hooks/useCalendarData';
 import { generateCalendarGrid, chunk, isRegularDayOff } from '@/lib/calendarUtils';
 import { addMonths, subMonths, isSameWeek, parseISO, isSameMonth, isSameDay } from 'date-fns';
 import styles from './CollaboratorDashboard.module.css';
+import cardStyles from '@/components/common/Card.module.css';
 import tableStyles from '@/components/common/Table.module.css';
 import { translate } from '@/lib/translations';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function CollaboratorDashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -127,7 +129,7 @@ export default function CollaboratorDashboardPage() {
   };
   
   if (!user || user.userType === 'master') {
-    return <div>Carregando...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
@@ -136,9 +138,9 @@ export default function CollaboratorDashboardPage() {
         <h1>Meu Calendário</h1>
       </div>
 
-      <div className={styles.mainCard}>
+      <div className={cardStyles.card}>
         <div className={styles.contentGrid}>
-          {isLoadingCalendar ? <p>Carregando...</p> : 
+          {isLoadingCalendar ? <LoadingSpinner /> : 
           <>
               <DashboardCalendar
                 currentMonth={currentMonth}
@@ -172,7 +174,7 @@ export default function CollaboratorDashboardPage() {
         
         <div className={styles.onShiftWidget}>
           <h3>Colaboradores de plantão</h3>
-            {isLoadingWidgets ? <p style={{padding: '20px', textAlign: 'center'}}>Carregando...</p> : usersOnShift.length > 0 ? (
+            {isLoadingWidgets ? <LoadingSpinner /> : usersOnShift.length > 0 ? (
               <div className={tableStyles.tableWrapper}>
                 <table className={tableStyles.table}>
                   <thead>

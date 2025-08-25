@@ -6,15 +6,6 @@
   margin-bottom: 20px;
 }
 
-.mainCard {
-    background-color: rgb(var(--card-background-rgb));
-    border-radius: 8px;
-    padding: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
 .contentGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));

@@ -6,6 +6,8 @@ import Cookies from 'js-cookie';
 import EyeIcon from '@/components/icons/EyeIcon';
 import EyeOffIcon from '@/components/icons/EyeOffIcon';
 import { useAuth } from '@/hooks/useAuth';
+import cardStyles from '@/components/common/Card.module.css';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function LoginPage() {
   useAuth();
@@ -70,7 +72,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'rgb(var(--background-rgb))' }}>
-      <div style={{ width: '100%', maxWidth: '400px', padding: '40px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
+      <div className={cardStyles.card} style={{ width: '100%', maxWidth: '400px' }}>
         <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>Login do Sistema</h1>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '20px' }}>
@@ -101,7 +103,7 @@ export default function LoginPage() {
           </div>
           {error && <p style={{ color: '#f87171', textAlign: 'center' }}>{error}</p>}
           <button type="submit" disabled={isLoading} style={{ width: '100%', padding: '12px', marginTop: '10px', fontSize: '16px' }}>
-            {isLoading ? 'Entrando...' : 'Entrar'}
+            {isLoading ? <LoadingSpinner size={16} strokeWidth={2} /> : 'Entrar'}
           </button>
         </form>
       </div>

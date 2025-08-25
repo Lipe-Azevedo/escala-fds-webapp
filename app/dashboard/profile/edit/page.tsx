@@ -6,6 +6,7 @@ import { User } from '@/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './EditProfile.module.css';
+import cardStyles from '@/components/common/Card.module.css'; // Importar o novo estilo
 
 export default function EditProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -118,7 +119,7 @@ export default function EditProfilePage() {
     <div>
       <h1>Editar Perfil</h1>
       
-      <div className={styles.card}>
+      <div className={cardStyles.card}>
         <form onSubmit={handleSubmit}>
           <div className={styles.formGrid}>
             <div>
