@@ -18,6 +18,7 @@
   --text-secondary-color: #a0aec0;
 }
 
+html,
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
@@ -83,7 +84,7 @@ input, select, textarea {
   border-radius: 6px;
   transition: border-color 0.2s ease;
   font-family: inherit; 
-  font-size: 14px;
+  font-size: 14px; 
 }
 
 input:focus, select:focus, textarea:focus {

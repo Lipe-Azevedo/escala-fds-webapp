@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function DashboardRootPage() {
   const router = useRouter();
@@ -23,8 +24,8 @@ export default function DashboardRootPage() {
   }, [router]);
 
   return (
-    <div>
-      <p>A redirecionar...</p>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <LoadingSpinner size={40} />
     </div>
   );
 }

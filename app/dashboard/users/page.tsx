@@ -42,11 +42,8 @@ export default function UsersPage() {
   const [filters, setFilters] = useState({ team: '', shift: '' });
 
   const fetchUsers = async () => {
-    setIsLoading(true);
-    setError('');
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-
     try {
       const res = await fetch(`${apiURL}/api/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -54,8 +51,6 @@ export default function UsersPage() {
       if (!res.ok) throw new Error('Falha ao ir buscar os utilizadores.');
       
       const data: User[] = await res.json();
-      console.log("API Users Response:", data); // Diagnóstico
-
       if (Array.isArray(data)) {
         const collaborators = data.filter(u => u.userType !== 'master');
         setAllUsers(collaborators);
@@ -63,7 +58,6 @@ export default function UsersPage() {
       } else {
         setAllUsers([]);
         setFilteredUsers([]);
-        console.error("API did not return a valid user array.");
       }
     } catch (err: any) {
       setError(err.message);
@@ -101,6 +95,8 @@ export default function UsersPage() {
     setSelectedUser(null);
   }
 
+  if (isLoading) return null;
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -112,9 +108,8 @@ export default function UsersPage() {
 
       <FilterBar configs={userFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
 
-      {isLoading && <p>A carregar colaboradores...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && <UserList users={filteredUsers} onEdit={handleEdit} />}
+      {!error && <UserList users={filteredUsers} onEdit={handleEdit} />}
 
       {isEditModalOpen && selectedUser && (
         <EditUserModal

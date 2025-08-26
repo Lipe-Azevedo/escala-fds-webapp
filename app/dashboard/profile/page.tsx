@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { User } from '@/types';
 import Link from 'next/link';
 import styles from './Profile.module.css';
-import cardStyles from '@/components/common/Card.module.css'; // Importar o novo estilo
+import cardStyles from '@/components/common/Card.module.css';
 import { getDay, differenceInCalendarWeeks } from 'date-fns';
 import { translate } from '@/lib/translations';
 import Cookies from 'js-cookie';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -50,7 +51,7 @@ export default function ProfilePage() {
     const today = new Date();
     const userCreatedAt = new Date(user.createdAt);
     
-    const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0; // 6 for Saturday, 0 for Sunday
+    const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
 
     let firstOccurrence = new Date(userCreatedAt);
     firstOccurrence.setDate(firstOccurrence.getDate() + (firstWeekendOffDay - getDay(firstOccurrence) + 7) % 7);
@@ -62,9 +63,8 @@ export default function ProfilePage() {
     return currentWeekendOffDay === 6 ? 'Sábado' : 'Domingo';
   };
 
-
   if (!user) {
-    return <p>A carregar perfil...</p>;
+    return <LoadingSpinner />;
   }
 
   return (

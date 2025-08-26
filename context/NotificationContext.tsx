@@ -10,6 +10,7 @@ interface NotificationContextType {
   unreadByCategory: Record<string, boolean>;
   getUnreadIdsForCategory: (category: string) => Set<number>;
   markCategoryAsSeen: (category: string) => void;
+  isLoading: boolean; // Propriedade adicionada
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -18,6 +19,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
   const [seenIds, setSeenIds] = useState<Set<number>>(new Set());
   const [unreadByCategory, setUnreadByCategory] = useState<Record<string, boolean>>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     try {
@@ -33,7 +35,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   const fetchNotifications = useCallback(async () => {
     const token = Cookies.get('authToken');
-    if (!token) return;
+    if (!token) {
+        setIsLoading(false);
+        return;
+    }
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     try {
       const res = await fetch(`${apiURL}/api/events`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -43,6 +48,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       }
     } catch (e) {
       console.error("Failed to fetch notifications", e);
+    } finally {
+        setIsLoading(false);
     }
   }, []);
 
@@ -64,7 +71,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     setUnreadByCategory(unreadStatus);
   }, [allNotifications, seenIds]);
 
-  const markCategoryAsSeen = (category: string) => {
+  const markCategoryAsSeen = useCallback((category: string) => {
     const newSeenIds = new Set(seenIds);
     let changed = false;
     allNotifications.forEach(n => {
@@ -79,9 +86,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       setSeenIds(newSeenIds);
       localStorage.setItem(SEEN_NOTIFICATIONS_KEY, JSON.stringify(Array.from(newSeenIds)));
     }
-  };
+  }, [allNotifications, seenIds]);
 
-  const getUnreadIdsForCategory = (category: string): Set<number> => {
+  const getUnreadIdsForCategory = useCallback((category: string): Set<number> => {
     const unreadIds = new Set<number>();
     allNotifications.forEach(n => {
         const linkMatchesCategory = n.link.includes(`/${category}`);
@@ -93,10 +100,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         }
     });
     return unreadIds;
-  };
+  }, [allNotifications, seenIds]);
 
   return (
-    <NotificationContext.Provider value={{ unreadByCategory, getUnreadIdsForCategory, markCategoryAsSeen }}>
+    <NotificationContext.Provider value={{ unreadByCategory, getUnreadIdsForCategory, markCategoryAsSeen, isLoading }}>
       {children}
     </NotificationContext.Provider>
   );

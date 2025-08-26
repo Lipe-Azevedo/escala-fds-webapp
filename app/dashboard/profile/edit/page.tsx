@@ -6,7 +6,8 @@ import { User } from '@/types';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './EditProfile.module.css';
-import cardStyles from '@/components/common/Card.module.css'; // Importar o novo estilo
+import cardStyles from '@/components/common/Card.module.css';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function EditProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -112,7 +113,7 @@ export default function EditProfilePage() {
   };
 
   if (!user) {
-    return <p>A carregar perfil...</p>;
+    return <LoadingSpinner />;
   }
 
   return (
@@ -168,7 +169,7 @@ export default function EditProfilePage() {
               <button type="button" style={{ backgroundColor: '#4a5568'}}>Cancelar</button>
             </Link>
             <button type="submit" disabled={isLoading}>
-              {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+              {isLoading ? <LoadingSpinner size={16} strokeWidth={2} /> : 'Salvar Alterações'}
             </button>
           </div>
         </form>

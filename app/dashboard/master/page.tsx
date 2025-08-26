@@ -7,6 +7,7 @@ import DashboardSummaryCard from '@/components/master/DashboardSummaryCard';
 import styles from './MasterDashboard.module.css';
 import { isRegularDayOff } from '@/lib/calendarUtils';
 import tableStyles from '@/components/common/Table.module.css';
+import cardStyles from '@/components/common/Card.module.css';
 import { translate } from '@/lib/translations';
 
 export default function MasterDashboardPage() {
@@ -17,11 +18,8 @@ export default function MasterDashboardPage() {
 
     useEffect(() => {
         const fetchDashboardData = async () => {
-            setIsLoading(true);
-            setError('');
             const token = Cookies.get('authToken');
             const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-
             try {
                 const [usersRes, swapsRes, certsRes] = await Promise.all([
                     fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -66,7 +64,6 @@ export default function MasterDashboardPage() {
                 } else {
                     console.error("API did not return a valid user array for master dashboard.");
                 }
-
             } catch (err: any) {
                 setError(err.message);
             } finally {
@@ -77,25 +74,21 @@ export default function MasterDashboardPage() {
         fetchDashboardData();
     }, []);
     
+    if (isLoading) return null; // O layout já está a mostrar o spinner
+
     return (
         <div>
             <div className={styles.header}>
                 <h1>Dashboard do Administrador</h1>
             </div>
-
-            {isLoading ? (
-                <p>A carregar estatísticas...</p>
-            ) : error ? (
-                <p style={{ color: 'red' }}>{error}</p>
-            ) : (
+            {error ? <p style={{ color: 'red' }}>{error}</p> : (
                 <>
                     <div className={styles.grid}>
                         <DashboardSummaryCard title="Total de Colaboradores" value={stats.totalUsers} linkTo="/dashboard/users" linkLabel="Gerir colaboradores" />
                         <DashboardSummaryCard title="Trocas Pendentes" value={stats.pendingSwaps} linkTo="/dashboard/swaps?status=pending" linkLabel="Ver trocas" />
                         <DashboardSummaryCard title="Atestados Pendentes" value={stats.pendingCertificates} linkTo="/dashboard/certificates?status=pending" linkLabel="Ver atestados" />
                     </div>
-
-                    <div className={styles.onShiftWidget}>
+                    <div className={`${cardStyles.card} ${styles.onShiftWidget}`}>
                         <h3>Colaboradores de plantão</h3>
                         {usersOnShift.length > 0 ? (
                             <div className={tableStyles.tableWrapper}>

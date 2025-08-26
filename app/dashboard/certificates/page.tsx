@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Cookies from 'js-cookie';
 import { Certificate, User, FilterConfig } from '@/types';
 import CertificateList from '@/components/certificate/CertificateList';
@@ -8,18 +8,10 @@ import FilterBar from '@/components/common/FilterBar';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useNotifications } from '@/context/NotificationContext';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const certificateFilterConfigs: FilterConfig[] = [
-    {
-      name: 'status',
-      label: 'Status',
-      type: 'select',
-      options: [
-        { value: '', label: 'Todos os Status' },
-        { value: 'pending', label: 'Pendentes' },
-        { value: 'approved', label: 'Aprovados' },
-        { value: 'rejected', label: 'Rejeitados' },
-    ]},
+    { name: 'status', label: 'Status', type: 'select', options: [{ value: '', label: 'Todos os Status' }, { value: 'pending', label: 'Pendentes' }, { value: 'approved', label: 'Aprovados' }, { value: 'rejected', label: 'Rejeitados' }] },
     { name: 'startDate', label: 'Data Início', type: 'date' },
     { name: 'endDate', label: 'Data Fim', type: 'date' },
 ];
@@ -30,16 +22,19 @@ export default function CertificatesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({ status: '', startDate: '', endDate: '' });
-
   const searchParams = useSearchParams();
-  const { getUnreadIdsForCategory, markCategoryAsSeen } = useNotifications();
+  const { getUnreadIdsForCategory, markCategoryAsSeen, isLoading: isNotificationsLoading } = useNotifications();
   const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());
+  const notificationsProcessed = useRef(false);
 
   useEffect(() => {
-    const unreadIds = getUnreadIdsForCategory('certificates');
-    setPageUnreadIds(unreadIds);
-    markCategoryAsSeen('certificates');
-  }, []);
+    if (!isNotificationsLoading && !notificationsProcessed.current) {
+        const unreadIds = getUnreadIdsForCategory('certificates');
+        setPageUnreadIds(unreadIds);
+        markCategoryAsSeen('certificates');
+        notificationsProcessed.current = true;
+    }
+  }, [isNotificationsLoading, getUnreadIdsForCategory, markCategoryAsSeen]);
 
   useEffect(() => {
     const statusFromUrl = searchParams.get('status');
@@ -50,24 +45,13 @@ export default function CertificatesPage() {
 
   const fetchCertificates = useCallback(async () => {
     if (!user) return;
-
     setIsLoading(true);
     setError('');
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-
     const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => {
-        if(value) params.append(key, value);
-    });
-
-    let url;
-    if (user.userType === 'collaborator') {
-      url = `${apiURL}/api/certificates/user/${user.id}?${params.toString()}`;
-    } else {
-      url = `${apiURL}/api/certificates?${params.toString()}`;
-    }
-
+    Object.entries(filters).forEach(([key, value]) => { if(value) params.append(key, value); });
+    let url = user.userType === 'collaborator' ? `${apiURL}/api/certificates/user/${user.id}?${params.toString()}` : `${apiURL}/api/certificates?${params.toString()}`;
     try {
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) throw new Error('Falha ao ir buscar os atestados.');
@@ -82,21 +66,14 @@ export default function CertificatesPage() {
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
-    if (userDataString) {
-      setUser(JSON.parse(userDataString));
-    }
+    if (userDataString) { setUser(JSON.parse(userDataString)); }
   }, []);
 
   useEffect(() => {
-    if (user) {
-        fetchCertificates();
-    }
+    if (user) { fetchCertificates(); }
   }, [user, fetchCertificates]);
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setFilters(prev => ({ ...prev, [e.target.name]: e.target.value })); };
   const updateCertificateStatus = async (certificateId: number, status: 'approved' | 'rejected') => {
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -106,43 +83,22 @@ export default function CertificatesPage() {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ status })
         });
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.message || 'Falha ao atualizar o status do atestado.');
-        }
+        if (!res.ok) { const errData = await res.json(); throw new Error(errData.message || 'Falha ao atualizar o status do atestado.'); }
         fetchCertificates();
-    } catch (err: any) {
-        setError(err.message);
-    }
+    } catch (err: any) { setError(err.message); }
   };
 
-  if (!user) {
-    return <div>A carregar...</div>;
-  }
+  if (!user) { return <LoadingSpinner />; }
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Atestados Médicos</h1>
-        {user.userType === 'collaborator' && (
-            <Link href="/dashboard/certificates/new">
-              <button>+ Enviar Atestado</button>
-            </Link>
-        )}
+        {user.userType === 'collaborator' && ( <Link href="/dashboard/certificates/new"><button>+ Enviar Atestado</button></Link> )}
       </div>
-
       <FilterBar configs={certificateFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
-
-      {isLoading && <p>A carregar atestados...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && (
-        <CertificateList
-          certificates={certificates}
-          currentUser={user}
-          unreadIds={pageUnreadIds}
-          onApprove={updateCertificateStatus}
-          onReject={updateCertificateStatus}
-        />
+      {isLoading ? <LoadingSpinner /> : error ? <p style={{ color: 'red' }}>{error}</p> : (
+        <CertificateList certificates={certificates} currentUser={user} unreadIds={pageUnreadIds} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />
       )}
     </div>
   );

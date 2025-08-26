@@ -33,11 +33,8 @@ export default function HolidaysPage() {
   const [filters, setFilters] = useState({ type: '' });
 
   const fetchHolidays = async () => {
-    setIsLoading(true);
-    setError('');
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-
     try {
       const res = await fetch(`${apiURL}/api/holidays`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -93,19 +90,18 @@ export default function HolidaysPage() {
     setSelectedHoliday(null);
   }
 
+  if (isLoading) return null;
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Gerenciamento de Feriados</h1>
         <button onClick={handleCreate}>+ Novo Feriado</button>
       </div>
-
       <FilterBar configs={holidayFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
-
-      {isLoading && <p>Carregando feriados...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {!isLoading && !error && <HolidayList holidays={filteredHolidays} onEdit={handleEdit} />}
-
+      {error ? <p style={{ color: 'red' }}>{error}</p> : (
+        <HolidayList holidays={filteredHolidays} onEdit={handleEdit} />
+      )}
       {isModalOpen && (
         <HolidayModal
           isOpen={isModalOpen}
