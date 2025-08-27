@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ShiftSelector from '@/components/swap/ShiftSelector';
 import cardStyles from '@/components/common/Card.module.css';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function NewSwapPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -129,7 +128,7 @@ export default function NewSwapPage() {
               <div style={{display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap'}}>
                   <div style={{flex: '1 1 320px', minWidth: '320px'}}>
                       <label>Dia da Folga:</label>
-                      {isLoadingSchedule ? <LoadingSpinner /> : (
+                      {isLoadingSchedule ? <p>Carregando...</p> : (
                       <DatePicker
                           selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
                           onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
@@ -149,7 +148,7 @@ export default function NewSwapPage() {
             ) : (
               <div style={{maxWidth: '380px', margin: '0 auto'}}>
                   <label>Dia de Trabalho:</label>
-                  {isLoadingSchedule ? <LoadingSpinner /> : (
+                  {isLoadingSchedule ? <p>Carregando...</p> : (
                   <DatePicker
                       selectedDate={formData.originalDate ? parseISO(formData.originalDate) : null}
                       onDateSelect={(date) => setFormData({...formData, originalDate: format(date, 'yyyy-MM-dd')})}
@@ -177,7 +176,7 @@ export default function NewSwapPage() {
             
             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                 <Link href="/dashboard/swaps"><button type="button" style={{backgroundColor: '#4a5568'}}>Cancelar</button></Link>
-                <button type="submit" disabled={isLoading || isLoadingSchedule}>{isLoading ? <LoadingSpinner size={16} strokeWidth={2} /> : 'Enviar Solicitação'}</button>
+                <button type="submit" disabled={isLoading || isLoadingSchedule}>{isLoading ? 'Enviando...' : 'Enviar Solicitação'}</button>
             </div>
             </form>
         </div>

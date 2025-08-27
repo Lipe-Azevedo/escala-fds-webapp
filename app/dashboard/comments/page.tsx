@@ -7,7 +7,6 @@ import CommentList from '@/components/comment/CommentList';
 import CreateCommentModal from '@/components/comment/CreateCommentModal';
 import FilterBar from '@/components/common/FilterBar';
 import { useNotifications } from '@/context/NotificationContext';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfig[] => {
   if (!user) return [];
@@ -111,7 +110,7 @@ export default function CommentsPage() {
           {canAddComment && ( <button onClick={() => setCreateModalOpen(true)}>+ Novo Comentário</button> )}
       </div>
       <FilterBar configs={generateFilterConfigs(currentUser, users)} filters={filters} onFilterChange={handleFilterChange} />
-      {isLoading ? <LoadingSpinner /> : error ? <p style={{color: 'red'}}>{error}</p> : ( <CommentList comments={comments} unreadIds={pageUnreadIds} /> )}
+      {isLoading ? <p>Carregando...</p> : error ? <p style={{color: 'red'}}>{error}</p> : ( <CommentList comments={comments} unreadIds={pageUnreadIds} /> )}
       {isCreateModalOpen && ( <CreateCommentModal isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} onSuccess={fetchComments} users={users} /> )}
     </div>
   );

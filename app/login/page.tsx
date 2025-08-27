@@ -7,7 +7,6 @@ import EyeIcon from '@/components/icons/EyeIcon';
 import EyeOffIcon from '@/components/icons/EyeOffIcon';
 import { useAuth } from '@/hooks/useAuth';
 import cardStyles from '@/components/common/Card.module.css';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function LoginPage() {
   useAuth();
@@ -103,7 +102,7 @@ export default function LoginPage() {
           </div>
           {error && <p style={{ color: '#f87171', textAlign: 'center' }}>{error}</p>}
           <button type="submit" disabled={isLoading} style={{ width: '100%', padding: '12px', marginTop: '10px', fontSize: '16px' }}>
-            {isLoading ? <LoadingSpinner size={16} strokeWidth={2} /> : 'Entrar'}
+            {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
       </div>

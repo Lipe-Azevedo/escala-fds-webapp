@@ -8,7 +8,6 @@ import FilterBar from '@/components/common/FilterBar';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useNotifications } from '@/context/NotificationContext';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const certificateFilterConfigs: FilterConfig[] = [
     { name: 'status', label: 'Status', type: 'select', options: [{ value: '', label: 'Todos os Status' }, { value: 'pending', label: 'Pendentes' }, { value: 'approved', label: 'Aprovados' }, { value: 'rejected', label: 'Rejeitados' }] },
@@ -88,7 +87,7 @@ export default function CertificatesPage() {
     } catch (err: any) { setError(err.message); }
   };
 
-  if (!user) { return <LoadingSpinner />; }
+  if (!user) { return <p>Carregando...</p>; }
 
   return (
     <div>
@@ -97,7 +96,7 @@ export default function CertificatesPage() {
         {user.userType === 'collaborator' && ( <Link href="/dashboard/certificates/new"><button>+ Enviar Atestado</button></Link> )}
       </div>
       <FilterBar configs={certificateFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
-      {isLoading ? <LoadingSpinner /> : error ? <p style={{ color: 'red' }}>{error}</p> : (
+      {isLoading ? <p>Carregando...</p> : error ? <p style={{ color: 'red' }}>{error}</p> : (
         <CertificateList certificates={certificates} currentUser={user} unreadIds={pageUnreadIds} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />
       )}
     </div>

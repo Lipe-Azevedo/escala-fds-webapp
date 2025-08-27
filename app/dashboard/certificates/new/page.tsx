@@ -7,7 +7,6 @@ import DateRangePicker from '@/components/certificate/DateRangePicker';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import cardStyles from '@/components/common/Card.module.css';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface DateRange {
   start: Date | null;
@@ -86,7 +85,7 @@ export default function NewCertificatePage() {
             
             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                 <Link href="/dashboard/certificates"><button type="button" style={{backgroundColor: '#4a5568'}}>Cancelar</button></Link>
-                <button type="submit" disabled={isLoading}>{isLoading ? <LoadingSpinner size={16} strokeWidth={2} /> : 'Enviar Atestado'}</button>
+                <button type="submit" disabled={isLoading}>{isLoading ? 'Enviando...' : 'Enviar Atestado'}</button>
             </div>
             </form>
         </div>

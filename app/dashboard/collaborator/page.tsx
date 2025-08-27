@@ -23,7 +23,8 @@ export default function CollaboratorDashboardPage() {
   const { isLoading: isLoadingCalendar, data: calendarRawData} = useCalendarData(currentMonth, user);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
-  
+  const [isLoadingWidgets, setIsLoadingWidgets] = useState(true);
+
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
@@ -39,7 +40,10 @@ export default function CollaboratorDashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+        setIsLoadingWidgets(false);
+        return;
+    }
      
     const fetchUsers = async () => {
         const token = Cookies.get('authToken');
@@ -72,6 +76,8 @@ export default function CollaboratorDashboardPage() {
             setUsersOnShift(onShiftNow);
         } catch (e) {
             console.error('Erro ao buscar usuários de plantão', e);
+        } finally {
+            setIsLoadingWidgets(false);
         }
     };
     fetchUsers();
@@ -119,7 +125,7 @@ export default function CollaboratorDashboardPage() {
     }
   };
   
-  if (isLoadingCalendar) {
+  if (!user || isLoadingCalendar || isLoadingWidgets) {
     return null;
   }
 

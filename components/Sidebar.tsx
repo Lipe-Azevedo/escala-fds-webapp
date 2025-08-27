@@ -8,7 +8,6 @@ import { User } from '../types';
 import { useNotifications } from '@/context/NotificationContext';
 import ProfileDropdown from './common/ProfileDropdown';
 import Cookies from 'js-cookie';
-import { useLoading } from '@/context/LoadingContext';
 
 const navItems = [
     { href: '/dashboard', label: 'Início', key: 'home' },
@@ -24,7 +23,6 @@ export default function Sidebar() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const { unreadByCategory } = useNotifications();
-  const { showLoader } = useLoading();
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
@@ -34,7 +32,6 @@ export default function Sidebar() {
   }, []);
 
   const handleLogout = () => {
-    showLoader();
     Cookies.remove('authToken');
     localStorage.removeItem('userData');
     router.push('/login');
@@ -67,7 +64,7 @@ export default function Sidebar() {
 
               return (
                 <li key={href}>
-                  <Link href={href} className={`${styles.navLink} ${isActive ? styles.active : ''}`} onClick={() => pathname !== href && showLoader()}>
+                  <Link href={href} className={`${styles.navLink} ${isActive ? styles.active : ''}`}>
                     <span>{label}</span>
                     {unreadByCategory[key] && <span className={styles.notificationDot}></span>}
                   </Link>

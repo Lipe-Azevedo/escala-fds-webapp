@@ -8,7 +8,6 @@ import cardStyles from '@/components/common/Card.module.css';
 import { getDay, differenceInCalendarWeeks } from 'date-fns';
 import { translate } from '@/lib/translations';
 import Cookies from 'js-cookie';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -64,7 +63,7 @@ export default function ProfilePage() {
   };
 
   if (!user) {
-    return <LoadingSpinner />;
+    return <p>Carregando...</p>;
   }
 
   return (

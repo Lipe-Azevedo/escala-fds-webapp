@@ -7,7 +7,6 @@ import styles from './NewUser.module.css';
 import cardStyles from '@/components/common/Card.module.css';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const positionsByTeam: Record<TeamName, { value: PositionName, label: string }[]> = {
   'Security': [
@@ -213,7 +212,7 @@ export default function NewUserPage() {
                     <Link href="/dashboard/users">
                         <button type="button" style={{ backgroundColor: '#4a5568'}}>Cancelar</button>
                     </Link>
-                    <button type="submit" disabled={isLoading}>{isLoading ? <LoadingSpinner size={16} strokeWidth={2} /> : 'Salvar Utilizador'}</button>
+                    <button type="submit" disabled={isLoading}>{isLoading ? 'Salvando...' : 'Salvar Utilizador'}</button>
                 </div>
             </form>
         </div>
