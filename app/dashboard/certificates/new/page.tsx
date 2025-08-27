@@ -58,12 +58,6 @@ export default function NewCertificatePage() {
   
   return (
     <div>
-        <div style={{ marginBottom: '20px' }}>
-            <Link href="/dashboard/certificates" style={{ textDecoration: 'none', color: 'var(--primary-color)' }}>
-            &larr; Voltar para Atestados
-            </Link>
-        </div>
-
         <div className={cardStyles.card} style={{ maxWidth: '500px', margin: 'auto' }}>
             <h1 style={{textAlign: 'center', marginBottom: '30px'}}>Enviar Atestado Médico</h1>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
