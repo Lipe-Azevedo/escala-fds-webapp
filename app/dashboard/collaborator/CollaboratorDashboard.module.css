@@ -6,6 +6,10 @@
   margin-bottom: 20px;
 }
 
+.sectionsContainer > *:not(:first-child) {
+  margin-top: 25px;
+}
+
 .contentGrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));

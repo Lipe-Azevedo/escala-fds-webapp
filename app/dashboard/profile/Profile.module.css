@@ -8,7 +8,12 @@
 .profileSection {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 20px; /* Reduzido de 30px para 20px */
+}
+
+/* Adiciona um espaçamento entre as seções de perfil */
+.profileSection:not(:first-child) {
+  margin-top: 40px;
 }
 
 .sectionTitle {
@@ -16,7 +21,7 @@
   font-weight: 500;
   color: var(--text-secondary-color);
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 0; 
   padding-bottom: 10px;
   border-bottom: 1px solid rgb(var(--card-border-rgb));
 }

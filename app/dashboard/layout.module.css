@@ -6,6 +6,6 @@
 
 .mainContent {
     flex-grow: 1;
-    overflow-y: auto; /* Apenas o conteúdo principal terá scroll */
+    overflow-y: auto; 
     padding: 20px 40px;
 }

@@ -23,8 +23,7 @@ export default function CollaboratorDashboardPage() {
   const { isLoading: isLoadingCalendar, data: calendarRawData} = useCalendarData(currentMonth, user);
   const [selectedWeekIndex, setSelectedWeekIndex] = useState(0);
   const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
-  const [isLoadingWidgets, setIsLoadingWidgets] = useState(true);
-
+  
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
@@ -40,10 +39,7 @@ export default function CollaboratorDashboardPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!user) {
-        setIsLoadingWidgets(false);
-        return;
-    }
+    if (!user) return;
      
     const fetchUsers = async () => {
         const token = Cookies.get('authToken');
@@ -76,8 +72,6 @@ export default function CollaboratorDashboardPage() {
             setUsersOnShift(onShiftNow);
         } catch (e) {
             console.error('Erro ao buscar usuários de plantão', e);
-        } finally {
-            setIsLoadingWidgets(false);
         }
     };
     fetchUsers();
@@ -125,7 +119,7 @@ export default function CollaboratorDashboardPage() {
     }
   };
   
-  if (!user || isLoadingCalendar || isLoadingWidgets) {
+  if (isLoadingCalendar) {
     return null;
   }
 
@@ -136,59 +130,61 @@ export default function CollaboratorDashboardPage() {
       </div>
 
       <div className={cardStyles.card}>
-        <div className={styles.contentGrid}>
-          <DashboardCalendar
-            currentMonth={currentMonth}
-            onPrevMonth={() => setCurrentMonth(prev => subMonths(prev, 1))}
-            onNextMonth={() => setCurrentMonth(prev => addMonths(prev, 1))}
-            calendarGrid={calendarGrid}
-            selectedWeekIndex={selectedWeekIndex}
-            onDateSelect={(date) => {
-              const weekIndex = weeks.findIndex(week => week.some(day => isSameWeek(parseISO(day.date), date, { weekStartsOn: 0 })));
-              if (weekIndex !== -1) {
-                setSelectedWeekIndex(weekIndex);
-              }
-            }}
-          />
-          <WeeklyDetailsPanel 
-              weeks={displayWeeks}
-              selectedWeekIndex={selectedDisplayWeekIndex}
-              onWeekChange={handleWeekChange}
+        <div className={styles.sectionsContainer}>
+          <div className={styles.contentGrid}>
+            <DashboardCalendar
               currentMonth={currentMonth}
+              onPrevMonth={() => setCurrentMonth(prev => subMonths(prev, 1))}
+              onNextMonth={() => setCurrentMonth(prev => addMonths(prev, 1))}
+              calendarGrid={calendarGrid}
+              selectedWeekIndex={selectedWeekIndex}
+              onDateSelect={(date) => {
+                const weekIndex = weeks.findIndex(week => week.some(day => isSameWeek(parseISO(day.date), date, { weekStartsOn: 0 })));
+                if (weekIndex !== -1) {
+                  setSelectedWeekIndex(weekIndex);
+                }
+              }}
+            />
+            <WeeklyDetailsPanel 
+                weeks={displayWeeks}
+                selectedWeekIndex={selectedDisplayWeekIndex}
+                onWeekChange={handleWeekChange}
+                currentMonth={currentMonth}
+            />
+          </div>
+          
+          <CalendarSummary 
+              workedDays={workedDays}
+              holidaysWorked={holidaysWorked}
           />
-        </div>
-        
-        <CalendarSummary 
-            workedDays={workedDays}
-            holidaysWorked={holidaysWorked}
-        />
-        
-        <div className={styles.onShiftWidget}>
-          <h3>Colaboradores de plantão</h3>
-          {usersOnShift.length > 0 ? (
-            <div className={tableStyles.tableWrapper}>
-              <table className={tableStyles.table}>
-                <thead>
-                  <tr>
-                    <th className={tableStyles.header}>Nome</th>
-                    <th className={tableStyles.header}>Equipe</th>
-                    <th className={tableStyles.header}>Cargo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {usersOnShift.map(u => (
-                    <tr key={u.id}>
-                      <td className={tableStyles.cell}>{u.firstName} {u.lastName}</td>
-                      <td className={tableStyles.cell}>{translate(u.team)}</td>
-                      <td className={tableStyles.cell}>{translate(u.position)}</td>
+          
+          <div className={styles.onShiftWidget}>
+            <h3>Colaboradores de plantão</h3>
+            {usersOnShift.length > 0 ? (
+              <div className={tableStyles.tableWrapper}>
+                <table className={tableStyles.table}>
+                  <thead>
+                    <tr>
+                      <th className={tableStyles.header}>Nome</th>
+                      <th className={tableStyles.header}>Equipe</th>
+                      <th className={tableStyles.header}>Cargo</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p style={{color: 'var(--text-secondary-color)', textAlign: 'center', padding: '20px'}}>Nenhum colega no seu turno agora.</p>
-          )}
+                  </thead>
+                  <tbody>
+                    {usersOnShift.map(u => (
+                      <tr key={u.id}>
+                        <td className={tableStyles.cell}>{u.firstName} {u.lastName}</td>
+                        <td className={tableStyles.cell}>{translate(u.team)}</td>
+                        <td className={tableStyles.cell}>{translate(u.position)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p style={{color: 'var(--text-secondary-color)', textAlign: 'center', padding: '20px'}}>Nenhum colega no seu turno agora.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
