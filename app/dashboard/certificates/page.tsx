@@ -14,6 +14,17 @@ const certificateFilterConfigs: FilterConfig[] = [
     { name: 'status', label: 'Status', type: 'select', options: [{ value: '', label: 'Todos os Status' }, { value: 'pending', label: 'Pendentes' }, { value: 'approved', label: 'Aprovados' }, { value: 'rejected', label: 'Rejeitados' }] },
     { name: 'startDate', label: 'Data Início', type: 'date' },
     { name: 'endDate', label: 'Data Fim', type: 'date' },
+    { 
+        name: 'sortBy', 
+        label: 'Ordenar por', 
+        type: 'select', 
+        options: [
+            { value: 'createdAt:desc', label: 'Mais Recentes' },
+            { value: 'createdAt:asc', label: 'Mais Antigos' },
+            { value: 'startDate:asc', label: 'Data de Início (Crescente)' },
+            { value: 'startDate:desc', label: 'Data de Início (Decrescente)' },
+        ]
+    }
 ];
 
 export default function CertificatesPage() {
@@ -21,7 +32,7 @@ export default function CertificatesPage() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filters, setFilters] = useState({ status: '', startDate: '', endDate: '' });
+  const [filters, setFilters] = useState({ status: '', startDate: '', endDate: '', sortBy: 'createdAt:desc' });
   const searchParams = useSearchParams();
   const { getUnreadIdsForCategory, markCategoryAsSeen, isLoading: isNotificationsLoading } = useNotifications();
   const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());

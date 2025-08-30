@@ -16,6 +16,7 @@
   --input-focus-border-color: #60a5fa;
 
   --text-secondary-color: #a0aec0;
+  --button-disabled-background: #4a5568;
 }
 
 html,
@@ -26,6 +27,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Estilos da Barra de Rolagem */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -67,7 +69,7 @@ button:hover {
 }
 
 button:disabled {
-  background-color: #4a5568;
+  background-color: var(--button-disabled-background);
   color: var(--text-secondary-color);
   cursor: not-allowed;
 }

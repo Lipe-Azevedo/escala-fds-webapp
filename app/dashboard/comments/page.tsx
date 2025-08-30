@@ -23,7 +23,18 @@ const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfi
   configs.push(
     { name: 'authorId', label: 'Autor', type: 'select', options: userOptions, disabled: !isMaster },
     { name: 'team', label: 'Equipe', type: 'select', options: [{ value: '', label: 'Todas' }, { value: 'Security', label: 'Segurança' }, { value: 'Support', label: 'Suporte' }, { value: 'CustomerService', label: 'Atendimento' }], disabled: !isMaster },
-    { name: 'shift', label: 'Turno', type: 'select', options: [{ value: '', label: 'Todos' }, { value: '06:00-14:00', label: 'Manhã' }, { value: '14:00-22:00', label: 'Tarde' }, { value: '22:00-06:00', label: 'Noite' }], disabled: !canSeeSubordinates }
+    { name: 'shift', label: 'Turno', type: 'select', options: [{ value: '', label: 'Todos' }, { value: '06:00-14:00', label: 'Manhã' }, { value: '14:00-22:00', label: 'Tarde' }, { value: '22:00-06:00', label: 'Noite' }], disabled: !canSeeSubordinates },
+    { 
+        name: 'sortBy', 
+        label: 'Ordenar por', 
+        type: 'select', 
+        options: [
+            { value: 'createdAt:desc', label: 'Mais Recentes' },
+            { value: 'createdAt:asc', label: 'Mais Antigos' },
+            { value: 'date:asc', label: 'Data do Comentário (Crescente)' },
+            { value: 'date:desc', label: 'Data do Comentário (Decrescente)' },
+        ]
+    }
   );
   return configs;
 };
@@ -35,7 +46,7 @@ export default function CommentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-  const [filters, setFilters] = useState({ collaboratorId: '', authorId: '', startDate: '', endDate: '', team: '', shift: '' });
+  const [filters, setFilters] = useState({ collaboratorId: '', authorId: '', startDate: '', endDate: '', team: '', shift: '', sortBy: 'createdAt:desc' });
   const { getUnreadIdsForCategory, markCategoryAsSeen, isLoading: isNotificationsLoading } = useNotifications();
   const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());
   const notificationsProcessed = useRef(false);
