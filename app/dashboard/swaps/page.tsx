@@ -9,6 +9,7 @@ import FilterBar from '@/components/common/FilterBar';
 import { useNotifications } from '@/context/NotificationContext';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import cardStyles from '@/components/common/Card.module.css';
 
 const generateFilterConfigs = (allUsers: User[], currentUser: User | null): FilterConfig[] => {
     const isManager = currentUser?.userType === 'master' || currentUser?.position.includes('Supervisor');
@@ -133,7 +134,9 @@ export default function SwapsPage() {
             </div>
             <FilterBar configs={generateFilterConfigs(allUsers, user)} filters={filters} onFilterChange={handleFilterChange} />
             {error ? <p style={{ color: '#f87171' }}>{error}</p> : (
-                <SwapList swaps={swaps} currentUser={user} unreadIds={pageUnreadIds} onApproveClick={handleApproveClick} onReject={handleReject} onConfirm={handleConfirmSwap} onDecline={handleDeclineSwap} />
+                <div className={cardStyles.card}>
+                    <SwapList swaps={swaps} currentUser={user} unreadIds={pageUnreadIds} onApproveClick={handleApproveClick} onReject={handleReject} onConfirm={handleConfirmSwap} onDecline={handleDeclineSwap} />
+                </div>
             )}
             {isApproveModalOpen && selectedSwap && ( <ApproveSwapModal isOpen={isApproveModalOpen} onClose={() => setApproveModalOpen(false)} onConfirm={handleConfirmApproval} swap={selectedSwap} /> )}
         </div>

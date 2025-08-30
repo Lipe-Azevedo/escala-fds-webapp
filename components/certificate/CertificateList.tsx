@@ -2,6 +2,7 @@
 
 import { Certificate, User } from '@/types';
 import { format } from 'date-fns';
+import gridStyles from '../common/ListGrid.module.css';
 
 interface CertificateListProps {
   certificates: Certificate[];
@@ -27,7 +28,7 @@ export default function CertificateList({ certificates, currentUser, unreadIds, 
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+    <div className={gridStyles.grid}>
       {certificates.length === 0 && <p>Nenhum atestado encontrado.</p>}
       {certificates.map((cert) => {
         const canApprove = currentUser.userType === 'master';

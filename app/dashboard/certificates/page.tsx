@@ -8,6 +8,7 @@ import FilterBar from '@/components/common/FilterBar';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useNotifications } from '@/context/NotificationContext';
+import cardStyles from '@/components/common/Card.module.css';
 
 const certificateFilterConfigs: FilterConfig[] = [
     { name: 'status', label: 'Status', type: 'select', options: [{ value: '', label: 'Todos os Status' }, { value: 'pending', label: 'Pendentes' }, { value: 'approved', label: 'Aprovados' }, { value: 'rejected', label: 'Rejeitados' }] },
@@ -97,7 +98,9 @@ export default function CertificatesPage() {
       </div>
       <FilterBar configs={certificateFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
       {isLoading ? <p>Carregando...</p> : error ? <p style={{ color: 'red' }}>{error}</p> : (
-        <CertificateList certificates={certificates} currentUser={user} unreadIds={pageUnreadIds} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />
+        <div className={cardStyles.card}>
+            <CertificateList certificates={certificates} currentUser={user} unreadIds={pageUnreadIds} onApprove={updateCertificateStatus} onReject={updateCertificateStatus} />
+        </div>
       )}
     </div>
   );

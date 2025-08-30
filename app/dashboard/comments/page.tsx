@@ -7,6 +7,7 @@ import CommentList from '@/components/comment/CommentList';
 import CreateCommentModal from '@/components/comment/CreateCommentModal';
 import FilterBar from '@/components/common/FilterBar';
 import { useNotifications } from '@/context/NotificationContext';
+import cardStyles from '@/components/common/Card.module.css';
 
 const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfig[] => {
   if (!user) return [];
@@ -110,7 +111,11 @@ export default function CommentsPage() {
           {canAddComment && ( <button onClick={() => setCreateModalOpen(true)}>+ Novo Comentário</button> )}
       </div>
       <FilterBar configs={generateFilterConfigs(currentUser, users)} filters={filters} onFilterChange={handleFilterChange} />
-      {isLoading ? <p>Carregando...</p> : error ? <p style={{color: 'red'}}>{error}</p> : ( <CommentList comments={comments} unreadIds={pageUnreadIds} /> )}
+      {isLoading ? <p>Carregando...</p> : error ? <p style={{color: 'red'}}>{error}</p> : (
+        <div className={cardStyles.card}>
+            <CommentList comments={comments} unreadIds={pageUnreadIds} />
+        </div>
+      )}
       {isCreateModalOpen && ( <CreateCommentModal isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} onSuccess={fetchComments} users={users} /> )}
     </div>
   );

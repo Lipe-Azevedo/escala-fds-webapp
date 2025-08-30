@@ -1,20 +1,12 @@
 'use client';
 
 import { Comment } from '@/types';
+import gridStyles from '../common/ListGrid.module.css';
 
 interface CommentListProps {
   comments: Comment[];
   unreadIds: Set<number>;
 }
-
-const cardStyle: React.CSSProperties = {
-  position: 'relative',
-  background: 'rgb(var(--card-background-rgb))',
-  border: '1px solid rgb(var(--card-border-rgb))',
-  borderRadius: '8px',
-  padding: '15px',
-  marginBottom: '15px',
-};
 
 export default function CommentList({ comments, unreadIds }: CommentListProps) {
   if (comments.length === 0) {
@@ -22,12 +14,18 @@ export default function CommentList({ comments, unreadIds }: CommentListProps) {
   }
 
   return (
-    <div>
+    <div className={gridStyles.grid}>
       {comments.map(comment => {
         const hasNotification = unreadIds.has(comment.id);
 
         return (
-          <div key={comment.id} style={cardStyle}>
+          <div key={comment.id} style={{
+            position: 'relative',
+            background: 'rgb(var(--card-background-rgb))',
+            border: '1px solid rgb(var(--card-border-rgb))',
+            borderRadius: '8px',
+            padding: '15px',
+          }}>
             {hasNotification && (
               <span style={{ position: 'absolute', top: '15px', right: '15px', height: '10px', width: '10px', backgroundColor: 'var(--primary-color)', borderRadius: '50%' }}></span>
             )}

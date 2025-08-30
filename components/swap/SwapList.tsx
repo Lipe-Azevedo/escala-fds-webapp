@@ -3,6 +3,7 @@
 import { Swap, User } from '@/types';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import gridStyles from '../common/ListGrid.module.css';
 
 interface SwapListProps {
   swaps: Swap[];
@@ -39,7 +40,7 @@ export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+    <div className={gridStyles.grid}>
       {swaps.length === 0 && <p>Nenhuma solicitação encontrada.</p>}
       {swaps.map((swap) => {
         const isManager = currentUser.userType === 'master' || currentUser.id === swap.requester.superiorId;
