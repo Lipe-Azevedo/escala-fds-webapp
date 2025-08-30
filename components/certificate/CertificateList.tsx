@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Certificate, User } from '@/types';
 import { format } from 'date-fns';
 import gridStyles from '../common/ListGrid.module.css';
@@ -12,7 +13,10 @@ interface CertificateListProps {
   onReject: (certificateId: number, status: 'rejected') => void;
 }
 
+const ITEMS_PER_PAGE = 6;
+
 export default function CertificateList({ certificates, currentUser, unreadIds, onApprove, onReject }: CertificateListProps) {
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
   const getStatusStyle = (status: Certificate['status']): React.CSSProperties => {
     switch (status) {
@@ -27,37 +31,57 @@ export default function CertificateList({ certificates, currentUser, unreadIds, 
     return format(new Date(dateString.replace(/-/g, '/')), 'dd/MM/yyyy');
   };
 
+  const handleShowMore = () => {
+    setVisibleCount(prevCount => prevCount + ITEMS_PER_PAGE);
+  };
+
+  const handleShowLess = () => {
+    setVisibleCount(prevCount => Math.max(ITEMS_PER_PAGE, prevCount - ITEMS_PER_PAGE));
+  };
+
   return (
-    <div className={gridStyles.grid}>
-      {certificates.length === 0 && <p>Nenhum atestado encontrado.</p>}
-      {certificates.map((cert) => {
-        const canApprove = currentUser.userType === 'master';
-        const hasNotification = unreadIds.has(cert.id);
+    <>
+      <div className={gridStyles.grid}>
+        {certificates.length === 0 && <p>Nenhum atestado encontrado.</p>}
+        {certificates.slice(0, visibleCount).map((cert) => {
+          const canApprove = currentUser.userType === 'master';
+          const hasNotification = unreadIds.has(cert.id);
 
-        return (
-          <div key={cert.id} style={{ position: 'relative', padding: '15px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
-            {hasNotification && (
-              <span style={{ position: 'absolute', top: '15px', right: '15px', height: '10px', width: '10px', backgroundColor: 'var(--primary-color)', borderRadius: '50%' }}></span>
-            )}
-            {currentUser.userType === 'master' && (
-                <p><strong>Colaborador:</strong> {cert.collaborator.firstName} {cert.collaborator.lastName}</p>
-            )}
-            <p><strong>Período:</strong> {formatDate(cert.startDate)} até {formatDate(cert.endDate)}</p>
-            <p><strong>Motivo:</strong> {cert.reason}</p>
-            <p><strong>Status:</strong> <span style={getStatusStyle(cert.status)}>{cert.status}</span></p>
-            {cert.approvedBy && cert.approvedAt && (
-                <p style={{fontSize: '12px', color: 'var(--text-secondary-color)'}}><strong>Aprovado por:</strong> {cert.approvedBy.firstName} em {format(new Date(cert.approvedAt), 'dd/MM/yyyy HH:mm')}</p>
-            )}
+          return (
+            <div key={cert.id} style={{ position: 'relative', padding: '15px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
+              {hasNotification && (
+                <span style={{ position: 'absolute', top: '15px', right: '15px', height: '10px', width: '10px', backgroundColor: 'var(--primary-color)', borderRadius: '50%' }}></span>
+              )}
+              {currentUser.userType === 'master' && (
+                  <p><strong>Colaborador:</strong> {cert.collaborator.firstName} {cert.collaborator.lastName}</p>
+              )}
+              <p><strong>Período:</strong> {formatDate(cert.startDate)} até {formatDate(cert.endDate)}</p>
+              <p><strong>Motivo:</strong> {cert.reason}</p>
+              <p><strong>Status:</strong> <span style={getStatusStyle(cert.status)}>{cert.status}</span></p>
+              {cert.approvedBy && cert.approvedAt && (
+                  <p style={{fontSize: '12px', color: 'var(--text-secondary-color)'}}><strong>Aprovado por:</strong> {cert.approvedBy.firstName} em {format(new Date(cert.approvedAt), 'dd/MM/yyyy HH:mm')}</p>
+              )}
 
-            {cert.status === 'pending' && canApprove && (
-              <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                <button onClick={() => onApprove(cert.id, 'approved')} style={{backgroundColor: '#16a34a'}}>Aprovar</button>
-                <button onClick={() => onReject(cert.id, 'rejected')} style={{backgroundColor: '#dc2626'}}>Rejeitar</button>
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
+              {cert.status === 'pending' && canApprove && (
+                <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
+                  <button onClick={() => onApprove(cert.id, 'approved')} style={{backgroundColor: '#16a34a'}}>Aprovar</button>
+                  <button onClick={() => onReject(cert.id, 'rejected')} style={{backgroundColor: '#dc2626'}}>Rejeitar</button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {certificates.length >= ITEMS_PER_PAGE && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px', maxWidth: '300px', margin: '20px auto 0' }}>
+          <button onClick={handleShowLess} disabled={visibleCount <= ITEMS_PER_PAGE} style={{ flex: 1 }}>
+            Ver Menos
+          </button>
+          <button onClick={handleShowMore} disabled={visibleCount >= certificates.length} style={{ flex: 1 }}>
+            Ver Mais
+          </button>
+        </div>
+      )}
+    </>
   );
 }

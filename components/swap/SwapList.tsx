@@ -90,11 +90,11 @@ export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick
         })}
       </div>
       {swaps.length >= ITEMS_PER_PAGE && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
-          <button onClick={handleShowLess} disabled={visibleCount <= ITEMS_PER_PAGE} style={{ backgroundColor: '#4a5568' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px', maxWidth: '300px', margin: '20px auto 0' }}>
+          <button onClick={handleShowLess} disabled={visibleCount <= ITEMS_PER_PAGE} style={{ flex: 1 }}>
             Ver Menos
           </button>
-          <button onClick={handleShowMore} disabled={visibleCount >= swaps.length}>
+          <button onClick={handleShowMore} disabled={visibleCount >= swaps.length} style={{ flex: 1 }}>
             Ver Mais
           </button>
         </div>
