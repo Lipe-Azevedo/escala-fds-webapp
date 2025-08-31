@@ -8,14 +8,20 @@ import { User } from '../types';
 import { useNotifications } from '@/context/NotificationContext';
 import ProfileDropdown from './common/ProfileDropdown';
 import Cookies from 'js-cookie';
+import CalendarIcon from './icons/CalendarIcon';
+import UsersIcon from './icons/UsersIcon';
+import SwapIcon from './icons/SwapIcon';
+import CertificateIcon from './icons/CertificateIcon';
+import CommentIcon from './icons/CommentIcon';
+import HolidayIcon from './icons/HolidayIcon';
 
 const navItems = [
-    { href: '/dashboard', label: 'Início', key: 'home' },
-    { href: '/dashboard/users', label: 'Colaboradores', key: 'users', managerOnly: true },
-    { href: '/dashboard/swaps', label: 'Trocas de Folga', key: 'swaps' },
-    { href: '/dashboard/certificates', label: 'Atestados', key: 'certificates' },
-    { href: '/dashboard/comments', label: 'Comentários', key: 'comments' },
-    { href: '/dashboard/holidays', label: 'Feriados', key: 'holidays', masterOnly: true },
+    { href: '/dashboard', label: 'Início', key: 'home', icon: CalendarIcon },
+    { href: '/dashboard/users', label: 'Colaboradores', key: 'users', managerOnly: true, icon: UsersIcon },
+    { href: '/dashboard/swaps', label: 'Trocas de Folga', key: 'swaps', icon: SwapIcon },
+    { href: '/dashboard/certificates', label: 'Atestados', key: 'certificates', icon: CertificateIcon },
+    { href: '/dashboard/comments', label: 'Comentários', key: 'comments', icon: CommentIcon },
+    { href: '/dashboard/holidays', label: 'Feriados', key: 'holidays', masterOnly: true, icon: HolidayIcon },
 ];
 
 export default function Sidebar() {
@@ -47,7 +53,7 @@ export default function Sidebar() {
         </div>
         <nav className={styles.nav}>
           <ul>
-            {navItems.map(({ href, label, key, masterOnly, managerOnly }) => {
+            {navItems.map(({ href, label, key, masterOnly, managerOnly, icon: Icon }) => {
               if (masterOnly && user?.userType !== 'master') {
                 return null;
               }
@@ -65,7 +71,10 @@ export default function Sidebar() {
               return (
                 <li key={href}>
                   <Link href={href} className={`${styles.navLink} ${isActive ? styles.active : ''}`}>
-                    <span>{label}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Icon />
+                      <span>{label}</span>
+                    </div>
                     {unreadByCategory[key] && <span className={styles.notificationDot}></span>}
                   </Link>
                 </li>

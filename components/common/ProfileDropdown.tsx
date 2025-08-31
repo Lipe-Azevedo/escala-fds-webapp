@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { User } from '@/types';
 import styles from './ProfileDropdown.module.css';
 import ChevronIcon from '../icons/ChevronIcon';
+import UserIcon from '../icons/UserIcon';
+import LogOutIcon from '../icons/LogOutIcon';
 
 interface ProfileDropdownProps {
   user: User | null;
@@ -62,16 +64,18 @@ export default function ProfileDropdown({ user, onLogout }: ProfileDropdownProps
       {isOpen && (
         <div className={`${styles.menu} ${isClosing ? styles.menuClosing : ''}`}>
           <Link href="/dashboard/profile" className={styles.menuItem} onClick={closeMenu}>
+            <UserIcon size={16} style={{ marginRight: '8px' }} />
             Perfil
           </Link>
           <button onClick={() => { onLogout(); closeMenu(); }} className={styles.menuItem}>
+            <LogOutIcon size={16} style={{ marginRight: '8px' }} />
             Sair
           </button>
         </div>
       )}
       <button className={styles.button} onClick={toggleDropdown}>
-        <div className={styles.userInitial}>
-          {user ? user.firstName.charAt(0) : ''}
+        <div className={styles.userAvatar}>
+          <UserIcon />
         </div>
         <ChevronIcon className={`${styles.chevron} ${isOpen && !isClosing ? styles.chevronOpen : ''}`} />
       </button>
