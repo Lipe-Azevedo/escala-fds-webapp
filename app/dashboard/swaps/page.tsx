@@ -10,6 +10,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import cardStyles from '@/components/common/Card.module.css';
+import PlusCircleIcon from '@/components/icons/PlusCircleIcon';
 
 const generateFilterConfigs = (allUsers: User[], currentUser: User | null): FilterConfig[] => {
     const isManager = currentUser?.userType === 'master' || (currentUser?.position && currentUser.position.includes('Supervisor'));
@@ -46,6 +47,7 @@ export default function SwapsPage() {
     const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());
     const searchParams = useSearchParams();
     const notificationsProcessed = useRef(false);
+    const [filterConfigs, setFilterConfigs] = useState<FilterConfig[]>([]);
 
     useEffect(() => {
         const userDataString = localStorage.getItem('userData');
@@ -91,6 +93,11 @@ export default function SwapsPage() {
         };
         fetchAllUsers();
     }, [user]);
+
+    useEffect(() => {
+        const configs = generateFilterConfigs(allUsers, user);
+        setFilterConfigs(configs);
+    }, [allUsers, user]);
 
     const fetchSwaps = useCallback(async () => {
         if (!user) return;
@@ -157,8 +164,6 @@ export default function SwapsPage() {
     };
     
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setFilters(prev => ({ ...prev, [e.target.name]: e.target.value })); };
-    
-    const filterConfigs = generateFilterConfigs(allUsers, user);
 
     if (isLoading) return null;
     if (!user) return <p>{error || 'Utilizador não encontrado.'}</p>;
@@ -169,7 +174,14 @@ export default function SwapsPage() {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h1>Trocas de Folga</h1>
-                {canCreateSwap && ( <Link href="/dashboard/swaps/new"><button>+ Solicitar Troca</button></Link> )}
+                {canCreateSwap && (
+                    <Link href="/dashboard/swaps/new" style={{ textDecoration: 'none' }}>
+                        <button style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <PlusCircleIcon size={20} />
+                            Solicitar Troca
+                        </button>
+                    </Link> 
+                )}
             </div>
             <FilterBar configs={filterConfigs} filters={filters} onFilterChange={handleFilterChange} />
             {error ? <p style={{ color: '#f87171' }}>{error}</p> : (

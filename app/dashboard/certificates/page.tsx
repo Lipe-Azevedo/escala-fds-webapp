@@ -9,6 +9,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useNotifications } from '@/context/NotificationContext';
 import cardStyles from '@/components/common/Card.module.css';
+import PlusCircleIcon from '@/components/icons/PlusCircleIcon'; // Importe o ícone
 
 const certificateFilterConfigs: FilterConfig[] = [
     { name: 'status', label: 'Status', type: 'select', options: [{ value: '', label: 'Todos os Status' }, { value: 'pending', label: 'Pendentes' }, { value: 'approved', label: 'Aprovados' }, { value: 'rejected', label: 'Rejeitados' }] },
@@ -105,7 +106,14 @@ export default function CertificatesPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Atestados Médicos</h1>
-        {user.userType === 'collaborator' && ( <Link href="/dashboard/certificates/new"><button>+ Enviar Atestado</button></Link> )}
+        {user.userType === 'collaborator' && ( 
+          <Link href="/dashboard/certificates/new" style={{ textDecoration: 'none' }}>
+            <button style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <PlusCircleIcon size={20} />
+              Enviar Atestado
+            </button>
+          </Link> 
+        )}
       </div>
       <FilterBar configs={certificateFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
       {isLoading ? <p>Carregando...</p> : error ? <p style={{ color: 'red' }}>{error}</p> : (

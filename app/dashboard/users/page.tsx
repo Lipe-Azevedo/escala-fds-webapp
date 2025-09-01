@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { User, FilterConfig } from '@/types';
 import UserList from '@/components/user/UserList';
-import EditUserModal from '@/components/user/EditUserModal';
 import FilterBar from '@/components/common/FilterBar';
 import Link from 'next/link';
 import UserPlusIcon from '@/components/icons/UserPlusIcon';
@@ -114,15 +113,6 @@ export default function UsersPage() {
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!error && <UserList users={filteredUsers} onEdit={handleEdit} />}
-
-      {isEditModalOpen && selectedUser && (
-        <EditUserModal
-          isOpen={isEditModalOpen}
-          onClose={handleModalClose}
-          onUserUpdated={fetchUsers}
-          user={selectedUser}
-        />
-      )}
     </div>
   );
 }

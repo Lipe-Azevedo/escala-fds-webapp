@@ -2,7 +2,7 @@ import React from 'react';
 import { Eye, LucideProps } from 'lucide-react';
 
 const EyeIcon = (props: LucideProps) => (
-  <Eye {...props} />
+  <Eye size={20} {...props} />
 );
 
 export default EyeIcon;
