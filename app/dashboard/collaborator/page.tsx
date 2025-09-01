@@ -14,6 +14,7 @@ import styles from './CollaboratorDashboard.module.css';
 import cardStyles from '@/components/common/Card.module.css';
 import tableStyles from '@/components/common/Table.module.css';
 import { translate } from '@/lib/translations';
+import UsersIcon from '@/components/icons/UsersIcon';
 
 export default function CollaboratorDashboardPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -159,7 +160,10 @@ export default function CollaboratorDashboardPage() {
           />
           
           <div className={styles.onShiftWidget}>
-            <h3>Colaboradores de plantão</h3>
+            <h3 style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <UsersIcon size={22}/>
+              Colaboradores de plantão
+            </h3>
             {usersOnShift.length > 0 ? (
               <div className={tableStyles.tableWrapper}>
                 <table className={tableStyles.table}>

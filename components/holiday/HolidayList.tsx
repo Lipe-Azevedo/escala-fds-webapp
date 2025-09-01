@@ -3,6 +3,7 @@
 import { Holiday } from '@/types';
 import { translate } from '@/lib/translations';
 import tableStyles from '@/components/common/Table.module.css';
+import EditIcon from '../icons/EditIcon';
 
 interface HolidayListProps {
   holidays: Holiday[];
@@ -28,7 +29,9 @@ export default function HolidayList({ holidays, onEdit }: HolidayListProps) {
               <td className={tableStyles.cell}>{new Date(holiday.date.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</td>
               <td className={tableStyles.cell}>{translate(holiday.type)}</td>
               <td className={`${tableStyles.cell} ${tableStyles.actionsCell}`}>
-                <button onClick={() => onEdit(holiday)} className={tableStyles.actionButton}>Editar</button>
+                <button onClick={() => onEdit(holiday)} className={tableStyles.actionButton} title="Editar">
+                  <EditIcon size={18} />
+                </button>
               </td>
             </tr>
           ))}

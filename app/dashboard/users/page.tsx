@@ -7,6 +7,7 @@ import UserList from '@/components/user/UserList';
 import EditUserModal from '@/components/user/EditUserModal';
 import FilterBar from '@/components/common/FilterBar';
 import Link from 'next/link';
+import UserPlusIcon from '@/components/icons/UserPlusIcon';
 
 const userFilterConfigs: FilterConfig[] = [
     { 
@@ -102,7 +103,10 @@ export default function UsersPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Gestão de Colaboradores</h1>
         <Link href="/dashboard/users/new">
-            <button>+ Novo Colaborador</button>
+            <button style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <UserPlusIcon size={20} />
+              + Novo Colaborador
+            </button>
         </Link>
       </div>
 

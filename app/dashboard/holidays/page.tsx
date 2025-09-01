@@ -7,6 +7,7 @@ import HolidayList from '@/components/holiday/HolidayList';
 import HolidayModal from '@/components/holiday/HolidayModal';
 import FilterBar from '@/components/common/FilterBar';
 import { useRouter } from 'next/navigation';
+import PlusCircleIcon from '@/components/icons/PlusCircleIcon'; // Importe o ícone
 
 const holidayFilterConfigs: FilterConfig[] = [
     { 
@@ -96,7 +97,10 @@ export default function HolidaysPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Gerenciamento de Feriados</h1>
-        <button onClick={handleCreate}>+ Novo Feriado</button>
+        <button onClick={handleCreate} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <PlusCircleIcon size={20} />
+          Novo Feriado
+        </button>
       </div>
       <FilterBar configs={holidayFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
       {error ? <p style={{ color: 'red' }}>{error}</p> : (

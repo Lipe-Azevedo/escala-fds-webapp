@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { User } from '@/types';
 import { translate } from '@/lib/translations';
 import tableStyles from '@/components/common/Table.module.css';
+import EditIcon from '../icons/EditIcon';
+import EyeIcon from '../icons/EyeIcon';
 
 interface UserListProps {
   users: User[];
@@ -33,9 +35,13 @@ export default function UserList({ users, onEdit }: UserListProps) {
               <td className={`${tableStyles.cell} ${tableStyles.actionsCell}`}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                   <Link href={`/dashboard/users/${user.id}`}>
-                    <button className={tableStyles.actionButton} style={{ backgroundColor: '#4a5568'}}>Detalhes</button>
+                    <button className={tableStyles.actionButton} style={{ backgroundColor: '#4a5568'}} title="Detalhes">
+                      <EyeIcon size={18} />
+                    </button>
                   </Link>
-                  <button onClick={() => onEdit(user)} className={tableStyles.actionButton}>Editar</button>
+                  <button onClick={() => onEdit(user)} className={tableStyles.actionButton} title="Editar">
+                    <EditIcon size={18} />
+                  </button>
                 </div>
               </td>
             </tr>

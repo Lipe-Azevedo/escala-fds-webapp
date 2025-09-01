@@ -9,6 +9,8 @@ import { isRegularDayOff } from '@/lib/calendarUtils';
 import tableStyles from '@/components/common/Table.module.css';
 import cardStyles from '@/components/common/Card.module.css';
 import { translate } from '@/lib/translations';
+import UsersIcon from '@/components/icons/UsersIcon';
+import ShieldIcon from '@/components/icons/ShieldIcon';
 
 export default function MasterDashboardPage() {
     const [stats, setStats] = useState({ totalUsers: 0, pendingSwaps: 0, pendingCertificates: 0 });
@@ -74,12 +76,15 @@ export default function MasterDashboardPage() {
         fetchDashboardData();
     }, []);
     
-    if (isLoading) return null; // O layout já está a mostrar o spinner
+    if (isLoading) return null;
 
     return (
         <div>
             <div className={styles.header}>
-                <h1>Dashboard do Administrador</h1>
+                <h1 style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                  <ShieldIcon size={28} />
+                  Dashboard do Administrador
+                </h1>
             </div>
             {error ? <p style={{ color: 'red' }}>{error}</p> : (
                 <>
@@ -89,7 +94,10 @@ export default function MasterDashboardPage() {
                         <DashboardSummaryCard title="Atestados Pendentes" value={stats.pendingCertificates} linkTo="/dashboard/certificates?status=pending" linkLabel="Ver atestados" />
                     </div>
                     <div className={`${cardStyles.card} ${styles.onShiftWidget}`}>
-                        <h3>Colaboradores de plantão</h3>
+                        <h3 style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                            <UsersIcon size={22} />
+                            Colaboradores de plantão
+                        </h3>
                         {usersOnShift.length > 0 ? (
                             <div className={tableStyles.tableWrapper}>
                                 <table className={tableStyles.table}>

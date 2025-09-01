@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Holiday } from '@/types';
+import CheckIcon from '../icons/CheckIcon';
+import XIcon from '../icons/XIcon';
 
 interface HolidayModalProps {
   isOpen: boolean;
@@ -129,8 +131,14 @@ export default function HolidayModal({ isOpen, onClose, onSuccess, holiday }: Ho
           {error && <p style={{ color: '#f87171', textAlign: 'center', marginTop: '15px' }}>{error}</p>}
           
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <button type="button" onClick={onClose} style={{ backgroundColor: '#4a5568'}}>Cancelar</button>
-            <button type="submit" disabled={isLoading}>{isLoading ? 'Salvando...' : 'Salvar'}</button>
+            <button type="button" onClick={onClose} style={{ backgroundColor: '#4a5568', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <XIcon size={20} />
+                Cancelar
+            </button>
+            <button type="submit" disabled={isLoading} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckIcon size={20} />
+                {isLoading ? 'Salvando...' : 'Salvar'}
+            </button>
           </div>
         </form>
       </div>

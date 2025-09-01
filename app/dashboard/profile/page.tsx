@@ -8,6 +8,8 @@ import cardStyles from '@/components/common/Card.module.css';
 import { getDay, differenceInCalendarWeeks } from 'date-fns';
 import { translate } from '@/lib/translations';
 import Cookies from 'js-cookie';
+import UserSquareIcon from '@/components/icons/UserSquareIcon';
+import BriefcaseIcon from '@/components/icons/BriefcaseIcon';
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -77,7 +79,10 @@ export default function ProfilePage() {
 
       <div className={cardStyles.card}>
         <div className={styles.profileSection}>
-            <h2 className={styles.sectionTitle}>Informações Pessoais</h2>
+            <h2 className={styles.sectionTitle} style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+              <UserSquareIcon size={22} />
+              Informações Pessoais
+            </h2>
             <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
                     <span className={styles.infoLabel}>Nome Completo</span>
@@ -100,7 +105,10 @@ export default function ProfilePage() {
         
         {user.userType === 'collaborator' && (
             <div className={styles.profileSection}>
-                <h2 className={styles.sectionTitle}>Informações de Trabalho</h2>
+                <h2 className={styles.sectionTitle} style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                  <BriefcaseIcon size={22} />
+                  Informações de Trabalho
+                </h2>
                 <div className={styles.infoGrid}>
                     <div className={styles.infoItem}>
                         <span className={styles.infoLabel}>Equipe</span>
