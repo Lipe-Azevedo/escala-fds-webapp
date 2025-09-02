@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { Swap, User } from '@/types';
 import { format } from 'date-fns';
-import Link from 'next/link';
-import gridStyles from '../common/ListGrid.module.css';
+import styles from './SwapList.module.css'; 
 
 interface SwapListProps {
   swaps: Swap[];
@@ -20,6 +19,7 @@ const ITEMS_PER_PAGE = 6;
 
 export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick, onReject, onConfirm, onDecline }: SwapListProps) {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
     
   const getStatusText = (status: Swap['status']) => {
     if (status === 'pending_confirmation') return 'Aguardando Confirmação';
@@ -29,13 +29,13 @@ export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick
     return status;
   }
 
-  const getStatusStyle = (status: Swap['status']): React.CSSProperties => {
+  const getStatusClass = (status: Swap['status']) => {
     switch (status) {
-      case 'approved': return { color: '#10b981', fontWeight: 'bold' };
-      case 'rejected': return { color: '#ef4444', fontWeight: 'bold' };
-      case 'pending': return { color: '#f59e0b', fontWeight: 'bold' };
-      case 'pending_confirmation': return { color: '#3b82f6', fontWeight: 'bold' };
-      default: return {};
+      case 'approved': return styles.approved;
+      case 'rejected': return styles.rejected;
+      case 'pending': return styles.pending;
+      case 'pending_confirmation': return styles.pendingConfirmation;
+      default: return '';
     }
   };
 
@@ -51,40 +51,68 @@ export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick
     setVisibleCount(prevCount => Math.max(ITEMS_PER_PAGE, prevCount - ITEMS_PER_PAGE));
   };
 
+  const toggleExpand = (id: number) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
   return (
     <>
-      <div className={gridStyles.grid}>
+      <div className={styles.swapGrid}>
         {swaps.length === 0 && <p>Nenhuma solicitação encontrada.</p>}
         {swaps.slice(0, visibleCount).map((swap) => {
           const isManager = currentUser.userType === 'master' || currentUser.id === swap.requester.superiorId;
           const isAwaitingMyConfirmation = swap.status === 'pending_confirmation' && currentUser.id === swap.involvedCollaborator?.id;
           const hasNotification = unreadIds.has(swap.id);
+          const isCollaboratorView = !isManager || currentUser.id === swap.requester.id;
+          const isExpanded = expandedId === swap.id;
 
           return (
-            <div key={swap.id} style={{ position: 'relative', padding: '15px', border: '1px solid rgb(var(--card-border-rgb))', borderRadius: '8px', backgroundColor: 'rgb(var(--card-background-rgb))' }}>
-              {hasNotification && (
-                <span style={{ position: 'absolute', top: '15px', right: '15px', height: '10px', width: '10px', backgroundColor: 'var(--primary-color)', borderRadius: '50%' }}></span>
-              )}
-              <p><strong>Solicitante:</strong> {swap.requester.firstName} {swap.requester.lastName}</p>
-              {swap.involvedCollaborator && <p><strong>Envolvido na Troca:</strong> {swap.involvedCollaborator.firstName} {swap.involvedCollaborator.lastName}</p>}
-              <p><strong>Motivo:</strong> {swap.reason || 'Não informado'}</p>
-              <p><strong>Dia Original:</strong> {formatDate(swap.originalDate)} (Turno: {swap.originalShift})</p>
-              <p><strong>Novo Dia:</strong> {formatDate(swap.newDate)} (Turno: {swap.newShift})</p>
-              <p><strong>Status:</strong> <span style={getStatusStyle(swap.status)}>{getStatusText(swap.status)}</span></p>
+            <div key={swap.id} className={styles.swapCard}>
+              {hasNotification && <span className={styles.notificationIndicator}></span>}
               
-              {swap.status === 'pending' && isManager && (
-                <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                  <button onClick={() => onApproveClick(swap)} style={{backgroundColor: '#16a34a'}}>Aprovar</button>
-                  <button onClick={() => onReject(swap.id)} style={{backgroundColor: '#dc2626'}}>Rejeitar</button>
+              <div className={styles.cardBody}>
+                {(!isCollaboratorView || isExpanded) && (
+                  <div className={styles.expandedInfo}>
+                    <p><strong>Solicitante:</strong> {swap.requester.firstName} {swap.requester.lastName}</p>
+                    {swap.involvedCollaborator && <p><strong>Envolvido:</strong> {swap.involvedCollaborator.firstName} {swap.involvedCollaborator.lastName}</p>}
+                    <p><strong>Motivo:</strong> {swap.reason || 'Não informado'}</p>
+                  </div>
+                )}
+                <div className={styles.swapDetails}>
+                  <div>
+                    <span className={styles.detailLabel}>Dia Original</span>
+                    <p>{formatDate(swap.originalDate)} ({swap.originalShift})</p>
+                  </div>
+                  <div>
+                    <span className={styles.detailLabel}>Novo Dia</span>
+                    <p>{formatDate(swap.newDate)} ({swap.newShift})</p>
+                  </div>
                 </div>
-              )}
+              </div>
 
-              {isAwaitingMyConfirmation && (
-                <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
-                  <button onClick={() => onConfirm(swap.id)} style={{backgroundColor: '#16a34a'}}>Confirmar Participação</button>
-                  <button onClick={() => onDecline(swap.id)} style={{backgroundColor: '#dc2626'}}>Recusar</button>
+              <div className={styles.cardFooter}>
+                <span className={`${styles.status} ${getStatusClass(swap.status)}`}>{getStatusText(swap.status)}</span>
+                
+                <div className={styles.footerActions}>
+                    {isCollaboratorView && (
+                        <button onClick={() => toggleExpand(swap.id)} className={styles.detailsButton}>
+                            {isExpanded ? 'Ver menos' : 'Ver mais'}
+                        </button>
+                    )}
+                    {swap.status === 'pending' && isManager && !isCollaboratorView && (
+                        <>
+                            <button onClick={() => onApproveClick(swap)} className={`${styles.actionButton} ${styles.approveButton}`}>Aprovar</button>
+                            <button onClick={() => onReject(swap.id)} className={`${styles.actionButton} ${styles.rejectButton}`}>Rejeitar</button>
+                        </>
+                    )}
+                    {isAwaitingMyConfirmation && (
+                        <>
+                            <button onClick={() => onConfirm(swap.id)} className={`${styles.actionButton} ${styles.approveButton}`}>Confirmar</button>
+                            <button onClick={() => onDecline(swap.id)} className={`${styles.actionButton} ${styles.rejectButton}`}>Recusar</button>
+                        </>
+                    )}
                 </div>
-              )}
+              </div>
             </div>
           )
         })}

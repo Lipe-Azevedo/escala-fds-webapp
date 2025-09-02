@@ -1,0 +1,100 @@
+.certificateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 20px;
+}
+
+.certificateCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgb(var(--card-border-rgb));
+  border-radius: 8px;
+  background-color: rgb(var(--card-background-rgb));
+  padding: 20px;
+}
+
+.notificationIndicator {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  height: 10px;
+  width: 10px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+}
+
+.cardBody {
+  flex-grow: 1;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgb(var(--card-border-rgb));
+}
+
+.certificateDetails p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.expandedInfo {
+  margin-bottom: 15px;
+}
+
+.expandedInfo p {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: var(--text-secondary-color);
+}
+.expandedInfo p:last-child {
+  margin-bottom: 0;
+}
+.expandedInfo p strong {
+  color: rgb(var(--foreground-rgb));
+}
+
+.cardFooter {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.footerActions {
+    display: flex;
+    gap: 10px;
+}
+
+.status {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.approved { color: #10b981; background-color: rgba(16, 185, 129, 0.1); }
+.rejected { color: #ef4444; background-color: rgba(239, 68, 68, 0.1); }
+.pending { color: #f59e0b; background-color: rgba(245, 158, 11, 0.1); }
+
+.detailsButton {
+  background-color: transparent;
+  border: 1px solid rgb(var(--card-border-rgb));
+  color: var(--text-secondary-color);
+  padding: 6px 12px;
+}
+.detailsButton:hover {
+  background-color: rgb(var(--input-background-rgb));
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.actionButton {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+.approveButton { background-color: #16a34a; }
+.rejectButton { background-color: #dc2626; }
+.approveButton:hover { background-color: #15803d; }
+.rejectButton:hover { background-color: #b91c1c; }
