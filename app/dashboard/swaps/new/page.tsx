@@ -89,7 +89,7 @@ export default function NewSwapPage() {
     const payload = {
         ...formData,
         newDate: swapType === 'shift' ? formData.originalDate : formData.newDate,
-        originalShift: swapType === 'day' ? "Folga" : currentUser?.shift,
+        originalShift: currentUser?.shift,
     };
 
     try {
@@ -163,7 +163,6 @@ export default function NewSwapPage() {
                 <ShiftSelector 
                     selectedShift={formData.newShift}
                     onSelectShift={(shift) => setFormData({...formData, newShift: shift})}
-                    disabledShift={swapType === 'shift' ? currentUser?.shift : ''}
                 />
             </div>
             

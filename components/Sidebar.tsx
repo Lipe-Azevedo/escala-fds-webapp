@@ -18,7 +18,7 @@ import HolidayIcon from './icons/HolidayIcon';
 const navItems = [
     { href: '/dashboard', label: 'Início', key: 'home', icon: CalendarIcon },
     { href: '/dashboard/users', label: 'Colaboradores', key: 'users', managerOnly: true, icon: UsersIcon },
-    { href: '/dashboard/swaps', label: 'Trocas de Folga', key: 'swaps', icon: SwapIcon },
+    { href: '/dashboard/swaps', label: 'Trocas', key: 'swaps', icon: SwapIcon },
     { href: '/dashboard/certificates', label: 'Atestados', key: 'certificates', icon: CertificateIcon },
     { href: '/dashboard/comments', label: 'Comentários', key: 'comments', icon: CommentIcon },
     { href: '/dashboard/holidays', label: 'Feriados', key: 'holidays', masterOnly: true, icon: HolidayIcon },

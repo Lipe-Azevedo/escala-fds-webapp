@@ -28,10 +28,9 @@ export default function ApproveSwapModal({ isOpen, onClose, onConfirm, swap }: A
 
       try {
         const date = swap.originalDate.split('T')[0];
-        const shift = swap.originalShift;
         const team = swap.requester.team;
         
-        const queryParams = new URLSearchParams({ date, shift, team });
+        const queryParams = new URLSearchParams({ date, team });
         const res = await fetch(`${apiURL}/api/users/available?${queryParams}`, { 
           headers: { 'Authorization': `Bearer ${token}` } 
         });
