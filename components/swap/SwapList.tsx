@@ -71,15 +71,6 @@ export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick
               {hasNotification && <span className={styles.notificationIndicator}></span>}
               
               <div className={styles.cardBody}>
-                {isExpanded && (
-                  <div className={styles.expandedInfo}>
-                    <p><strong>Solicitante:</strong> {swap.requester.firstName} {swap.requester.lastName}</p>
-                    {swap.involvedCollaborator && <p><strong>Envolvido:</strong> {swap.involvedCollaborator.firstName} {swap.involvedCollaborator.lastName}</p>}
-                    <p><strong>Motivo:</strong> {swap.reason || 'Não informado'}</p>
-                    {isShiftSwap && <p><strong>Turno Original:</strong> {swap.originalShift}</p>}
-                  </div>
-                )}
-
                 <div className={styles.swapDetails}>
                   {isShiftSwap ? (
                     <>
@@ -96,15 +87,26 @@ export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick
                     <>
                       <div>
                         <span className={styles.detailLabel}>Dia Original</span>
-                        <p>{formatDate(swap.originalDate)} ({swap.originalShift})</p>
+                        <p>{formatDate(swap.originalDate)}</p>
                       </div>
                       <div>
-                        <span className={styles.detailLabel}>Novo Dia de Trabalho</span>
-                        <p>{formatDate(swap.newDate)} ({swap.newShift})</p>
+                        <span className={styles.detailLabel}>Novo Dia de Folga</span>
+                        <p>{formatDate(swap.newDate)}</p>
                       </div>
                     </>
                   )}
                 </div>
+                {isExpanded && (
+                  <div className={styles.expandedInfo}>
+                    <p><strong>Solicitante:</strong> {swap.requester.firstName} {swap.requester.lastName}</p>
+                    {swap.involvedCollaborator && <p><strong>Envolvido:</strong> {swap.involvedCollaborator.firstName} {swap.involvedCollaborator.lastName}</p>}
+                    <p><strong>Turno Original:</strong> {swap.originalShift}</p>
+                    <p><strong>Novo Turno:</strong> {swap.newShift}</p>
+                    <p><strong>Motivo:</strong> {swap.reason || 'Não informado'}</p>
+                    {swap.approvedBy && <p><strong>Aprovado por:</strong> {swap.approvedBy.firstName} {swap.approvedBy.lastName}</p>}
+                    {swap.approvedAt && <p><strong>Aprovado em:</strong> {format(new Date(swap.approvedAt), 'dd/MM/yyyy - HH:mm')}</p>}
+                  </div>
+                )}
               </div>
 
               <div className={styles.cardFooter}>

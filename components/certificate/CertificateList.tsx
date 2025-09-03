@@ -65,29 +65,26 @@ export default function CertificateList({ certificates, currentUser, unreadIds, 
               {hasNotification && <span className={styles.notificationIndicator}></span>}
               
               <div className={styles.cardBody}>
-                 {isExpanded && (
+                <div className={styles.certificateDetails}>
+                  <div>
+                    <span className={styles.detailLabel}>Início</span>
+                    <p>{formatDate(cert.startDate)}</p>
+                  </div>
+                  <div>
+                    <span className={styles.detailLabel}>Fim</span>
+                    <p>{formatDate(cert.endDate)}</p>
+                  </div>
+                </div>
+                {isExpanded && (
                   <div className={styles.expandedInfo}>
                     {currentUser.userType === 'master' && (
                       <p><strong>Colaborador:</strong> {cert.collaborator.firstName} {cert.collaborator.lastName}</p>
                     )}
                     <p><strong>Motivo:</strong> {cert.reason}</p>
-                    {cert.approvedBy && cert.approvedAt && (
-                      <p><strong>Aprovado por:</strong> {cert.approvedBy.firstName} em {format(new Date(cert.approvedAt), 'dd/MM/yyyy HH:mm')}</p>
-                    )}
+                    {cert.approvedBy && <p><strong>Aprovado por:</strong> {cert.approvedBy.firstName}</p>}
+                    {cert.approvedAt && <p><strong>Aprovado em:</strong> {format(new Date(cert.approvedAt), 'dd/MM/yyyy - HH:mm')}</p>}
                   </div>
                 )}
-                <div className={styles.certificateDetails}>
-                  <>
-                    <div>
-                      <span className={styles.detailLabel}>Início</span>
-                      <p>{formatDate(cert.startDate)}</p>
-                    </div>
-                    <div>
-                      <span className={styles.detailLabel}>Fim</span>
-                      <p>{formatDate(cert.endDate)}</p>
-                    </div>
-                  </>
-                </div>
               </div>
 
               <div className={styles.cardFooter}>

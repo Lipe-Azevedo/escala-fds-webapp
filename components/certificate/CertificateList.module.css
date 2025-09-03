@@ -31,13 +31,32 @@
   border-bottom: 1px solid rgb(var(--card-border-rgb));
 }
 
+.certificateDetails {
+  display: flex;
+  gap: 20px;
+}
+
+.certificateDetails > div {
+  flex: 1;
+  text-align: center;
+}
+
+.detailLabel {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary-color);
+  margin-bottom: 4px;
+}
+
 .certificateDetails p {
   margin: 0;
   font-weight: 500;
 }
 
 .expandedInfo {
-  margin-bottom: 15px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgb(var(--card-border-rgb));
 }
 
 .expandedInfo p {

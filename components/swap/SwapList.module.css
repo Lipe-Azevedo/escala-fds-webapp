@@ -38,6 +38,7 @@
 
 .swapDetails > div {
   flex: 1;
+  text-align: center;
 }
 
 .detailLabel {
@@ -53,7 +54,9 @@
 }
 
 .expandedInfo {
-  margin-bottom: 15px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgb(var(--card-border-rgb));
 }
 
 .expandedInfo p {

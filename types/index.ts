@@ -64,7 +64,7 @@ export type Swap = {
   involvedCollaborator?: User;
   originalDate: string;
   newDate: string;
-  originalShift: ShiftName | 'Folga';
+  originalShift: ShiftName;
   newShift: ShiftName;
   reason: string;
   status: 
