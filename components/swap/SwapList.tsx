@@ -63,43 +63,57 @@ export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick
           const isManager = currentUser.userType === 'master' || currentUser.id === swap.requester.superiorId;
           const isAwaitingMyConfirmation = swap.status === 'pending_confirmation' && currentUser.id === swap.involvedCollaborator?.id;
           const hasNotification = unreadIds.has(swap.id);
-          const isCollaboratorView = !isManager || currentUser.id === swap.requester.id;
           const isExpanded = expandedId === swap.id;
+          const isShiftSwap = swap.originalDate === swap.newDate;
 
           return (
             <div key={swap.id} className={styles.swapCard}>
               {hasNotification && <span className={styles.notificationIndicator}></span>}
               
               <div className={styles.cardBody}>
-                {(!isCollaboratorView || isExpanded) && (
+                {isExpanded && (
                   <div className={styles.expandedInfo}>
                     <p><strong>Solicitante:</strong> {swap.requester.firstName} {swap.requester.lastName}</p>
                     {swap.involvedCollaborator && <p><strong>Envolvido:</strong> {swap.involvedCollaborator.firstName} {swap.involvedCollaborator.lastName}</p>}
                     <p><strong>Motivo:</strong> {swap.reason || 'Não informado'}</p>
+                    {isShiftSwap && <p><strong>Turno Original:</strong> {swap.originalShift}</p>}
                   </div>
                 )}
+
                 <div className={styles.swapDetails}>
-                  <div>
-                    <span className={styles.detailLabel}>Dia Original</span>
-                    <p>{formatDate(swap.originalDate)} ({swap.originalShift})</p>
-                  </div>
-                  <div>
-                    <span className={styles.detailLabel}>Novo Dia</span>
-                    <p>{formatDate(swap.newDate)} ({swap.newShift})</p>
-                  </div>
+                  {isShiftSwap ? (
+                    <>
+                      <div>
+                        <span className={styles.detailLabel}>Dia</span>
+                        <p>{formatDate(swap.originalDate)}</p>
+                      </div>
+                      <div>
+                        <span className={styles.detailLabel}>Novo Turno</span>
+                        <p>{swap.newShift}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <span className={styles.detailLabel}>Dia Original</span>
+                        <p>{formatDate(swap.originalDate)} ({swap.originalShift})</p>
+                      </div>
+                      <div>
+                        <span className={styles.detailLabel}>Novo Dia de Trabalho</span>
+                        <p>{formatDate(swap.newDate)} ({swap.newShift})</p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
               <div className={styles.cardFooter}>
                 <span className={`${styles.status} ${getStatusClass(swap.status)}`}>{getStatusText(swap.status)}</span>
-                
                 <div className={styles.footerActions}>
-                    {isCollaboratorView && (
-                        <button onClick={() => toggleExpand(swap.id)} className={styles.detailsButton}>
-                            {isExpanded ? 'Ver menos' : 'Ver mais'}
-                        </button>
-                    )}
-                    {swap.status === 'pending' && isManager && !isCollaboratorView && (
+                    <button onClick={() => toggleExpand(swap.id)} className={styles.detailsButton}>
+                        {isExpanded ? 'Ver menos' : 'Ver mais'}
+                    </button>
+                    {swap.status === 'pending' && isManager && (
                         <>
                             <button onClick={() => onApproveClick(swap)} className={`${styles.actionButton} ${styles.approveButton}`}>Aprovar</button>
                             <button onClick={() => onReject(swap.id)} className={`${styles.actionButton} ${styles.rejectButton}`}>Rejeitar</button>

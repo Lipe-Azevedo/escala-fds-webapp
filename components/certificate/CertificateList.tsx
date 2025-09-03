@@ -77,10 +77,16 @@ export default function CertificateList({ certificates, currentUser, unreadIds, 
                   </div>
                 )}
                 <div className={styles.certificateDetails}>
-                    <p>
-                        <strong>Período: </strong> 
-                        {formatDate(cert.startDate)} até {formatDate(cert.endDate)}
-                    </p>
+                  <>
+                    <div>
+                      <span className={styles.detailLabel}>Início</span>
+                      <p>{formatDate(cert.startDate)}</p>
+                    </div>
+                    <div>
+                      <span className={styles.detailLabel}>Fim</span>
+                      <p>{formatDate(cert.endDate)}</p>
+                    </div>
+                  </>
                 </div>
               </div>
 

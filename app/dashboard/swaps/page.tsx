@@ -101,7 +101,6 @@ export default function SwapsPage() {
 
     const fetchSwaps = useCallback(async () => {
         if (!user) return;
-
         setIsLoading(true);
         const token = Cookies.get('authToken');
         const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
@@ -173,7 +172,7 @@ export default function SwapsPage() {
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1>Trocas de Folga</h1>
+                <h1>Trocas</h1>
                 {canCreateSwap && (
                     <Link href="/dashboard/swaps/new" style={{ textDecoration: 'none' }}>
                         <button style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
