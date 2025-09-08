@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Cookies from 'js-cookie';
-import EyeIcon from '@/components/icons/EyeIcon';
-import EyeOffIcon from '@/components/icons/EyeOffIcon';
 import { useAuth } from '@/hooks/useAuth';
 import cardStyles from '@/components/common/Card.module.css';
+import EyeIcon from '@/components/icons/EyeIcon';
+import EyeOffIcon from '@/components/icons/EyeOffIcon';
 
 export default function LoginPage() {
   useAuth();
@@ -35,11 +36,11 @@ export default function LoginPage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.message || 'Credenciais inválidas.');
+        throw new Error('Email ou senha inválidos');
       }
+
+      const data = await res.json();
 
       Cookies.set('authToken', data.token, { expires: 1, secure: process.env.NODE_ENV === 'production' });
       localStorage.setItem('userData', JSON.stringify(data.user));
@@ -71,10 +72,12 @@ export default function LoginPage() {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'rgb(var(--background-rgb))' }}>
-      <div className={cardStyles.card} style={{ width: '100%', maxWidth: '400px' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '30px' }}>Login do Sistema</h1>
+      <div className={cardStyles.card} style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+        <div style={{ marginBottom: '30px', display: 'inline-block' }}>
+            <Image src="/logo-main.png" alt="EscalaFDS Logo" width={0} height={0} sizes="100vw" style={{ width: '60%', height: 'auto' }} priority />
+        </div>
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '20px', textAlign: 'left' }}>
             <label htmlFor="email">Email:</label>
             <input
               id="email"
@@ -84,7 +87,7 @@ export default function LoginPage() {
               required
             />
           </div>
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '20px', textAlign: 'left' }}>
             <label htmlFor="password">Senha:</label>
             <div style={passwordInputContainerStyle}>
                 <input

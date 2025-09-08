@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import styles from './Sidebar.module.css';
@@ -49,7 +50,7 @@ export default function Sidebar() {
     <aside className={styles.sidebar}>
       <div>
         <div className={styles.logo}>
-          EscalaFDS
+          <Image src="/logo-main.png" alt="EscalaFDS Logo" width={0} height={0} sizes="100vw" style={{ width: '70%', height: 'auto' }} priority />
         </div>
         <nav className={styles.nav}>
           <ul>
