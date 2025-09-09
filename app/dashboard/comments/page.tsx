@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import Cookies from 'js-cookie';
 import { Comment, User, FilterConfig } from '@/types';
 import CommentList from '@/components/comment/CommentList';
-import CreateCommentModal from '@/components/comment/CreateCommentModal';
 import FilterBar from '@/components/common/FilterBar';
 import { useNotifications } from '@/context/NotificationContext';
 import cardStyles from '@/components/common/Card.module.css';
+import Link from 'next/link';
+import MessageSquarePlusIcon from '@/components/icons/MessageSquarePlusIcon';
 
 const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfig[] => {
   if (!user) return [];
@@ -45,7 +46,6 @@ export default function CommentsPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [filters, setFilters] = useState({ collaboratorId: '', authorId: '', startDate: '', endDate: '', team: '', shift: '', sortBy: 'createdAt:desc' });
   const { getUnreadIdsForCategory, markCategoryAsSeen, isLoading: isNotificationsLoading } = useNotifications();
   const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());
@@ -113,13 +113,20 @@ export default function CommentsPage() {
   useEffect(() => { if(currentUser) fetchComments(); }, [filters, currentUser]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setFilters(prev => ({ ...prev, [e.target.name]: e.target.value })); };
-  const canAddComment = currentUser?.userType === 'master' || currentUser?.position.includes('Supervisor');
+  const canAddComment = currentUser?.userType === 'master' || (currentUser?.position && currentUser.position.includes('Supervisor'));
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h1>Consultar Comentários</h1>
-          {canAddComment && ( <button onClick={() => setCreateModalOpen(true)}>+ Novo Comentário</button> )}
+          {canAddComment && (
+            <Link href="/dashboard/comments/new">
+              <button style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageSquarePlusIcon size={20} />
+                Novo Comentário
+              </button>
+            </Link>
+          )}
       </div>
       <FilterBar configs={generateFilterConfigs(currentUser, users)} filters={filters} onFilterChange={handleFilterChange} />
       {isLoading ? <p>Carregando...</p> : error ? <p style={{color: 'red'}}>{error}</p> : (
@@ -127,7 +134,6 @@ export default function CommentsPage() {
             <CommentList comments={comments} unreadIds={pageUnreadIds} />
         </div>
       )}
-      {isCreateModalOpen && ( <CreateCommentModal isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} onSuccess={fetchComments} users={users} /> )}
     </div>
   );
 }
