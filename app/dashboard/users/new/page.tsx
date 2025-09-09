@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Cookies from 'js-cookie';
 import { TeamName, PositionName, User } from '@/types';
 import styles from './NewUser.module.css';
@@ -65,11 +65,28 @@ export default function NewUserPage() {
     fetchUsers();
   }, []);
 
-  const supervisors = allUsers.filter(u => u.position.includes('Supervisor') || u.userType === 'master');
+  const availableSupervisors = useMemo(() => {
+    const { team, position } = formData;
+    if (!position) return [];
+
+    if (position === 'BackendDeveloper' || position === 'FrontendDeveloper' || position === 'SupervisorII') {
+      return allUsers.filter(u => u.userType === 'master' || u.position === 'Master');
+    }
+    
+    if (position === 'Attendant' || position === 'RiskAnalyst') {
+      return allUsers.filter(u => u.position === 'SupervisorI' && u.team === team);
+    }
+
+    if (position === 'SupervisorI') {
+      return allUsers.filter(u => u.position === 'SupervisorII' && u.team === team);
+    }
+
+    return [];
+  }, [allUsers, formData.team, formData.position]);
 
   useEffect(() => {
     setAvailablePositions(positionsByTeam[formData.team] || []);
-    setFormData(prev => ({ ...prev, position: '' }));
+    setFormData(prev => ({ ...prev, position: '', superiorId: '' }));
   }, [formData.team]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -169,9 +186,9 @@ export default function NewUserPage() {
                         </div>
                         <div>
                             <label htmlFor="superiorId">Supervisor</label>
-                            <select id="superiorId" name="superiorId" value={formData.superiorId} onChange={handleChange}>
+                            <select id="superiorId" name="superiorId" value={formData.superiorId} onChange={handleChange} disabled={!formData.position}>
                                 <option value="">Nenhum</option>
-                                {supervisors.map(s => <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>)}
+                                {availableSupervisors.map(s => <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>)}
                             </select>
                         </div>
                         <div>
