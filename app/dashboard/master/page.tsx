@@ -33,9 +33,9 @@ export default function MasterDashboardPage() {
                     throw new Error('Falha ao carregar os dados do dashboard.');
                 }
 
-                const allUsers: User[] = await usersRes.json();
-                const swaps: Swap[] = await swapsRes.json();
-                const certificates: Certificate[] = await certsRes.json();
+                const allUsers: User[] = await usersRes.json() || [];
+                const swaps: Swap[] = await swapsRes.json() || [];
+                const certificates: Certificate[] = await certsRes.json() || [];
 
                 if (Array.isArray(allUsers)) {
                     setStats({
