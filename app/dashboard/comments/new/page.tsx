@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { User, TeamName } from '@/types';
 import { useRouter } from 'next/navigation';
@@ -21,81 +21,105 @@ export default function NewCommentPage() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  // 1. Obtém o usuário atual do localStorage
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
     if (userDataString) {
-      const user = JSON.parse(userDataString);
-      setCurrentUser(user);
+      setCurrentUser(JSON.parse(userDataString));
     }
   }, []);
 
-  // 2. Função para buscar colaboradores (agora com useCallback)
-  const fetchCollaborators = useCallback(async () => {
-    if (!currentUser) return;
-
+  useEffect(() => {
     const token = Cookies.get('authToken');
-    if (!token) return;
-
-    setIsFetchingCollaborators(true);
-    setError('');
-    setAvailableCollaborators([]); // Limpa os resultados anteriores
+    if (!token || !currentUser) return;
 
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-    let url = '';
 
-    if (currentUser.userType === 'master') {
-      if (!formData.team) {
-        setIsFetchingCollaborators(false);
-        return; // Não busca se nenhuma equipe for selecionada
-      }
-      url = `${apiURL}/api/users?team=${formData.team}`;
-    } else if (currentUser.position?.includes('Supervisor')) {
-      url = `${apiURL}/api/users?superiorId=${currentUser.id}`;
-    } else {
-      setIsFetchingCollaborators(false);
-      return; // Não é master nem supervisor, não há o que buscar
-    }
+    const fetchAndSetCollaborators = async () => {
+      setIsFetchingCollaborators(true);
+      setAvailableCollaborators([]);
+      setError('');
 
-    try {
-      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-      
-      if (res.ok) {
-        const users = await res.json();
-        setAvailableCollaborators(users.filter((u: User) => u.userType === 'collaborator' || u.id !== currentUser.id));
-      } else {
-        throw new Error("Falha ao buscar a lista de colaboradores.");
-      }
-    } catch (e: any) {
-      setError(e.message);
-      console.error("Failed to fetch collaborators", e);
-    } finally {
-      setIsFetchingCollaborators(false);
-    }
-  }, [currentUser, formData.team]);
+      try {
+        let usersToDisplay: User[] = [];
 
-  // 3. Dispara a busca quando o usuário atual ou a equipe selecionada mudam
-  useEffect(() => {
-    if (currentUser?.userType === 'master') {
-        // A busca para o master é disparada pela mudança da equipe
-        if (formData.team) {
-            fetchCollaborators();
+        if (currentUser.userType === 'master') {
+          if (!formData.team) {
+            setIsFetchingCollaborators(false);
+            return;
+          }
+          // Busca todos os usuários, a filtragem será feita no cliente.
+          const res = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+          if (!res.ok) throw new Error("Falha ao buscar colaboradores da equipe.");
+          
+          const allUsers: User[] = await res.json();
+          
+          // **CORREÇÃO: Filtra por equipe selecionada E por tipo de usuário**
+          usersToDisplay = allUsers.filter((u: User) => 
+            u.userType !== 'master' && u.team === formData.team
+          );
+
+        } else if (currentUser.position === 'SupervisorII') {
+          if (!currentUser.team) {
+             setIsFetchingCollaborators(false);
+             return;
+          }
+          const res = await fetch(`${apiURL}/api/users?team=${currentUser.team}`, { headers: { 'Authorization': `Bearer ${token}` } });
+          if (!res.ok) throw new Error("Falha ao buscar colaboradores da equipe.");
+          const teamUsers: User[] = await res.json();
+          usersToDisplay = teamUsers.filter((u: User) => 
+            u.id !== currentUser.id && 
+            (u.position === 'SupervisorI' || u.position === 'SupervisorII')
+          );
+
+        } else if (currentUser.position === 'SupervisorI') {
+           if (!currentUser.team) {
+             setIsFetchingCollaborators(false);
+             return;
+          }
+          const [teamRes, subordinatesRes] = await Promise.all([
+             fetch(`${apiURL}/api/users?team=${currentUser.team}`, { headers: { 'Authorization': `Bearer ${token}` } }),
+             fetch(`${apiURL}/api/users?superiorId=${currentUser.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
+          ]);
+          if (!teamRes.ok || !subordinatesRes.ok) throw new Error("Falha ao buscar dados da equipe.");
+          
+          const teamUsers: User[] = await teamRes.json();
+          const subordinates: User[] = await subordinatesRes.json();
+          
+          const peerSupervisors = teamUsers.filter((u: User) => u.id !== currentUser.id && u.position === 'SupervisorI');
+          
+          const combined = [...subordinates, ...peerSupervisors];
+          const uniqueUserIds = new Set<number>();
+          usersToDisplay = combined.filter((u: User) => {
+              if (uniqueUserIds.has(u.id)) return false;
+              uniqueUserIds.add(u.id);
+              return true;
+          });
         }
-    } else if (currentUser?.position?.includes('Supervisor')) {
-        // A busca para o supervisor é disparada quando o usuário é carregado
-        fetchCollaborators();
-    }
-  }, [currentUser, formData.team, fetchCollaborators]);
+
+        setAvailableCollaborators(usersToDisplay);
+
+      } catch (e: any) {
+        setError(e.message);
+        setAvailableCollaborators([]);
+      } finally {
+        setIsFetchingCollaborators(false);
+      }
+    };
+
+    fetchAndSetCollaborators();
+  }, [currentUser, formData.team]);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-      // Reseta o colaborador selecionado quando a equipe muda
-      ...(name === 'team' && { collaboratorId: '' }),
-    }));
+    
+    setFormData(prev => {
+        const newState = { ...prev, [name]: value };
+        if (name === 'team') {
+            newState.collaboratorId = '';
+        }
+        return newState;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -132,7 +156,7 @@ export default function NewCommentPage() {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div>
       <div className={cardStyles.card} style={{ maxWidth: '600px', margin: 'auto' }}>
@@ -159,10 +183,14 @@ export default function NewCommentPage() {
               value={formData.collaboratorId} 
               onChange={handleChange} 
               required 
-              disabled={isFetchingCollaborators || ((currentUser?.userType === 'master' && !formData.team) || availableCollaborators.length === 0)}
+              disabled={isFetchingCollaborators || (currentUser?.userType === 'master' && !formData.team) || availableCollaborators.length === 0}
             >
               <option value="">
-                {isFetchingCollaborators ? 'Buscando...' : 'Selecione um colaborador...'}
+                {isFetchingCollaborators 
+                    ? 'Carregando...' 
+                    : (currentUser?.userType === 'master' && !formData.team) 
+                        ? 'Selecione uma equipe primeiro' 
+                        : 'Selecione um colaborador...'}
               </option>
               {availableCollaborators.map(user => (
                 <option key={user.id} value={user.id}>{user.firstName} {user.lastName}</option>
