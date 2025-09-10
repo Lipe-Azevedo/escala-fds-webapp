@@ -20,10 +20,10 @@ const generateFilterConfigs = (allUsers: User[], currentUser: User | null): Filt
         { name: 'requesterId', label: 'Solicitante', type: 'select', options: userOptions, disabled: !isManager },
         { name: 'startDate', label: 'Data Início', type: 'date' },
         { name: 'endDate', label: 'Data Fim', type: 'date' },
-        { 
-            name: 'sortBy', 
-            label: 'Ordenar por', 
-            type: 'select', 
+        {
+            name: 'sortBy',
+            label: 'Ordenar por',
+            type: 'select',
             options: [
                 { value: 'createdAt:desc', label: 'Mais Recentes' },
                 { value: 'createdAt:asc', label: 'Mais Antigos' },
@@ -74,7 +74,7 @@ export default function SwapsPage() {
             setFilters(prev => ({ ...prev, status: statusFromUrl }));
         }
     }, [searchParams]);
-    
+
     useEffect(() => {
         const fetchAllUsers = async () => {
             if (user && (user.userType === 'master' || (user.position && user.position.includes('Supervisor')))) {
@@ -107,7 +107,15 @@ export default function SwapsPage() {
         try {
             const params = new URLSearchParams();
             Object.entries(filters).forEach(([key, value]) => { if(value) params.append(key, value); });
-            const swapsUrl = `${apiURL}/api/swaps?${params.toString()}`;
+
+            const isManager = user.userType === 'master' || (user.position && user.position.includes('Supervisor'));
+            let swapsUrl = '';
+
+            if (isManager) {
+                swapsUrl = `${apiURL}/api/swaps?${params.toString()}`;
+            } else {
+                swapsUrl = `${apiURL}/api/swaps/user/${user.id}?${params.toString()}`;
+            }
             
             const swapsRes = await fetch(swapsUrl, { headers: { 'Authorization': `Bearer ${token}` } });
             
@@ -121,6 +129,7 @@ export default function SwapsPage() {
             setIsLoading(false);
         }
     }, [filters, user]);
+
 
     useEffect(() => {
         fetchSwaps();
