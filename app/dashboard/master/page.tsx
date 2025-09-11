@@ -13,7 +13,7 @@ import UsersIcon from '@/components/icons/UsersIcon';
 import ShieldIcon from '@/components/icons/ShieldIcon';
 
 export default function MasterDashboardPage() {
-    const [stats, setStats] = useState({ totalUsers: 0, pendingSwaps: 0, pendingCertificates: 0 });
+    const [stats, setStats] = useState({ pendingSwaps: 0, pendingCertificates: 0 });
     const [usersOnShift, setUsersOnShift] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -39,7 +39,6 @@ export default function MasterDashboardPage() {
 
                 if (Array.isArray(allUsers)) {
                     setStats({
-                        totalUsers: allUsers.filter(u => u.userType !== 'master').length,
                         pendingSwaps: swaps.length,
                         pendingCertificates: certificates.length,
                     });
@@ -87,13 +86,12 @@ export default function MasterDashboardPage() {
                 </h1>
             </div>
             {error ? <p style={{ color: 'red' }}>{error}</p> : (
-                <>
+                <div className={cardStyles.card}>
                     <div className={styles.grid}>
-                        <DashboardSummaryCard title="Total de Colaboradores" value={stats.totalUsers} linkTo="/dashboard/users" linkLabel="Gerir colaboradores" />
                         <DashboardSummaryCard title="Trocas Pendentes" value={stats.pendingSwaps} linkTo="/dashboard/swaps?status=pending" linkLabel="Ver trocas" />
                         <DashboardSummaryCard title="Atestados Pendentes" value={stats.pendingCertificates} linkTo="/dashboard/certificates?status=pending" linkLabel="Ver atestados" />
                     </div>
-                    <div className={`${cardStyles.card} ${styles.onShiftWidget}`}>
+                    <div className={`${styles.onShiftWidget}`} style={{marginTop: '20px'}}>
                         <h3 style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
                             <UsersIcon size={22} />
                             Colaboradores de plantão
@@ -125,7 +123,7 @@ export default function MasterDashboardPage() {
                             <p style={{color: 'var(--text-secondary-color)', textAlign: 'center', padding: '20px'}}>Nenhum colaborador de plantão agora.</p>
                         )}
                     </div>
-                </>
+                </div>
             )}
         </div>
     );
