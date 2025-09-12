@@ -72,7 +72,7 @@ export default function EditProfilePage() {
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
-    const payload: any = {
+    const payload: { [key: string]: string } = {
       firstName: formData.firstName,
       lastName: formData.lastName,
       phoneNumber: formData.phoneNumber,
@@ -104,8 +104,8 @@ export default function EditProfilePage() {
         router.push('/dashboard/profile');
       }, 2000);
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }

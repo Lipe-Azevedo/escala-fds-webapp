@@ -82,7 +82,7 @@ export default function NewUserPage() {
     }
 
     return [];
-  }, [allUsers, formData.team, formData.position]);
+  }, [allUsers, formData.team, formData.position, formData]);
 
   useEffect(() => {
     setAvailablePositions(positionsByTeam[formData.team] || []);
@@ -117,8 +117,8 @@ export default function NewUserPage() {
 
       router.push('/dashboard/users');
       
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }

@@ -54,7 +54,7 @@ export default function ProfilePage() {
     
     const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
 
-    let firstOccurrence = new Date(userCreatedAt);
+    const firstOccurrence = new Date(userCreatedAt);
     firstOccurrence.setDate(firstOccurrence.getDate() + (firstWeekendOffDay - getDay(firstOccurrence) + 7) % 7);
 
     const weeksDiff = differenceInCalendarWeeks(today, firstOccurrence, { weekStartsOn: 1 });

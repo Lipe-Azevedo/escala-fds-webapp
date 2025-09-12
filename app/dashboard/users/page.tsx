@@ -37,8 +37,6 @@ export default function UsersPage() {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isEditModalOpen, setEditModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [filters, setFilters] = useState({ team: '', shift: '' });
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
@@ -60,8 +58,8 @@ export default function UsersPage() {
         setAllUsers([]);
         setFilteredUsers([]);
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -87,15 +85,11 @@ export default function UsersPage() {
   };
 
   const handleEdit = (user: User) => {
-    setSelectedUser(user);
-    setEditModalOpen(true);
+    // A lógica de edição foi removida, pois não estava a ser usada.
+    // Se for reimplementada, o estado e o modal devem ser adicionados novamente.
+    console.log('Edit user:', user);
   };
 
-  const handleModalClose = () => {
-    setEditModalOpen(false);
-    setSelectedUser(null);
-  }
-  
   const toggleFilterVisibility = () => {
     setIsFilterVisible(prev => !prev);
   };
