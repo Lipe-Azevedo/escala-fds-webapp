@@ -26,8 +26,8 @@ export default function MasterDashboardPage() {
             try {
                 const [usersRes, swapsRes, certsRes] = await Promise.all([
                     fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${apiURL}/api/swaps?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${apiURL}/api/certificates?status=pending`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${apiURL}/api/swaps`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${apiURL}/api/certificates`, { headers: { 'Authorization': `Bearer ${token}` } }),
                 ]);
 
                 if (!usersRes.ok || !swapsRes.ok || !certsRes.ok) {
@@ -35,13 +35,16 @@ export default function MasterDashboardPage() {
                 }
 
                 const allUsers: User[] = await usersRes.json() || [];
-                const swaps: Swap[] = await swapsRes.json() || [];
-                const certificates: Certificate[] = await certsRes.json() || [];
+                const allSwaps: Swap[] = await swapsRes.json() || [];
+                const allCertificates: Certificate[] = await certsRes.json() || [];
 
                 if (Array.isArray(allUsers)) {
+                    const pendingSwaps = allSwaps.filter(swap => swap.status === 'pending');
+                    const pendingCertificates = allCertificates.filter(cert => cert.status === 'pending');
+
                     setStats({
-                        pendingSwaps: swaps.length,
-                        pendingCertificates: certificates.length,
+                        pendingSwaps: pendingSwaps.length,
+                        pendingCertificates: pendingCertificates.length,
                     });
 
                     const today = new Date();
