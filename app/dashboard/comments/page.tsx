@@ -131,8 +131,8 @@ export default function CommentsPage() {
 
       setComments(finalComments);
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }

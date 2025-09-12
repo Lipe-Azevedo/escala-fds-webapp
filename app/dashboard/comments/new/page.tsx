@@ -47,13 +47,11 @@ export default function NewCommentPage() {
             setIsFetchingCollaborators(false);
             return;
           }
-          // Busca todos os usuários, a filtragem será feita no cliente.
           const res = await fetch(`${apiURL}/api/users`, { headers: { 'Authorization': `Bearer ${token}` } });
           if (!res.ok) throw new Error("Falha ao buscar colaboradores da equipe.");
           
           const allUsers: User[] = await res.json();
           
-          // **CORREÇÃO: Filtra por equipe selecionada E por tipo de usuário**
           usersToDisplay = allUsers.filter((u: User) => 
             u.userType !== 'master' && u.team === formData.team
           );
@@ -98,8 +96,8 @@ export default function NewCommentPage() {
 
         setAvailableCollaborators(usersToDisplay);
 
-      } catch (e: any) {
-        setError(e.message);
+      } catch (e: unknown) {
+        setError((e as Error).message);
         setAvailableCollaborators([]);
       } finally {
         setIsFetchingCollaborators(false);
@@ -150,8 +148,8 @@ export default function NewCommentPage() {
         throw new Error(data.message || 'Falha ao criar comentário.');
       }
       router.push('/dashboard/comments');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }
