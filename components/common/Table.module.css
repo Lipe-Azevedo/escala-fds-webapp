@@ -21,6 +21,11 @@
   border-bottom: 2px solid rgb(var(--card-border-rgb));
 }
 
+.actionsHeader {
+  text-align: right;
+  padding-right: 40px;
+}
+
 .cell {
   padding: 12px 15px;
   text-align: center;

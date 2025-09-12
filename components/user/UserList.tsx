@@ -22,7 +22,7 @@ export default function UserList({ users, onEdit }: UserListProps) {
             <th className={tableStyles.header}>Equipe</th>
             <th className={tableStyles.header}>Cargo</th>
             <th className={tableStyles.header}>Turno</th>
-            <th className={`${tableStyles.header} ${tableStyles.actionsCell}`}>Ações</th>
+            <th className={`${tableStyles.header} ${tableStyles.actionsHeader}`}>Ações</th>
           </tr>
         </thead>
         <tbody>
