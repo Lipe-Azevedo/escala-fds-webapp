@@ -49,8 +49,8 @@ export default function NewCertificatePage() {
       if (!res.ok) { throw new Error(data.message || 'Falha ao enviar atestado.'); }
       
       router.push('/dashboard/certificates');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }

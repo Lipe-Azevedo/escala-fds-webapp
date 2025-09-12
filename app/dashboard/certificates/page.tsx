@@ -65,14 +65,14 @@ export default function CertificatesPage() {
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => { if(value) params.append(key, value); });
-    let url = user.userType === 'collaborator' ? `${apiURL}/api/certificates/user/${user.id}?${params.toString()}` : `${apiURL}/api/certificates?${params.toString()}`;
+    const url = user.userType === 'collaborator' ? `${apiURL}/api/certificates/user/${user.id}?${params.toString()}` : `${apiURL}/api/certificates?${params.toString()}`;
     try {
       const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) throw new Error('Falha ao ir buscar os atestados.');
       const data: Certificate[] = await res.json();
       setCertificates(data || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +99,7 @@ export default function CertificatesPage() {
         });
         if (!res.ok) { const errData = await res.json(); throw new Error(errData.message || 'Falha ao atualizar o status do atestado.'); }
         fetchCertificates();
-    } catch (err: any) { setError(err.message); }
+    } catch (err: unknown) { setError((err as Error).message); }
   };
 
   const toggleFilterVisibility = () => {
