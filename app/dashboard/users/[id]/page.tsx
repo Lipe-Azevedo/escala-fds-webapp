@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { User } from '@/types';
-import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import styles from '../../profile/Profile.module.css'; 

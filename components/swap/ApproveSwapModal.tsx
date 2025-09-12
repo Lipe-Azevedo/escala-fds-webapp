@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { Swap, User } from '@/types';
+import { isRegularDayOff } from '@/lib/calendarUtils';
+import { parseISO } from 'date-fns';
 
 interface ApproveSwapModalProps {
   isOpen: boolean;
@@ -27,20 +29,27 @@ export default function ApproveSwapModal({ isOpen, onClose, onConfirm, swap }: A
       const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
       try {
-        const date = swap.originalDate.split('T')[0];
-        const team = swap.requester.team;
-        
-        const queryParams = new URLSearchParams({ date, team });
-        const res = await fetch(`${apiURL}/api/users/available?${queryParams}`, { 
+        const res = await fetch(`${apiURL}/api/users`, { 
           headers: { 'Authorization': `Bearer ${token}` } 
         });
 
         if (!res.ok) {
-          throw new Error('Falha ao buscar colaboradores disponíveis.');
+          throw new Error('Falha ao buscar a lista de colaboradores.');
         }
         
-        const data: User[] = await res.json();
-        setAvailableUsers(data.filter(u => u.id !== swap.requester.id));
+        const allUsers: User[] = await res.json();
+        const swapDate = parseISO(swap.originalDate);
+
+        const available = allUsers.filter(u => {
+          const isWorkingOnDay = !isRegularDayOff(swapDate, u);
+          const isInCorrectShift = u.shift === swap.originalShift;
+          const isNotRequester = u.id !== swap.requester.id;
+          
+          return isWorkingOnDay && isInCorrectShift && isNotRequester;
+        });
+
+        setAvailableUsers(available);
+
       } catch (err: unknown) {
         setError((err as Error).message);
       } finally {
@@ -74,7 +83,7 @@ export default function ApproveSwapModal({ isOpen, onClose, onConfirm, swap }: A
       <div style={modalContentStyle}>
         <h2>Aprovar Troca</h2>
         <p><strong>Solicitante:</strong> {swap.requester.firstName}</p>
-        <p><strong>Dia Original:</strong> {new Date(swap.originalDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
+        <p><strong>Dia de Folga:</strong> {new Date(swap.originalDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
         <p><strong>Novo Dia de Folga:</strong> {new Date(swap.newDate.replace(/-/g, '/')).toLocaleDateString('pt-BR')}</p>
         <p><strong>Turno:</strong> {swap.newShift}</p>
         
@@ -87,7 +96,7 @@ export default function ApproveSwapModal({ isOpen, onClose, onConfirm, swap }: A
             disabled={isLoading}
           >
             {isLoading ? (
-              <option>Carregando colaboradores...</option>
+              <option>A procurar colaboradores...</option>
             ) : (
               <>
                 <option value="">Ninguém (Apenas troca de dia)</option>

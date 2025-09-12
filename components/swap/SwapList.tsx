@@ -90,7 +90,7 @@ export default function SwapList({ swaps, currentUser, unreadIds, onApproveClick
                         <p>{formatDate(swap.originalDate)}</p>
                       </div>
                       <div>
-                        <span className={styles.detailLabel}>Novo Dia de Trabalho</span>
+                        <span className={styles.detailLabel}>Novo Dia de Folga</span>
                         <p>{formatDate(swap.newDate)}</p>
                       </div>
                     </>
