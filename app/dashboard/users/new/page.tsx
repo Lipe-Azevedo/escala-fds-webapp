@@ -82,7 +82,7 @@ export default function NewUserPage() {
     }
 
     return [];
-  }, [allUsers, formData.team, formData.position, formData]);
+  }, [allUsers, formData]);
 
   useEffect(() => {
     setAvailablePositions(positionsByTeam[formData.team] || []);

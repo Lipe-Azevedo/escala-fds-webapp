@@ -64,7 +64,7 @@ export default function NewSwapPage() {
           }
         }
         setAvailableDaysOff(upcomingDaysOff);
-      } catch(e) {
+      } catch {
         setError('Erro ao carregar sua escala de folgas.');
       } finally {
         setIsLoadingSchedule(false);

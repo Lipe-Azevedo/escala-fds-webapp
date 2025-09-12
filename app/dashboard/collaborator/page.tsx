@@ -59,7 +59,7 @@ export default function CollaboratorDashboardPage() {
                     const endHour = parseInt(endStr, 10);
                     if (isNaN(startHour) || isNaN(endHour)) return false;
                     return startHour < endHour ? currentHour >= startHour && currentHour < endHour : currentHour >= startHour || currentHour < endHour;
-                } catch (error) { return false; }
+                } catch { return false; }
             };
             
             const onShiftNow = allUsers.filter(u => {

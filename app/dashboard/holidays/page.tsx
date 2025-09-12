@@ -49,8 +49,8 @@ export default function HolidaysPage() {
       const data: Holiday[] = await res.json();
       setAllHolidays(data || []);
       setFilteredHolidays(data || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }

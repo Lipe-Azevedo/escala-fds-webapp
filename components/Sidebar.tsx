@@ -84,7 +84,7 @@ export default function Sidebar() {
           </ul>
         </nav>
       </div>
-      <ProfileDropdown user={user} onLogout={handleLogout} />
+      <ProfileDropdown onLogout={handleLogout} />
     </aside>
   );
 }
