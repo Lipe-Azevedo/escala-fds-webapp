@@ -76,8 +76,8 @@ export default function HolidayModal({ isOpen, onClose, onSuccess, holiday }: Ho
       onSuccess();
       onClose();
       
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }

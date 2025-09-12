@@ -2,18 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { User } from '@/types';
 import styles from './ProfileDropdown.module.css';
 import ChevronIcon from '../icons/ChevronIcon';
 import UserIcon from '../icons/UserIcon';
 import LogOutIcon from '../icons/LogOutIcon';
 
 interface ProfileDropdownProps {
-  user: User | null;
   onLogout: () => void;
 }
 
-export default function ProfileDropdown({ user, onLogout }: ProfileDropdownProps) {
+export default function ProfileDropdown({ onLogout }: ProfileDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

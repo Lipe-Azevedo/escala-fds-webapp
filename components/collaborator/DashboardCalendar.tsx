@@ -1,6 +1,6 @@
 'use client';
 
-import { format, parseISO, isSameMonth, isToday, addMonths, subMonths } from 'date-fns';
+import { format, parseISO, isSameMonth, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DaySchedule } from '@/types';
 import { indicatorColors } from '@/lib/calendarUtils';

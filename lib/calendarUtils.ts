@@ -1,12 +1,9 @@
 import {
   format,
   startOfMonth,
-  endOfMonth,
   startOfWeek,
-  endOfWeek,
   eachDayOfInterval,
   isSameMonth,
-  isToday,
   getDay,
   differenceInCalendarWeeks,
   addDays,
@@ -31,7 +28,7 @@ export function isRegularDayOff(date: Date, user: Pick<User, 'weekdayOff' | 'ini
     if ((dayOfWeek === 0 || dayOfWeek === 6) && user.initialWeekendOff && user.createdAt) {
         const userCreatedAt = new Date(user.createdAt);
         const firstWeekendOffDay = user.initialWeekendOff === 'saturday' ? 6 : 0;
-        let firstOccurrence = new Date(userCreatedAt);
+        const firstOccurrence = new Date(userCreatedAt);
         while (getDay(firstOccurrence) !== firstWeekendOffDay) { firstOccurrence.setDate(firstOccurrence.getDate() + 1); }
         const weeksDiff = differenceInCalendarWeeks(date, firstOccurrence, { weekStartsOn: 1 });
         const currentWeekendOffDay = (weeksDiff % 2 === 0) ? firstWeekendOffDay : (firstWeekendOffDay === 6 ? 0 : 6);

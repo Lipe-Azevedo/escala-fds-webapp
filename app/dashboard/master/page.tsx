@@ -54,7 +54,7 @@ export default function MasterDashboardPage() {
                             const endHour = parseInt(endStr, 10);
                             if (isNaN(startHour) || isNaN(endHour)) return false;
                             return startHour < endHour ? currentHour >= startHour && currentHour < endHour : currentHour >= startHour || currentHour < endHour;
-                        } catch (error) { return false; }
+                        } catch { return false; }
                     };
 
                     const onShiftNow = allUsers.filter(u => {
@@ -66,8 +66,8 @@ export default function MasterDashboardPage() {
                 } else {
                     console.error("API did not return a valid user array for master dashboard.");
                 }
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err: unknown) {
+                setError((err as Error).message);
             } finally {
                 setIsLoading(false);
             }
