@@ -103,8 +103,8 @@ export default function NewSwapPage() {
       if (!res.ok) { throw new Error(data.message || 'Falha ao criar solicitação.'); }
       
       router.push('/dashboard/swaps');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError((err as Error).message);
     } finally {
       setIsLoading(false);
     }

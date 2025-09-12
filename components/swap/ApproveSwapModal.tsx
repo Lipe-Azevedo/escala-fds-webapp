@@ -41,8 +41,8 @@ export default function ApproveSwapModal({ isOpen, onClose, onConfirm, swap }: A
         
         const data: User[] = await res.json();
         setAvailableUsers(data.filter(u => u.id !== swap.requester.id));
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError((err as Error).message);
       } finally {
         setIsLoading(false);
       }

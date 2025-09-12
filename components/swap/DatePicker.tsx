@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay, addDays } from 'date-fns';
+import { format, startOfMonth, startOfWeek, eachDayOfInterval, addMonths, subMonths, isSameMonth, isSameDay, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import panelStyles from '../common/Panel.module.css';
 import styles from './DatePicker.module.css';

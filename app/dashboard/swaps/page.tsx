@@ -88,7 +88,7 @@ export default function SwapsPage() {
                         const usersData = await usersRes.json();
                         setAllUsers(usersData || []);
                     }
-                } catch (err) {
+                } catch {
                    console.error("Failed to fetch users for filter");
                 }
             }
@@ -125,8 +125,8 @@ export default function SwapsPage() {
             const swapsData = await swapsRes.json();
             setSwaps(swapsData || []);
 
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError((err as Error).message);
         } finally {
             setIsLoading(false);
         }
@@ -152,7 +152,7 @@ export default function SwapsPage() {
             });
             if (!res.ok) { const errData = await res.json(); throw new Error(errData.message || 'Falha ao atualizar o status da troca.'); }
             fetchSwaps();
-        } catch (err: any) { setError(err.message); }
+        } catch (err: unknown) { setError((err as Error).message); }
     };
 
     const handleConfirmSwap = async (swapId: number) => {
@@ -161,7 +161,7 @@ export default function SwapsPage() {
         try {
             await fetch(`${apiURL}/api/swaps/${swapId}/confirm`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` }});
             fetchSwaps();
-        } catch (err: any) { setError(err.message); }
+        } catch (err: unknown) { setError((err as Error).message); }
     };
 
     const handleDeclineSwap = async (swapId: number) => {
@@ -170,7 +170,7 @@ export default function SwapsPage() {
         try {
             await fetch(`${apiURL}/api/swaps/${swapId}/decline`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` }});
             fetchSwaps();
-        } catch (err: any) { setError(err.message); }
+        } catch (err: unknown) { setError((err as Error).message); }
     };
     
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setFilters(prev => ({ ...prev, [e.target.name]: e.target.value })); };
