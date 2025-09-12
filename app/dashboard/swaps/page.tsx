@@ -11,6 +11,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import cardStyles from '@/components/common/Card.module.css';
 import PlusCircleIcon from '@/components/icons/PlusCircleIcon';
+import PageHeader from '@/components/common/PageHeader';
 
 const generateFilterConfigs = (allUsers: User[], currentUser: User | null): FilterConfig[] => {
     const isManager = currentUser?.userType === 'master' || (currentUser?.position && currentUser.position.includes('Supervisor'));
@@ -48,6 +49,7 @@ export default function SwapsPage() {
     const searchParams = useSearchParams();
     const notificationsProcessed = useRef(false);
     const [filterConfigs, setFilterConfigs] = useState<FilterConfig[]>([]);
+    const [isFilterVisible, setIsFilterVisible] = useState(false);
 
     useEffect(() => {
         const userDataString = localStorage.getItem('userData');
@@ -173,6 +175,10 @@ export default function SwapsPage() {
     
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setFilters(prev => ({ ...prev, [e.target.name]: e.target.value })); };
 
+    const toggleFilterVisibility = () => {
+        setIsFilterVisible(prev => !prev);
+    };
+
     if (isLoading) return null;
     if (!user) return <p>{error || 'Utilizador não encontrado.'}</p>;
 
@@ -180,8 +186,7 @@ export default function SwapsPage() {
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h1>Trocas</h1>
+            <PageHeader title="Trocas" onFilterToggle={toggleFilterVisibility}>
                 {canCreateSwap && (
                     <Link href="/dashboard/swaps/new" style={{ textDecoration: 'none' }}>
                         <button style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -190,8 +195,13 @@ export default function SwapsPage() {
                         </button>
                     </Link> 
                 )}
-            </div>
-            <FilterBar configs={filterConfigs} filters={filters} onFilterChange={handleFilterChange} />
+            </PageHeader>
+            <FilterBar 
+                configs={filterConfigs} 
+                filters={filters} 
+                onFilterChange={handleFilterChange}
+                isVisible={isFilterVisible}
+            />
             {error ? <p style={{ color: '#f87171' }}>{error}</p> : (
                 <div className={cardStyles.card}>
                     <SwapList swaps={swaps} currentUser={user} unreadIds={pageUnreadIds} onApproveClick={handleApproveClick} onReject={handleReject} onConfirm={handleConfirmSwap} onDecline={handleDeclineSwap} />

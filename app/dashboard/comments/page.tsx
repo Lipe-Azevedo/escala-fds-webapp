@@ -9,6 +9,7 @@ import { useNotifications } from '@/context/NotificationContext';
 import cardStyles from '@/components/common/Card.module.css';
 import Link from 'next/link';
 import MessageSquarePlusIcon from '@/components/icons/MessageSquarePlusIcon';
+import PageHeader from '@/components/common/PageHeader';
 
 const generateFilterConfigs = (user: User | null, allUsers: User[]): FilterConfig[] => {
   if (!user) return [];
@@ -50,6 +51,7 @@ export default function CommentsPage() {
   const { getUnreadIdsForCategory, markCategoryAsSeen, isLoading: isNotificationsLoading } = useNotifications();
   const [pageUnreadIds, setPageUnreadIds] = useState(new Set<number>());
   const notificationsProcessed = useRef(false);
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   useEffect(() => {
     if (!isNotificationsLoading && !notificationsProcessed.current) {
@@ -152,22 +154,31 @@ export default function CommentsPage() {
   }, [currentUser, fetchComments]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { setFilters(prev => ({ ...prev, [e.target.name]: e.target.value })); };
+  
+  const toggleFilterVisibility = () => {
+    setIsFilterVisible(prev => !prev);
+  };
+  
   const canAddComment = currentUser?.userType === 'master' || (currentUser?.position && currentUser.position.includes('Supervisor'));
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h1>Consultar Comentários</h1>
+      <PageHeader title="Consultar Comentários" onFilterToggle={toggleFilterVisibility}>
           {canAddComment && (
-            <Link href="/dashboard/comments/new">
+            <Link href="/dashboard/comments/new" style={{ textDecoration: 'none' }}>
               <button style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <MessageSquarePlusIcon size={20} />
                 Novo Comentário
               </button>
             </Link>
           )}
-      </div>
-      <FilterBar configs={generateFilterConfigs(currentUser, users)} filters={filters} onFilterChange={handleFilterChange} />
+      </PageHeader>
+      <FilterBar 
+        configs={generateFilterConfigs(currentUser, users)} 
+        filters={filters} 
+        onFilterChange={handleFilterChange}
+        isVisible={isFilterVisible}
+      />
       {isLoading ? <p>Carregando...</p> : error ? <p style={{color: 'red'}}>{error}</p> : (
         <div className={cardStyles.card}>
             <CommentList comments={comments} unreadIds={pageUnreadIds} />

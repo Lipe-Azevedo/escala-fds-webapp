@@ -7,6 +7,7 @@ import UserList from '@/components/user/UserList';
 import FilterBar from '@/components/common/FilterBar';
 import Link from 'next/link';
 import UserPlusIcon from '@/components/icons/UserPlusIcon';
+import PageHeader from '@/components/common/PageHeader';
 
 const userFilterConfigs: FilterConfig[] = [
     { 
@@ -38,8 +39,8 @@ export default function UsersPage() {
   const [error, setError] = useState('');
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  
   const [filters, setFilters] = useState({ team: '', shift: '' });
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
 
   const fetchUsers = async () => {
     const token = Cookies.get('authToken');
@@ -94,22 +95,30 @@ export default function UsersPage() {
     setEditModalOpen(false);
     setSelectedUser(null);
   }
+  
+  const toggleFilterVisibility = () => {
+    setIsFilterVisible(prev => !prev);
+  };
 
   if (isLoading) return null;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>Gestão de Colaboradores</h1>
-        <Link href="/dashboard/users/new">
+      <PageHeader title="Gestão de Colaboradores" onFilterToggle={toggleFilterVisibility}>
+        <Link href="/dashboard/users/new" style={{ textDecoration: 'none' }}>
             <button style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <UserPlusIcon size={20} />
-              + Novo Colaborador
+              Novo Colaborador
             </button>
         </Link>
-      </div>
+      </PageHeader>
 
-      <FilterBar configs={userFilterConfigs} filters={filters} onFilterChange={handleFilterChange} />
+      <FilterBar
+        configs={userFilterConfigs}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        isVisible={isFilterVisible}
+      />
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!error && <UserList users={filteredUsers} onEdit={handleEdit} />}
