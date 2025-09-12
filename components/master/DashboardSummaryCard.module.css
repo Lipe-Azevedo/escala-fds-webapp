@@ -4,9 +4,8 @@
   padding: 20px;
   border-radius: 8px;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  min-height: 150px;
+  align-items: center;
 }
 
 .title {
@@ -17,15 +16,25 @@
 }
 
 .value {
-  margin: 10px 0;
+  margin: 10px 0 0 0;
   font-size: 36px;
   font-weight: bold;
   color: rgb(var(--foreground-rgb));
 }
 
 .link {
-  color: var(--primary-color);
+  background-color: transparent;
+  border: 1px solid rgb(var(--card-border-rgb));
+  color: var(--text-secondary-color);
+  padding: 10px 15px;
+  border-radius: 6px;
   text-decoration: none;
   font-weight: 500;
-  align-self: flex-start;
+  transition: all 0.2s ease;
+}
+
+.link:hover {
+  background-color: rgb(var(--input-background-rgb));
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }

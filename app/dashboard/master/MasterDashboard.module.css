@@ -2,5 +2,44 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
-    margin-top: 20px;
+}
+
+.onShiftSection {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgb(var(--card-border-rgb));
+}
+
+.sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: rgb(var(--foreground-rgb)); /* Alterado para branco */
+    margin: 0;
+}
+
+.viewAllButton {
+  background-color: transparent;
+  border: 1px solid rgb(var(--card-border-rgb));
+  color: var(--text-secondary-color);
+  padding: 10px 15px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.viewAllButton:hover {
+  background-color: rgb(var(--input-background-rgb));
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }

@@ -19,7 +19,7 @@ export default function DashboardSummaryCard({ title, value, linkTo, linkLabel }
         <p className={styles.value}>{value}</p>
       </div>
       <Link href={linkTo} className={styles.link}>
-        {linkLabel} &rarr;
+        {linkLabel}
       </Link>
     </div>
   );

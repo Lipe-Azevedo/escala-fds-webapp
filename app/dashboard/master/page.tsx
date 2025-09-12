@@ -11,6 +11,7 @@ import cardStyles from '@/components/common/Card.module.css';
 import { translate } from '@/lib/translations';
 import UsersIcon from '@/components/icons/UsersIcon';
 import ShieldIcon from '@/components/icons/ShieldIcon';
+import Link from 'next/link';
 
 export default function MasterDashboardPage() {
     const [stats, setStats] = useState({ pendingSwaps: 0, pendingCertificates: 0 });
@@ -82,7 +83,7 @@ export default function MasterDashboardPage() {
             <div className={styles.header}>
                 <h1 style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
                   <ShieldIcon size={28} />
-                  Dashboard do Administrador
+                  Dashboard do Master
                 </h1>
             </div>
             {error ? <p style={{ color: 'red' }}>{error}</p> : (
@@ -91,11 +92,18 @@ export default function MasterDashboardPage() {
                         <DashboardSummaryCard title="Trocas Pendentes" value={stats.pendingSwaps} linkTo="/dashboard/swaps?status=pending" linkLabel="Ver trocas" />
                         <DashboardSummaryCard title="Atestados Pendentes" value={stats.pendingCertificates} linkTo="/dashboard/certificates?status=pending" linkLabel="Ver atestados" />
                     </div>
-                    <div className={`${styles.onShiftWidget}`} style={{marginTop: '20px'}}>
-                        <h3 style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                            <UsersIcon size={22} />
-                            Colaboradores de plantão
-                        </h3>
+                    
+                    <div className={styles.onShiftSection}>
+                        <div className={styles.sectionHeader}>
+                            <h3 className={styles.sectionTitle}>
+                                <UsersIcon size={22} />
+                                Colaboradores de plantão
+                            </h3>
+                            <Link href="/dashboard/users" className={styles.viewAllButton}>
+                                Ver colaboradores
+                            </Link>
+                        </div>
+
                         {usersOnShift.length > 0 ? (
                             <div className={tableStyles.tableWrapper}>
                                 <table className={tableStyles.table}>
@@ -110,7 +118,7 @@ export default function MasterDashboardPage() {
                                     <tbody>
                                         {usersOnShift.map(u => (
                                             <tr key={u.id}>
-                                                <td className={tableStyles.cell}>{u.firstName} {u.lastName}</td>
+                                                <td className={tableStyles.cell}>{`${u.firstName} ${u.lastName.charAt(0)}.`}</td>
                                                 <td className={tableStyles.cell}>{translate(u.team)}</td>
                                                 <td className={tableStyles.cell}>{translate(u.position)}</td>
                                                 <td className={tableStyles.cell}>{u.shift}</td>
