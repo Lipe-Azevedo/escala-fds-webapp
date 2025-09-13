@@ -8,6 +8,7 @@ import FilterBar from '@/components/common/FilterBar';
 import Link from 'next/link';
 import UserPlusIcon from '@/components/icons/UserPlusIcon';
 import PageHeader from '@/components/common/PageHeader';
+import EditUserModal from '@/components/user/EditUserModal';
 
 const userFilterConfigs: FilterConfig[] = [
     { 
@@ -37,6 +38,8 @@ export default function UsersPage() {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isEditModalOpen, setEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [filters, setFilters] = useState({ team: '', shift: '' });
   const [isFilterVisible, setIsFilterVisible] = useState(false);
 
@@ -44,6 +47,7 @@ export default function UsersPage() {
     const token = Cookies.get('authToken');
     const apiURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     try {
+      setIsLoading(true);
       const res = await fetch(`${apiURL}/api/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -85,11 +89,20 @@ export default function UsersPage() {
   };
 
   const handleEdit = (user: User) => {
-    // A lógica de edição foi removida, pois não estava a ser usada.
-    // Se for reimplementada, o estado e o modal devem ser adicionados novamente.
-    console.log('Edit user:', user);
+    setSelectedUser(user);
+    setEditModalOpen(true);
   };
 
+  const handleModalClose = () => {
+    setEditModalOpen(false);
+    setSelectedUser(null);
+  }
+
+  const handleSuccess = () => {
+    handleModalClose();
+    fetchUsers();
+  };
+  
   const toggleFilterVisibility = () => {
     setIsFilterVisible(prev => !prev);
   };
@@ -116,6 +129,13 @@ export default function UsersPage() {
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!error && <UserList users={filteredUsers} onEdit={handleEdit} />}
+
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={handleModalClose}
+        onSuccess={handleSuccess}
+        user={selectedUser}
+      />
     </div>
   );
 }
